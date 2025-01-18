@@ -1,0 +1,104 @@
+.ivm-mechanics {
+    padding: 10px;
+    margin-left: 20px;
+    display: inline-block;
+    border: 1px solid black;
+    background-color: #eee;
+}
+
+
+.ivm-move {
+
+}
+
+.ivm-move-name {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+
+.ivm-node {
+}
+
+
+.ivm-ooc {
+}
+
+
+.ivm-roll {
+    color: #000
+}
+
+.ivm-roll-miss {
+    background-color: #c00;
+}
+
+.ivm-roll-weak {
+    background-color: orange;
+}
+
+.ivm-roll-strong {
+    background-color: #0c0;
+}
+
+.ivm-roll-match {
+    font-weight: bold;
+}
+
+
+.ivm-reroll {
+
+}
+
+
+.ivm-progress {
+    background-color: #ccc;
+}
+
+
+.ivm-meter {
+}
+
+.ivm-meter-increase {
+    background-color: #0c0;
+}
+.ivm-meter-decrease {
+    background-color: #c00;
+}
+
+.ivm-meter-burn {
+}
+
+
+.ivm-track {
+}
+
+
+.ivm-clock {
+}
+
+
+.ivm-add {
+}
+
+
+.ivm-position {
+    
+}
+
+.ivm-position-nocombat {
+    background-color: #999;
+}
+.ivm-position-control {
+    background-color: #c09;
+}
+.ivm-position-badspot {
+    background-color: #0c9;
+}
+
+
+.ivm-oracle {
+}
+
+
+
