@@ -99,7 +99,7 @@ class IronVaultMechanicsPreprocessor(Preprocessor):
             elif inside:
                 if line == self.END:
                     new_lines.append(self.NEW_END)
-                    if len(lines) < line_num + 1 and lines[line_num + 1] != "":
+                    if line_num + 1 < len(lines) and lines[line_num + 1] != "":
                         # Append newline after, if there isn't one, to ensure later on that
                         # the mechanics block is fully contained within a dedicated BlockParser block
                         new_lines.append("")
@@ -334,6 +334,10 @@ class OracleNodeParser(SimpleContentNodeParser):
 
 
 class IronVaultMechanicsBlockProcessor(BlockProcessor):
+    # Note, preprocessor removes now all content before and after the mechanics block,
+    # so could consider tweaking the regex strings accordingly for these two here.
+    # Also, empty but otherwise valid block fails to match now and raises an exception,
+    # that's a bit harsh? Could use one common regex here, so test() fails on empty block.
     RE_MECHANICS_START = re.compile(r'(^|\n),,,iron-vault-mechanics(\n|$)')
     RE_MECHANICS_SECTION = re.compile(r'(^|\n),,,iron-vault-mechanics\n(?P<mechanics>[\s\S]*)\n,,,(\n|$)')
 
@@ -358,7 +362,6 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
         
         block = blocks.pop(0)
         content = ''
-        print(self.parser.md.Frontmatter)
 
         if (match := self.RE_MECHANICS_SECTION.search(block)) is not None:
             # iron-vault-mechanics section found.
@@ -401,6 +404,10 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
                 self.parse_content(parent, after, indent)
             
         elif self.RE_CMD_NODE_CHECK.search(content) is not None:
+            # Note: this only verifies valid comments for the very first line
+            #       after it passes the first check, the line splitting here is
+            #       only interested if it matches "<words> <words>"
+            #       Should add checks for each line then.
             lines = [c for c in content.split("\n") if c]
             
             for line in lines:
@@ -522,10 +529,6 @@ def check_ticks(rank: str, current: int, steps: int) -> int:
         
 
 class IronVaultExtension(Extension):
-    def __init__(self, **kwargs) -> None:
-        print("Initializing IronVault")
-        super().__init__(**kwargs)
-
     def extendMarkdown(self, md) -> None:
         md.registerExtension(self)
         self.md = md
