@@ -4,7 +4,7 @@ import sys
 import markdown
 from markdown.extensions.wikilinks import WikiLinkExtension
 from markdown.extensions.fenced_code import FencedCodeExtension
-from ironvault import IronVaultExtension, unhandled_nodes
+from ironvaultmd import IronVaultExtension, unhandled_nodes
 
 from pprint import pprint
 from bs4 import BeautifulSoup
@@ -27,7 +27,8 @@ def read_markdown_file(md: markdown.Markdown, filename: str) -> str:
     with open(filename, "r", encoding="utf-8") as input_file:
         text = input_file.read()
     html = md.convert(text)
-    # return html
+    # could directly 'return html' here, but for better mental parsing of the output,
+    # BeatifulSoup formatter is used to add some indentation to each element level.
     formatter = HTMLFormatter(indent=4)
     return BeautifulSoup(html, 'html.parser').prettify(formatter=formatter)
 
