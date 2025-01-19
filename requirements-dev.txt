@@ -10,16 +10,26 @@ build==1.2.2.post1
     # via pip-tools
 click==8.1.8
     # via pip-tools
+coverage==7.6.10
+    # via -r requirements-dev.in
+iniconfig==2.0.0
+    # via pytest
 markdown==3.7
     # via -r requirements.in
 packaging==24.2
-    # via build
+    # via
+    #   build
+    #   pytest
 pip-tools==7.4.1
     # via -r requirements-dev.in
+pluggy==1.5.0
+    # via pytest
 pyproject-hooks==1.2.0
     # via
     #   build
     #   pip-tools
+pytest==8.3.4
+    # via -r requirements-dev.in
 pyyaml==6.0.2
     # via -r requirements.in
 soupsieve==2.6

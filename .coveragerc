@@ -1,0 +1,8 @@
+[run]
+command_line = -m pytest
+branch = True
+dynamic_context = test_function
+omit = tests/**
+
+[paths]
+source = src/
