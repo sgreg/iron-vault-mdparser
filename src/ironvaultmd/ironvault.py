@@ -353,11 +353,11 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
     #  - oracle-group { oracle ...\noracle ... }  e.g. create entity/character or somethin
     #  - actor name=[[link|name]] { move {} }  for when "Always record actor" (or multiplayer?) is enabled
     # Should probably collect all content into a data object to e.g. match a roll to a move or a reroll to a previous roll
-    RE_MOVE_NODE = re.compile(r'move\s+"\[(?P<move_name>[\s\S]*)\]\((?P<move_link>[\s\S]*)\)"\s*\{(?P<move_content>[\s\S]*)}')
-    RE_CMD_NODE_CHECK = re.compile(r'(^|[\s]*)(roll|reroll|progress_roll|progress|meter|track|clock|burn|add|position|oracle|\s*-\s*")')
+    RE_MOVE_NODE = re.compile(r'move +"\[(?P<move_name>[^\]]+)\]\((?P<move_link>[^)]+)\)" +\{(?P<move_content>[\s\S]*)}')
+    RE_CMD_NODE_CHECK = re.compile(r'(^|\n)(\b(roll|reroll|progress_roll|progress|meter|track|clock|burn|add|position|oracle)\b|- "[^"]*")')
 
-    RE_CMD = re.compile(r'^\s*(?P<cmd_name>[\S]{2,}) +(?P<cmd_params>[\s\S]+)$')
-    RE_OOC = re.compile(r'^\s*- +"(?P<ooc>[\s\S]+)"$')
+    RE_CMD = re.compile(r'^\s*(?P<cmd_name>[\S]{2,}) +(?P<cmd_params>\S[\S ]*)$')
+    RE_OOC = re.compile(r'^\s*- +"(?P<ooc>[^"]*)"$')
         
 
     def test(self, parent, block) -> bool:
