@@ -187,7 +187,7 @@ class OocNodeParser(NodeParser):
 
 class RollNodeParser(RegexNodeParser):
     def __init__(self) -> None:
-        regex = r'^"(?P<stat_name>\w*)" action=(?P<action>\d+) adds=(?P<adds>\d+) stat=(?P<stat>\d+) vs1=(?P<vs1>\d+) vs2=(?P<vs2>\d+)$'
+        regex = r'^"(?P<stat_name>\w+)" action=(?P<action>\d+) adds=(?P<adds>\d+) stat=(?P<stat>\d+) vs1=(?P<vs1>\d+) vs2=(?P<vs2>\d+)$'
         super().__init__("Roll", regex)
 
     def set_element(self, parent, data) -> None:
@@ -211,7 +211,7 @@ class RerollNodeParser(SimpleContentNodeParser):
         # reroll vs1="3"
         # reroll vs2="4"
         regex = r'^(?P<dice>action|vs1|vs2)="(?P<value>\d+)"$'
-        super().__init__("Roll", regex, ["reroll"])
+        super().__init__("Reroll", regex, ["reroll"])
 
     def set_content(self, element, data) -> None:
         element.text = f"Reroll {data["dice"]} &rarr; {data["value"]}"
@@ -256,7 +256,13 @@ class MeterNodeParser(RegexNodeParser):
         oldval = int(data['from'])
         newval = int(data['to'])
 
-        element = create_div(parent, ["meter", "meter-increase" if newval > oldval else "meter-decrease"])
+        classes = ["meter"]
+        if newval > oldval:
+            classes.append("meter-increase")
+        elif newval < oldval:
+            classes.append("meter-decrease")
+
+        element = create_div(parent, classes)
         element.text = f"<i>{data['meter_name']}</i>: {data['from']} &rarr; {data['to']}"
 
 
@@ -309,15 +315,17 @@ class PositionNodeParser(RegexNodeParser):
         super().__init__("Position", regex)
         
     def set_element(self, parent, data) -> None:
+        classes = ["position"]
+
         match data["to"]:
             case "out of combat":
-                position = "nocombat"
+                classes.append("position-nocombat")
             case "in control":
-                position = "control"
+                classes.append("position-control")
             case "in a bad spot":
-                position = "badspot"
+                classes.append("position-badspot")
 
-        element = create_div(parent, ["position", f"position-{position}"])
+        element = create_div(parent, classes)
         element.text = f"Position {data['from']} &rarr; {data['to']}"
 
 
