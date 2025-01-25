@@ -154,7 +154,8 @@ def test_parser_oracle(parent):
 
     rolls = [
         ParserData('name="[Oracle Name](datasworn:path)" result="Something" roll=55', True, 0, classes),
-        ParserData('name="[Oracle Name]" result="Something" roll=55', False),
+        ParserData('name="[Oracle Name]" result="Something" roll=55', True, 1, classes),
+        ParserData('name="something with just a name" result="Something" roll=55', True, 2, classes),
         ParserData('name="" result="Something" roll=55', False),
         ParserData('result="Something" roll=55', False),
         ParserData('name="[Oracle Name](datasworn:path)" result=Something roll=55', False),

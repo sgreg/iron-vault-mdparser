@@ -1,5 +1,5 @@
 import xml.etree.ElementTree as etree
-from typing import NamedTuple
+from typing import NamedTuple, TypeVar, Generic
 
 from ironvaultmd.parsers.base import NodeParser
 
@@ -35,3 +35,9 @@ def assert_parser_data(parser: NodeParser, parent: etree.Element, rolls: list[Pa
                 assert c not in classes
 
     return nodes
+
+
+T = TypeVar("T")
+class CompareData(NamedTuple, Generic[T]):
+    content: T
+    expected: T

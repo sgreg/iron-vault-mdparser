@@ -6,7 +6,7 @@ from ironvaultmd.parsers.base import (
     RegexNodeParser,
     SimpleContentNodeParser,
 )
-from ironvaultmd.util import check_dice, check_ticks, create_div
+from ironvaultmd.util import check_dice, check_ticks, create_div, convert_link_name
 
 
 class AddNodeParser(SimpleContentNodeParser):
@@ -74,11 +74,17 @@ class OocNodeParser(NodeParser):
 class OracleNodeParser(SimpleContentNodeParser):
     def __init__(self) -> None:
         # oracle name="[Core Oracles \/ Theme](datasworn:oracle_rollable:starforged\/core\/theme)" result="Warning" roll=96
-        regex = r'^name="\[(?P<oracle_name>.+)\]\(datasworn:.+\)" result="(?P<result>.+)" roll=(?P<roll>\d+)$'
+        # oracle name="Will [[Lone Howls\/Clocks\/Clock decrypt Verholm research.md|Clock decrypt Verholm research]] advance? (Likely)" result="No" roll=83
+        regex = r'^name="(\[(?P<oracle_name>[^\]]+)\]\(datasworn:.+\)|(?P<oracle_text>[^"]+))" result="(?P<result>[^"]+)" roll=(?P<roll>\d+)$'
         super().__init__("Oracle", regex, ["oracle"])
 
     def set_content(self, parent, data) -> None:
-        oracle = data["oracle_name"].replace("\\/", "/")
+        oracle = "undefined"
+        if data["oracle_name"] is not None:
+            oracle = convert_link_name(data["oracle_name"])
+        elif data["oracle_text"] is not None:
+            oracle = convert_link_name(data["oracle_text"])
+
         parent.text = f"Oracle <i>{oracle}</i> rolled a {data['roll']} == {data['result']}"
 
 

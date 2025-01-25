@@ -20,6 +20,23 @@ def create_div(parent: etree.Element, classes: list[str] | None = None) -> etree
     return e
 
 
+RE_LINK_TEXT_MARKDOWN = re.compile(r"\[(?P<link_name>[^\]]+)\]\([^\)]*\)")
+RE_LINK_TEXT_WIKITYPE = re.compile(r"\[\[(?P<link_name>[^\]\|]+)\]\]")
+RE_LINK_TEXT_WIKITYPE_NAMED = re.compile(r"\[\[[^\]\|]*\|(?P<link_name>[^\]]+)\]\]")
+
+def convert_link_name(raw: str) -> str:
+    if (
+        (m := RE_LINK_TEXT_MARKDOWN.search(raw)) or
+        (m := RE_LINK_TEXT_WIKITYPE.search(raw)) or
+        (m := RE_LINK_TEXT_WIKITYPE_NAMED.search(raw))
+    ):
+        link_name = m.groupdict()["link_name"].replace("\\/", "/")
+        before, after = split_match(raw, m)
+        return f"{before}{link_name}{after}"
+
+    return raw
+
+
 unhandled_nodes: list[str] = []
 def add_unhandled_node(node: str) -> None:
     """Keep track of iron-vault-mechanics nodes that aren't handled yet (for dev purpose only)"""
