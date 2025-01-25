@@ -1,15 +1,16 @@
 # Test the extension
 
 import sys
-import markdown
-from markdown.extensions.wikilinks import WikiLinkExtension
-from markdown.extensions.fenced_code import FencedCodeExtension
-from ironvaultmd import IronVaultExtension, unhandled_nodes
-
 from pprint import pprint
+
+import markdown
 from bs4 import BeautifulSoup
 from bs4.formatter import HTMLFormatter
+from markdown.extensions.fenced_code import FencedCodeExtension
+from markdown.extensions.wikilinks import WikiLinkExtension
 
+from ironvaultmd import IronVaultExtension
+from ironvaultmd.util import unhandled_nodes
 
 template_top = """<!-- Created by ironparser.py -->
 <html>

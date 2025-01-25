@@ -1,6 +1,8 @@
-from typing import NamedTuple
 import xml.etree.ElementTree as etree
-from ironvaultmd.ironvault import NodeParser
+from typing import NamedTuple
+
+from ironvaultmd.parsers.base import NodeParser
+
 
 class ParserData(NamedTuple):
     content: str

@@ -1,5 +1,6 @@
 import pytest
-from ironvaultmd import FrontmatterException
+
+from ironvaultmd.processors.frontmatter import FrontmatterException
 
 
 def test_frontproc_parse(frontproc):

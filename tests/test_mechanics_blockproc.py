@@ -1,5 +1,6 @@
 import pytest
-from ironvaultmd import MechanicsBlockException
+
+from ironvaultmd.processors.mechanics import MechanicsBlockException
 
 
 def test_mechblock_test_success(parent, mechblock):

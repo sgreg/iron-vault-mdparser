@@ -1,5 +1,6 @@
 import pytest
-from ironvaultmd import MechanicsBlockException
+
+from ironvaultmd.processors.mechanics import MechanicsBlockException
 
 
 def test_mechproc_dont_touch(mechproc):

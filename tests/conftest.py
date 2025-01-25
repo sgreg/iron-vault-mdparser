@@ -1,11 +1,15 @@
-import pytest
-import markdown
 import xml.etree.ElementTree as etree
+
+import markdown
+import pytest
+
 from ironvaultmd.ironvault import (
     IronVaultExtension,
-    IronVaultFrontmatterPreprocessor,
-    IronVaultMechanicsPreprocessor,
+)
+from ironvaultmd.processors.frontmatter import IronVaultFrontmatterPreprocessor
+from ironvaultmd.processors.mechanics import (
     IronVaultMechanicsBlockProcessor,
+    IronVaultMechanicsPreprocessor,
 )
 
 
