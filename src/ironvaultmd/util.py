@@ -75,4 +75,4 @@ def check_ticks(rank: str, current: int, steps: int) -> int:
             print(f"Fail to check ticks, unknown rank {rank}")
             return current
 
-    return current + (ticks * steps)
+    return min(current + (ticks * steps), 40)

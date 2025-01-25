@@ -41,3 +41,18 @@ T = TypeVar("T")
 class CompareData(NamedTuple, Generic[T]):
     content: T
     expected: T
+
+
+class DiceData(NamedTuple):
+    score: int
+    vs1: int
+    vs2: int
+    expected_hitmiss: str
+    expected_match: bool
+
+
+class ProgressTickData(NamedTuple):
+    rank: str
+    current: int
+    steps: int
+    expected :int
