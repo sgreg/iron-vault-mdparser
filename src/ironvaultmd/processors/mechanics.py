@@ -98,6 +98,20 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
     RE_CMD = re.compile(r'^\s*(?P<cmd_name>[\S]{2,}) +(?P<cmd_params>\S[\S ]*)$')
     RE_OOC = re.compile(r'^\s*- +"(?P<ooc>[^"]*)"$')
 
+    parsers: dict[str, NodeParser] = {
+        "add": AddNodeParser(),
+        "burn": BurnNodeParser(),
+        "clock": ClockNodeParser(),
+        "meter": MeterNodeParser(),
+        "ooc": OocNodeParser(),
+        "oracle": OracleNodeParser(),
+        "position": PositionNodeParser(),
+        "progress": ProgressNodeParser(),
+        "progress-roll": ProgressRollNodeParser(),
+        "reroll": RerollNodeParser(),
+        "roll": RollNodeParser(),
+        "track": TrackNodeParser(),
+    }
 
     def test(self, parent, block) -> bool:
         match = self.RE_MECHANICS_START.search(block)
@@ -178,35 +192,10 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
 
 
     def add_node(self, parent: etree.Element, name: str, data: str) -> None:
-        parser: NodeParser
+        parser = self.parsers.get(name)
 
-        match name:
-            case "ooc":
-                parser = OocNodeParser()
-            case "roll":
-                parser = RollNodeParser()
-            case "reroll":
-                parser = RerollNodeParser()
-            case "progress-roll":
-                parser = ProgressRollNodeParser()
-            case "progress":
-                parser = ProgressNodeParser()
-            case "meter":
-                parser = MeterNodeParser()
-            case "track":
-                parser = TrackNodeParser()
-            case "clock":
-                parser = ClockNodeParser()
-            case "burn":
-                parser = BurnNodeParser()
-            case "add":
-                parser = AddNodeParser()
-            case "position":
-                parser = PositionNodeParser()
-            case "oracle":
-                parser = OracleNodeParser()
-            case _:
-                add_unhandled_node(name)
-                parser = NodeParser(name)
+        if parser is None:
+            parser = NodeParser(name)
+            add_unhandled_node(name)
 
         parser.parse(parent, data)
