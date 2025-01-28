@@ -21,7 +21,62 @@
 }
 
 
+/*
+ * Nodes
+ */
+
+.ivm-add {
+}
+
+
+.ivm-clock {
+}
+
+
+.ivm-meter {
+}
+
+.ivm-meter-increase {
+    background-color: #0c0;
+}
+.ivm-meter-decrease {
+    background-color: #c00;
+}
+
+.ivm-meter-burn {
+}
+
+
 .ivm-ooc {
+}
+
+
+.ivm-oracle {
+}
+
+
+.ivm-position {
+    
+}
+
+.ivm-position-nocombat {
+    background-color: #999;
+}
+.ivm-position-control {
+    background-color: #c09;
+}
+.ivm-position-badspot {
+    background-color: #0c9;
+}
+
+
+.ivm-progress {
+    background-color: #ccc;
+}
+
+
+.ivm-reroll {
+
 }
 
 
@@ -46,59 +101,6 @@
 }
 
 
-.ivm-reroll {
-
-}
-
-
-.ivm-progress {
-    background-color: #ccc;
-}
-
-
-.ivm-meter {
-}
-
-.ivm-meter-increase {
-    background-color: #0c0;
-}
-.ivm-meter-decrease {
-    background-color: #c00;
-}
-
-.ivm-meter-burn {
-}
-
-
 .ivm-track {
 }
-
-
-.ivm-clock {
-}
-
-
-.ivm-add {
-}
-
-
-.ivm-position {
-    
-}
-
-.ivm-position-nocombat {
-    background-color: #999;
-}
-.ivm-position-control {
-    background-color: #c09;
-}
-.ivm-position-badspot {
-    background-color: #0c9;
-}
-
-
-.ivm-oracle {
-}
-
-
 
