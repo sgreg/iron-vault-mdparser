@@ -34,7 +34,7 @@ def convert_link_name(raw: str) -> str:
         before, after = split_match(raw, m)
         return f"{before}{link_name}{after}"
 
-    return raw
+    return raw.replace("\\/", "/")
 
 
 unhandled_nodes: list[str] = []

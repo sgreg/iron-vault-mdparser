@@ -68,6 +68,7 @@ def test_util_convert_link_name():
         CompareData[str]("before[[https://example.org|link name]]after", "beforelink nameafter"),
         CompareData[str]("[[|]]", "[[|]]"),
         CompareData[str]("No link in here", "No link in here"),
+        CompareData[str]("No link in here but \\/ escaped slash", "No link in here but / escaped slash"),
         CompareData[str]("", ""),
     ]
 
