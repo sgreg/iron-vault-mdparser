@@ -18,9 +18,11 @@ template_top = """<!-- Created by ironparser.py -->
 <link rel="stylesheet" href="ironvault.css"
 </head>
 <body>
+<div class="ivm-content">
 """
 
 template_bottom = """
+</div>
 </body>
 </html>"""
 
