@@ -11,6 +11,7 @@ from ironvaultmd.processors.mechanics import (
     IronVaultMechanicsBlockProcessor,
     IronVaultMechanicsPreprocessor,
 )
+from ironvaultmd.processors.links import WikiLinkProcessor
 
 
 @pytest.fixture(name="md")
@@ -34,6 +35,12 @@ def mechanics_block_preprocessor(md):
 @pytest.fixture(name="mechblock")
 def mechanics_block_blockprocessor(md):
     processor = IronVaultMechanicsBlockProcessor(md.parser)
+    yield processor
+
+
+@pytest.fixture(name="linkproc")
+def links_inlineprocessor():
+    processor = WikiLinkProcessor()
     yield processor
 
 
