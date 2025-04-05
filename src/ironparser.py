@@ -52,7 +52,7 @@ def usage():
     print("""Iron Vault Markdown Parser
 
 Converts a markdown file to HTML, with special support for
-markdown files created by Obisidian's iron-vault plugin.
+markdown files created by Obsidian's iron-vault plugin.
 
 Usage: python ironparser.py <infile> [<outfile>]
 

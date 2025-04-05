@@ -30,7 +30,7 @@ class IronVaultMechanicsPreprocessor(Preprocessor):
     """Markdown preprocessor for handling mechanics blocks.
 
     This serves two purposes:
-     1. Convert triple backticks that enclose iron-vault-mechnics blocks to triple commas,
+     1. Convert triple backticks that enclose iron-vault-mechanics blocks to triple commas,
      so this extension can nicely coexist with extensions like fenced_code that would
      otherwise convert those backticks into <pre></pre> content
      2. Make sure iron-vault-mechanics blocks are fully contained within a single `block`
@@ -89,13 +89,13 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
     RE_MECHANICS_SECTION = re.compile(r'(^|\n),,,iron-vault-mechanics\n(?P<mechanics>[\s\S]*)\n,,,(\n|$)')
 
     # note, this exists also for
-    #  - oracle-group { oracle ...\noracle ... }  e.g. create entity/character or somethin
+    #  - oracle-group { oracle ...\noracle ... }  e.g. create entity/character or something
     #  - actor name=[[link|name]] { move {} }  for when "Always record actor" (or multiplayer?) is enabled
     # Should probably collect all content into a data object to e.g. match a roll to a move or a reroll to a previous roll
-    RE_MOVE_NODE = re.compile(r'move +"\[(?P<move_name>[^\]]+)\]\((?P<move_link>[^)]+)\)" +\{(?P<move_content>[\s\S]*)}')
+    RE_MOVE_NODE = re.compile(r'move +"\[(?P<move_name>[^]]+)]\((?P<move_link>[^)]+)\)" +\{(?P<move_content>[\s\S]*)}')
     RE_CMD_NODE_CHECK = re.compile(r'(^|\n)(\b(roll|reroll|progress_roll|progress|meter|track|clock|burn|add|position|oracle)\b|- "[^"]*")')
 
-    RE_CMD = re.compile(r'^\s*(?P<cmd_name>[\S]{2,}) +(?P<cmd_params>\S[\S ]*)$')
+    RE_CMD = re.compile(r'^\s*(?P<cmd_name>\S{2,}) +(?P<cmd_params>\S[\S ]*)$')
     RE_OOC = re.compile(r'^\s*- +"(?P<ooc>[^"]*)"$')
 
     parsers: dict[str, NodeParser] = {

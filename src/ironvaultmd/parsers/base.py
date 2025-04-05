@@ -19,7 +19,7 @@ class NodeParser:
 
 class RegexNodeParser(NodeParser):
     """Parser for iron-vault-mechanics nodes supporting regex matching"""
-    regex: re.Match
+    regex: re.Pattern[str]
 
     def __init__(self, name: str, regex: str) -> None:
         super().__init__(name)

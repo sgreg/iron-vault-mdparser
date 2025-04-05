@@ -6,7 +6,7 @@ def split_match(text: str, match: re.Match[str]) -> tuple[str, str]:
     """Split a regex match to extract and return any text before and after the match"""
     before = text[:match.start()]
     after = text[match.end():]
-    return (before, after)
+    return before, after
 
 
 def create_div(parent: etree.Element, classes: list[str] | None = None) -> etree.Element:
@@ -20,9 +20,9 @@ def create_div(parent: etree.Element, classes: list[str] | None = None) -> etree
     return e
 
 
-RE_LINK_TEXT_MARKDOWN = re.compile(r"\[(?P<link_name>[^\]]+)\]\([^\)]*\)")
-RE_LINK_TEXT_WIKITYPE = re.compile(r"\[\[(?P<link_name>[^\]\|]+)\]\]")
-RE_LINK_TEXT_WIKITYPE_NAMED = re.compile(r"\[\[[^\]\|]*\|(?P<link_name>[^\]]+)\]\]")
+RE_LINK_TEXT_MARKDOWN = re.compile(r"\[(?P<link_name>[^]]+)]\([^)]*\)")
+RE_LINK_TEXT_WIKITYPE = re.compile(r"\[\[(?P<link_name>[^]|]+)]]")
+RE_LINK_TEXT_WIKITYPE_NAMED = re.compile(r"\[\[[^]|]*\|(?P<link_name>[^]]+)]]")
 
 def convert_link_name(raw: str) -> str:
     if (
@@ -54,7 +54,7 @@ def check_dice(score, vs1, vs2) -> tuple[str, bool]:
         hitmiss = "miss"
 
     match = (vs1 == vs2)
-    return (hitmiss, match)
+    return hitmiss, match
 
 
 def check_ticks(rank: str, current: int, steps: int) -> int:

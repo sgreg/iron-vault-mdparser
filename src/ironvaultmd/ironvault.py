@@ -23,7 +23,7 @@ class IronVaultExtension(Extension):
         md.preprocessors.register(IronVaultMechanicsPreprocessor(md), 'ironvault-mechanics-preprocessor', 50)
         md.preprocessors.register(IronVaultFrontmatterPreprocessor(md), 'ironvault-frontmatter-preprocessor', 40)
         md.parser.blockprocessors.register(IronVaultMechanicsBlockProcessor(md.parser), 'ironvault-mechanics', 175)
-        # wikilinks extension processor has priorty 75, so need to make sure ours has higher priority again
+        # wikilinks extension processor has priority 75, so need to make sure ours has higher priority again
         md.inlinePatterns.register(WikiLinkProcessor(), 'ironvault-wikilinks-inlineprocessor', 100)
 
     def reset(self) -> None:

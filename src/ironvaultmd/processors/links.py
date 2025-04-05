@@ -22,8 +22,8 @@ class WikiLinkProcessor(InlineProcessor):
     def __init__(self):
         # [[link as label]]
         # [[link|label]]
-        RE_WIKILINK = r'\[\[([^\]|]+)(?:\|([^\]]+))?\]\]'
-        super().__init__(RE_WIKILINK)
+        wikilink_pattern = r'\[\[([^]|]+)(?:\|([^]]+))?]]'
+        super().__init__(wikilink_pattern)
 
     def handleMatch(self, m: re.Match[str], data: str) -> tuple[etree.Element | str, int, int]:
         if m.group(1).strip():
