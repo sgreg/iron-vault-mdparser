@@ -1,23 +1,23 @@
 import xml.etree.ElementTree as etree
-from utils import CompareData
+from utils import StringCompareData
 
 
 def test_linkproc_match_success(linkproc):
     data = [
-        CompareData[str]("[[link]]", "link"),
-        CompareData[str]("[[link|label]]", "label"),
-        CompareData[str]("[[  link  ]]", "link"),
-        CompareData[str]("[[  link |  label  ]]", "label"),
-        CompareData[str]("[[multi word link]]", "multi word link"),
-        CompareData[str]("[[multi word link|multi word label]]", "multi word label"),
-        CompareData[str]("[[  multi word link  ]]", "multi word link"),
-        CompareData[str]("[[  multi word link  |  multi word label  ]]", "multi word label"),
-        CompareData[str]("[[link]] with text afterwards", "link"),
-        CompareData[str]("[[link|label]] with text afterwards", "label"),
-        CompareData[str]("this is [[a link without label]] in the middle of it all", "a link without label"),
-        CompareData[str]("this is [[a link|with a label]] in the middle of it all", "with a label"),
-        CompareData[str]("first text, and then the [[link]]", "link"),
-        CompareData[str]("first text, and then the [[link|label]]", "label"),
+        StringCompareData("[[link]]", "link"),
+        StringCompareData("[[link|label]]", "label"),
+        StringCompareData("[[  link  ]]", "link"),
+        StringCompareData("[[  link |  label  ]]", "label"),
+        StringCompareData("[[multi word link]]", "multi word link"),
+        StringCompareData("[[multi word link|multi word label]]", "multi word label"),
+        StringCompareData("[[  multi word link  ]]", "multi word link"),
+        StringCompareData("[[  multi word link  |  multi word label  ]]", "multi word label"),
+        StringCompareData("[[link]] with text afterwards", "link"),
+        StringCompareData("[[link|label]] with text afterwards", "label"),
+        StringCompareData("this is [[a link without label]] in the middle of it all", "a link without label"),
+        StringCompareData("this is [[a link|with a label]] in the middle of it all", "with a label"),
+        StringCompareData("first text, and then the [[link]]", "link"),
+        StringCompareData("first text, and then the [[link|label]]", "label"),
     ]
 
     for d in data:
@@ -63,10 +63,10 @@ def test_linkproc_nomatch(linkproc):
 
 def test_linkproc_convert(md):
     data = [
-        CompareData[str]("[[label]]", "label"),
-        CompareData[str]("[[link|label]]", "label"),
-        CompareData[str]("[[multi word link]]", "multi word link"),
-        CompareData[str]("[[multi word link|multi word label]]", "multi word label"),
+        StringCompareData("[[label]]", "label"),
+        StringCompareData("[[link|label]]", "label"),
+        StringCompareData("[[multi word link]]", "multi word link"),
+        StringCompareData("[[multi word link|multi word label]]", "multi word label"),
     ]
 
     template = '<p><span class="ivm-link">{0}</span></p>'

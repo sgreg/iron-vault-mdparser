@@ -6,7 +6,7 @@ from ironvaultmd.util import (
     check_dice,
     check_ticks,
 )
-from utils import CompareData, DiceData, ProgressTickData
+from utils import StringCompareData, DiceData, ProgressTickData
 
 
 def test_util_split_match():
@@ -46,30 +46,30 @@ def test_util_create_dive(parent):
 
 def test_util_convert_link_name():
     data = [
-        CompareData[str]("[link name](https://example.org)", "link name"),
-        CompareData[str]("[linkName](https://example.org)", "linkName"),
-        CompareData[str]("[link\\/name](https://example.org)", "link/name"),
-        CompareData[str]("[link/name](https://example.org)", "link/name"),
-        CompareData[str]("before [link name](https://example.org) after", "before link name after"),
-        CompareData[str]("before[link name](https://example.org)after", "beforelink nameafter"),
-        CompareData[str]("[]()", "[]()"),
-        CompareData[str]("[[link name]]", "link name"),
-        CompareData[str]("[[linkName]]", "linkName"),
-        CompareData[str]("[[link\\/name]]", "link/name"),
-        CompareData[str]("[[link/name]]", "link/name"),
-        CompareData[str]("before [[link name]] after", "before link name after"),
-        CompareData[str]("before[[link name]]after", "beforelink nameafter"),
-        CompareData[str]("[[]]", "[[]]"),
-        CompareData[str]("[[https://example.org|link name]]", "link name"),
-        CompareData[str]("[[https://example.org|linkName]]", "linkName"),
-        CompareData[str]("[[https://example.org|link\\/name]]", "link/name"),
-        CompareData[str]("[[https://example.org|link/name]]", "link/name"),
-        CompareData[str]("before [[https://example.org|link name]] after", "before link name after"),
-        CompareData[str]("before[[https://example.org|link name]]after", "beforelink nameafter"),
-        CompareData[str]("[[|]]", "[[|]]"),
-        CompareData[str]("No link in here", "No link in here"),
-        CompareData[str]("No link in here but \\/ escaped slash", "No link in here but / escaped slash"),
-        CompareData[str]("", ""),
+        StringCompareData("[link name](https://example.org)", "link name"),
+        StringCompareData("[linkName](https://example.org)", "linkName"),
+        StringCompareData("[link\\/name](https://example.org)", "link/name"),
+        StringCompareData("[link/name](https://example.org)", "link/name"),
+        StringCompareData("before [link name](https://example.org) after", "before link name after"),
+        StringCompareData("before[link name](https://example.org)after", "beforelink nameafter"),
+        StringCompareData("[]()", "[]()"),
+        StringCompareData("[[link name]]", "link name"),
+        StringCompareData("[[linkName]]", "linkName"),
+        StringCompareData("[[link\\/name]]", "link/name"),
+        StringCompareData("[[link/name]]", "link/name"),
+        StringCompareData("before [[link name]] after", "before link name after"),
+        StringCompareData("before[[link name]]after", "beforelink nameafter"),
+        StringCompareData("[[]]", "[[]]"),
+        StringCompareData("[[https://example.org|link name]]", "link name"),
+        StringCompareData("[[https://example.org|linkName]]", "linkName"),
+        StringCompareData("[[https://example.org|link\\/name]]", "link/name"),
+        StringCompareData("[[https://example.org|link/name]]", "link/name"),
+        StringCompareData("before [[https://example.org|link name]] after", "before link name after"),
+        StringCompareData("before[[https://example.org|link name]]after", "beforelink nameafter"),
+        StringCompareData("[[|]]", "[[|]]"),
+        StringCompareData("No link in here", "No link in here"),
+        StringCompareData("No link in here but \\/ escaped slash", "No link in here but / escaped slash"),
+        StringCompareData("", ""),
     ]
 
     for d in data:
