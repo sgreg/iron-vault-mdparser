@@ -109,6 +109,27 @@ def test_mechblock_parse_move_after_content(parent, mechblock):
     assert "ivm-move" in nodes[0].get("class")
     assert "ivm-node" in nodes[1].get("class")
 
+def test_mechblock_parse_multiple_moves(parent, mechblock):
+    content = """move "[Compel](link)" {
+    add 2
+}
+move "[Face Danger](link)" {
+    roll "Heart" action=4 adds=2 stat=1 vs1=7 vs2=4
+}
+"""
+
+    mechblock.parse_content(parent, content)
+    nodes = parent.findall("div")
+
+    assert len(nodes) == 2
+
+    expected_move_names = ["Compel", "Face Danger"]
+
+    for idx, node in enumerate(nodes):
+        assert "ivm-move" in node.get("class")
+        move_text_node = node.findall("div")[0]
+        assert "ivm-move-name" in move_text_node.get("class")
+        assert expected_move_names[idx] in move_text_node.text
 
 def test_mechblock_parse_node(parent, mechblock):
     mechblock.parse_content(parent, "add 2")
