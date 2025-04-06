@@ -107,7 +107,7 @@ def test_mechblock_parse_move_after_content(parent, mechblock):
     assert len(nodes) == 2
 
     assert "ivm-move" in nodes[0].get("class")
-    assert "ivm-node" in nodes[1].get("class")
+    assert "ivm-add" in nodes[1].get("class")
 
 def test_mechblock_parse_multiple_moves(parent, mechblock):
     content = """move "[Compel](link)" {
@@ -146,7 +146,7 @@ move "[Face Danger](link)" {
     mechblock.parse_content(parent, content)
     nodes = parent.findall("div")
 
-    expected_div_classes = ["ivm-node", "ivm-move", "ivm-node", "ivm-move", "ivm-ooc"]
+    expected_div_classes = ["ivm-track", "ivm-move", "ivm-progress", "ivm-move", "ivm-ooc"]
     assert len(nodes) == len(expected_div_classes)
 
     for idx, node in enumerate(nodes):
@@ -157,12 +157,8 @@ def test_mechblock_parse_node(parent, mechblock):
 
     node = parent.find("div")
     assert node is not None
-    assert "ivm-node" in node.get("class")
-
-    add = node.find("div")
-    assert add is not None
-    assert "ivm-add" in add.get("class")
-    assert "add" in add.text.lower()
+    assert "ivm-add" in node.get("class")
+    assert "add" in node.text.lower()
 
 
 def test_mechblock_parse_ooc(parent, mechblock):

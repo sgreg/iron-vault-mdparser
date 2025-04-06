@@ -11,10 +11,10 @@ class NodeParser:
     def __init__(self, name: str) -> None:
         self.node_name = name
 
-
     def parse(self, parent: etree.Element, data: str) -> None:
         """Parse the given data, create HTML elements from it, and attach it to the given parent element"""
-        parent.text = f"<i>{self.node_name}</i>: {data}"
+        element = create_div(parent, ["node"])
+        element.text = f"<i>{self.node_name}</i>: {data}"
 
 
 class RegexNodeParser(NodeParser):

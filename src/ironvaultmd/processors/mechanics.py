@@ -180,13 +180,11 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
             for line in lines:
                 if (cmd_match := self.RE_CMD.search(line)) is not None:
                     print(f"{" " * indent}CMD: {cmd_match.group("cmd_name")}({cmd_match.group("cmd_params")})")
-                    element = create_div(parent, ["node"])
                     name = cmd_match.group("cmd_name")
                     data = cmd_match.group("cmd_params")
 
                 elif (ooc_match := self.RE_OOC.search(line)) is not None:
                     print(f"{" " * indent}// {ooc_match.group("ooc")}")
-                    element = parent
                     name = "ooc"
                     data = ooc_match.group("ooc")
 
@@ -194,7 +192,7 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
                     print(f"skipping unknown content {repr(line)}")
                     continue
 
-                self.add_node(element, name, data)
+                self.add_node(parent, name, data)
 
 
     def add_node(self, parent: etree.Element, name: str, data: str) -> None:

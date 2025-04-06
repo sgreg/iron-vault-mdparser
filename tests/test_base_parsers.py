@@ -16,9 +16,12 @@ def test_parser_node(parent):
     content = "Random Content"
     parser.parse(parent, content)
 
-    assert node_name in parent.text
-    assert content in parent.text
-    assert parent.find("div") is None
+    node = parent.find("div")
+    # Expects: <div class="ivm-node"><i>Node Test</i>: Random Content</div>
+    assert node is not None
+    assert "ivm-node" in node.get("class")
+    assert node_name in node.text
+    assert content in node.text
 
 
 def test_parser_regex(parent):
