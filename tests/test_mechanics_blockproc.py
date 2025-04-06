@@ -131,6 +131,27 @@ move "[Face Danger](link)" {
         assert "ivm-move-name" in move_text_node.get("class")
         assert expected_move_names[idx] in move_text_node.text
 
+def test_mechblock_parse_multiple_moves_with_content(parent, mechblock):
+    content = """track name="[[Link|Name]]" status="added"
+move "[Compel](link)" {
+    add 2
+}
+progress from=0 name="[[Link|Name]]" rank="dangerous" steps=2
+move "[Face Danger](link)" {
+    roll "Heart" action=4 adds=2 stat=1 vs1=7 vs2=4
+}
+- "Comment"
+"""
+
+    mechblock.parse_content(parent, content)
+    nodes = parent.findall("div")
+
+    expected_div_classes = ["ivm-node", "ivm-move", "ivm-node", "ivm-move", "ivm-ooc"]
+    assert len(nodes) == len(expected_div_classes)
+
+    for idx, node in enumerate(nodes):
+        assert expected_div_classes[idx] in node.get("class")
+
 def test_mechblock_parse_node(parent, mechblock):
     mechblock.parse_content(parent, "add 2")
 

@@ -154,13 +154,19 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
 
         if (move_node_match := self.RE_MOVE_NODE.search(content)) is not None:
             print(f"{" " * indent}MOVE: {move_node_match.group("move_name")}")
+
+            # Split up the match to make sure anything before or after is handled as well
+            # Regex itself could have some improvement maybe to match better here? Hmm...
+            before, after = split_match(content, move_node_match)
+
+            if before:
+                self.parse_content(parent, before, indent)
+
             element = create_div(parent, ["move"])
             create_div(element, ["move-name"]).text = f"{move_node_match.group("move_name")}"
 
             self.parse_content(element, move_node_match.group("move_content"), indent + 4)
 
-            # if there's afterwards more, grab it and re-parse that, too
-            _, after = split_match(content, move_node_match)
             if after:
                 self.parse_content(parent, after, indent)
 
