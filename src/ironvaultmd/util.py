@@ -1,5 +1,8 @@
+import logging
 import re
 import xml.etree.ElementTree as etree
+
+logger = logging.getLogger("ironvaultmd")
 
 
 def split_match(text: str, match: re.Match[str]) -> tuple[str, str]:
@@ -72,7 +75,7 @@ def check_ticks(rank: str, current: int, steps: int) -> int:
         case "troublesome":
             ticks = 12
         case _:
-            print(f"Fail to check ticks, unknown rank {rank}")
+            logger.warning(f"Fail to check ticks, unknown rank {rank}")
             return current
 
     return min(current + (ticks * steps), 40)

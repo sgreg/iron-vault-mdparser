@@ -3,6 +3,7 @@
 """
 Convert iron-vault markdown blocks, such as iron-vault-mechanics to dedicated html css classes and whatnot .. dunno yet, let's see what else?
 """
+import logging
 
 from markdown.extensions import Extension
 
@@ -13,6 +14,7 @@ from ironvaultmd.processors.mechanics import (
 )
 from ironvaultmd.processors.links import WikiLinkProcessor
 
+logger = logging.getLogger(__name__)
 
 class IronVaultExtension(Extension):
     def extendMarkdown(self, md) -> None:

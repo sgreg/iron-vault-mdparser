@@ -1,7 +1,7 @@
 # Test the extension
 
+import logging
 import sys
-from pprint import pprint
 
 import markdown
 from bs4 import BeautifulSoup
@@ -11,6 +11,8 @@ from markdown.extensions.wikilinks import WikiLinkExtension
 
 from ironvaultmd import IronVaultExtension
 from ironvaultmd.util import unhandled_nodes
+
+logger = logging.getLogger("ironparser")
 
 template_top = """<!-- Created by ironparser.py -->
 <html>
@@ -79,6 +81,8 @@ if __name__ == "__main__":
         usage()
         sys.exit(1)
 
+    logging.basicConfig(level=logging.INFO)
+
     markdown_extensions = [
         WikiLinkExtension(base_url='/', end_url=''),
         FencedCodeExtension(),
@@ -86,16 +90,16 @@ if __name__ == "__main__":
     ]
     md = markdown.Markdown(extensions=markdown_extensions)
 
-    print(f"Iron Vault Parser, {infile} -> {outfile}")
+    logger.info(f"Iron Vault Parser, {infile} -> {outfile}")
 
-    print(f"Reading {infile}")
+    logger.debug(f"Reading {infile}")
     html = read_markdown_file(md, infile)
 
     if to_stdout:
         print(html)
     else:
         size = write_html_file(outfile, html)
-        print(f"{size} bytes written to {outfile}")
+        logger.info(f"{size} bytes written to {outfile}")
     
-    pprint(md.Frontmatter)
-    print(f"TODO: {sorted(unhandled_nodes)}")
+    logger.debug(md.Frontmatter)
+    logger.debug(f"TODO: {sorted(unhandled_nodes)}")

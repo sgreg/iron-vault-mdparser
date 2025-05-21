@@ -1,8 +1,11 @@
+import logging
 import re
 import xml.etree.ElementTree as etree
 from typing import Any
 
 from ironvaultmd.util import create_div
+
+logger = logging.getLogger("ironvaultmd")
 
 
 class NodeParser:
@@ -30,10 +33,10 @@ class RegexNodeParser(NodeParser):
         match = self.regex.search(data)
 
         if match is None:
-            print(f"Fail to match parameters for {self.node_name}: {repr(data)}")
+            logger.warning(f"Fail to match parameters for {self.node_name}: {repr(data)}")
             return None
 
-        print(match)
+        logger.debug(match)
         return match.groupdict()
 
     def parse(self, parent: etree.Element, data: str) -> None:

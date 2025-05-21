@@ -1,3 +1,4 @@
+import logging
 import re
 import xml.etree.ElementTree as etree
 
@@ -20,6 +21,8 @@ from ironvaultmd.parsers.nodes import (
     TrackNodeParser,
 )
 from ironvaultmd.util import add_unhandled_node, create_div, split_match
+
+logger = logging.getLogger("ironvaultmd")
 
 
 class MechanicsBlockException(Exception):
@@ -76,7 +79,7 @@ class IronVaultMechanicsPreprocessor(Preprocessor):
             else:
                 new_lines.append(line)
 
-        print(new_lines)
+        logger.debug(new_lines)
         return new_lines
 
 
@@ -115,11 +118,11 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
 
     def test(self, parent, block) -> bool:
         match = self.RE_MECHANICS_START.search(block)
-        print(f" >>> VLT testing ({'Y' if match is not None else 'N'}) {repr(block)} -> '{match}'")
+        logger.debug(f" >>> VLT testing ({'Y' if match is not None else 'N'}) {repr(block)} -> '{match}'")
         return match is not None
 
     def run(self, parent, blocks) -> None:
-        print(f"\nrun, {len(blocks)} blocks: '{blocks}'")
+        logger.debug(f"\nrun, {len(blocks)} blocks: '{blocks}'")
 
         block = blocks.pop(0)
         content = ''
@@ -144,16 +147,16 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
             # match that here. Something is wrong. Fail hard.
             raise MechanicsBlockException(f"your logic sucks, {repr(block)}")
 
-        print(f"mechanics block content: {repr(content)}")
+        logger.debug(f"mechanics block content: {repr(content)}")
         element = create_div(parent, ["mechanics"])
         self.parse_content(element, content)
 
 
     def parse_content(self, parent, content: str, indent=0) -> None:
-        print(f"x> adding content {repr(content)}")
+        logger.debug(f"x> adding content {repr(content)}")
 
         if (move_node_match := self.RE_MOVE_NODE.search(content)) is not None:
-            print(f"{" " * indent}MOVE: {move_node_match.group("move_name")}")
+            logger.debug(f"{" " * indent}MOVE: {move_node_match.group("move_name")}")
 
             # Split up the match to make sure anything before or after is handled as well
             # Regex itself could have some improvement maybe to match better here? Hmm...
@@ -179,17 +182,17 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
 
             for line in lines:
                 if (cmd_match := self.RE_CMD.search(line)) is not None:
-                    print(f"{" " * indent}CMD: {cmd_match.group("cmd_name")}({cmd_match.group("cmd_params")})")
+                    logger.debug(f"{" " * indent}CMD: {cmd_match.group("cmd_name")}({cmd_match.group("cmd_params")})")
                     name = cmd_match.group("cmd_name")
                     data = cmd_match.group("cmd_params")
 
                 elif (ooc_match := self.RE_OOC.search(line)) is not None:
-                    print(f"{" " * indent}// {ooc_match.group("ooc")}")
+                    logger.debug(f"{" " * indent}// {ooc_match.group("ooc")}")
                     name = "ooc"
                     data = ooc_match.group("ooc")
 
                 else:
-                    print(f"skipping unknown content {repr(line)}")
+                    logger.debug(f"skipping unknown content {repr(line)}")
                     continue
 
                 self.add_node(parent, name, data)
