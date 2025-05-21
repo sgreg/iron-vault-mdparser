@@ -1,0 +1,41 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+packages = ["src/ironvaultmd"]
+
+[project]
+name = "ironvaultmd"
+dynamic = ["version"]
+description = "Python-Markdown extension for parsing Iron Vault journals"
+authors = [
+  { name="Sven Gregori", email="sven@craplab.fi" },
+]
+readme = "README.md"
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+requires-python = ">=3.10"
+dependencies = [
+    "markdown",
+    "pyyaml",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Games/Entertainment :: Role-Playing",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing :: Markup :: HTML",
+    "Topic :: Text Processing :: Markup :: Markdown",
+]
+
+[project.urls]
+Homepage = "https://github.com/sgreg/iron-vault-mdparser"
+Issues = "https://github.com/sgreg/iron-vault-mdparser/issues"
+
+[tool.hatch.version]
+path = "src/ironvaultmd/__init__.py"
