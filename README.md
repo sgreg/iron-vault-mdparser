@@ -1,4 +1,4 @@
-# iron-vault-mdparser
+# ironvaultmd - Iron Vault Markdown Parser
 [![Quality Gate Status](https://sonarqube.craplab.fi/api/project_badges/measure?project=iron-vault-mdparser&metric=alert_status&token=sqb_09511c290a6a0c81316431640636eeed4db43f92)](https://sonarqube.craplab.fi/dashboard?id=iron-vault-mdparser)
 [![Coverage](https://sonarqube.craplab.fi/api/project_badges/measure?project=iron-vault-mdparser&metric=coverage&token=sqb_09511c290a6a0c81316431640636eeed4db43f92)](https://sonarqube.craplab.fi/dashboard?id=iron-vault-mdparser)
 [![Security Hotspots](https://sonarqube.craplab.fi/api/project_badges/measure?project=iron-vault-mdparser&metric=security_hotspots&token=sqb_09511c290a6a0c81316431640636eeed4db43f92)](https://sonarqube.craplab.fi/dashboard?id=iron-vault-mdparser)
@@ -6,64 +6,59 @@
 [![Maintainability Issues](https://sonarqube.craplab.fi/api/project_badges/measure?project=iron-vault-mdparser&metric=software_quality_maintainability_issues&token=sqb_09511c290a6a0c81316431640636eeed4db43f92)](https://sonarqube.craplab.fi/dashboard?id=iron-vault-mdparser)
 [![Security Issues](https://sonarqube.craplab.fi/api/project_badges/measure?project=iron-vault-mdparser&metric=software_quality_security_issues&token=sqb_09511c290a6a0c81316431640636eeed4db43f92)](https://sonarqube.craplab.fi/dashboard?id=iron-vault-mdparser)
 
-A [Python-Markdown](https://pypi.org/project/Markdown/) ([github](https://github.com/Python-Markdown/markdown)) extension to parse Markdown files from the [Iron Vault](https://ironvault.quest/) ([github](https://github.com/iron-vault-plugin/iron-vault)) Obsidian plugin.
+A [Python-Markdown](https://pypi.org/project/Markdown/) ([GitHub](https://github.com/Python-Markdown/markdown)) extension to parse Markdown files from the [Iron Vault](https://ironvault.quest/) ([GitHub](https://github.com/iron-vault-plugin/iron-vault)) Obsidian plugin.
 
-Mainly parses anything within ` ```iron-vault-mechanics ... ``` ` blocks, but als frontmatter YAML.
+The main idea for this extension is to convert Iron Vault markdown journals into HTML sites for publishing.
+
+## Features
+
+Supports at this point
+ - parsing ` ```iron-vault-mechanics ``` ` blocks (see [below](#supported-mechanics-block-content) for details)
+ - collecting frontmatter YAML information into a dictionary
+ - regular and labeled wiki-style links, i.e. `[[link]]` and `[[link|label]]` (see also below for details)
+
+### Supported mechanics block content
+
+> Disclaimer: This extension came into existence for my own purposes, to eventually publish my campaigns.
+>
+> After old-school pen and paper, and a bunch of other experiments, I eventually gave Iron Vault a try for my most recent campaign - and I haven't looked back.
+However, this only happened in December 2024, so somewhere around Iron Vault version 1.88.1, and only with a Starforged campaign.
+Currently, neither journals created with an older version, nor OG Ironsworn, Delve, or Sundered Isles campaigns are supported,
+and results may be disappointing.
+
+#### Mechanics nodes
+Currently supported nodes within a mechanics block: add, burn, clock, meter, move, out-of-character comments, oracle (note, only single oracle nodes, no oracle groups), 
+position, progress, progress-roll, reroll, roll, track
+
+#### Links
+Links are currently detected but only packed in a `<span class="ivm-link">` element.
+No actual linking is performed yet.
 
 
-## Setup
+## Installation
 
-Dependencies to use the extension / run the sample parser are listed in `requirements.txt`. It's recommended to set up a virtual environment.
-
-```shell
-$ python -m venv venv
-$ . ./venv/bin/activate
-$ (venv) $ pip install -r requirements.txt
+```sh
+pip install ironvaultmd
 ```
 
-For dependencies needed for development, check the Development section below.
+This will install the required dependencies, `markdown` and `pyyaml`, as well.
 
 ## Usage
 
-```shell
-$ python ./ironvault.py /path/to/vault/Journals/Session.md /tmp/Session.html
+Quick usage to convert an Iron Vault journal Markdown file to HTML and print it to the terminal:
+
+```python
+import markdown
+from ironvaultmd import IronVaultExtension
+
+md = markdown.Markdown(extensions=[IronVaultExtension()])
+
+with open("/path/to/ironvault/Journals/JournalEntry.md", "r", encoding="utf-8") as file:
+    print(md.convert(file.read()))
 ```
 
+Check also the [`ironparser.py` example file](src/ironparser.py) for a more complete example to write a given journal Markdown file as HTML file.
 
-## Development
+## Developing
 
-### Dependencies
-
-Dependencies are separated to those required to run the extension and sample parser, and those that are
-required for full development and CI pipeline runs (unit tests, coverage), and listed in `requirements.in`
-and `requirements-dev.in` respectively. Those are on high level only, and `pip-tools` is used to create a
-full list of requirements from it, which can then be passed `pip install -f`.
-
-If you just want to hack some stuff together, the runtime dependencies are probably all you need, but if
-you want to e.g. add and run tests, go with the `-dev` ones. To make life easier, a set of precompiled
-`requirements.txt` and `requirements-dev.txt` files are added to the repository.
-
-#### pip-tools
-
-Dependencies are managed with `pip-tools`, which needs to be installed first, and latest now the virtual
-environment is very recommended.
-
-```shell
-$ python -m venv venv
-$ . ./venv/bin/activate
-(venv) $ pip install pip-tools
-```
-
-To compile and install runtime requirements:
-
-```shell
-(venv) $ pip-compile requirements.in -o requirements.txt
-(venv) $ pip install -r requirements.txt
-```
-
-To compile and install both runtime and development requirements:
-
-```shell
-(venv) $ pip-compile requirements.in requirements-dev.in -o requirements-dev.txt
-(venv) $ pip install -r requirements-dev.txt
-```
+See [`DEVELOPING.md`](DEVELOPING.md) for details on how to set up development environments etc. 
