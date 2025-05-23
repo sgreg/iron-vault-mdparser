@@ -4,10 +4,7 @@ import logging
 import sys
 
 import markdown
-from bs4 import BeautifulSoup
-from bs4.formatter import HTMLFormatter
 from markdown.extensions.fenced_code import FencedCodeExtension
-from markdown.extensions.wikilinks import WikiLinkExtension
 
 from ironvaultmd import IronVaultExtension
 from ironvaultmd.util import unhandled_nodes
@@ -31,11 +28,7 @@ template_bottom = """
 def read_markdown_file(md: markdown.Markdown, filename: str) -> str:
     with open(filename, "r", encoding="utf-8") as input_file:
         text = input_file.read()
-    html = md.convert(text)
-    # could directly 'return html' here, but for better mental parsing of the output,
-    # BeatifulSoup formatter is used to add some indentation to each element level.
-    formatter = HTMLFormatter(indent=4)
-    return BeautifulSoup(html, 'html.parser').prettify(formatter=formatter)
+    return md.convert(text)
 
 def write_html_file(filename: str, html: str) -> int:
     with open(filename, "w", encoding="utf-8", errors="xmlcharrefreplace") as output_file:
@@ -84,8 +77,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     markdown_extensions = [
-        WikiLinkExtension(base_url='/', end_url=''),
-        FencedCodeExtension(),
+        FencedCodeExtension(), # for parsing code blocks
         IronVaultExtension(),
     ]
     md = markdown.Markdown(extensions=markdown_extensions)

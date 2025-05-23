@@ -4,11 +4,7 @@
 #
 #    pip-compile --output-file=requirements.txt requirements.in
 #
-beautifulsoup4==4.12.3
-    # via -r requirements.in
 markdown==3.7
     # via -r requirements.in
 pyyaml==6.0.2
     # via -r requirements.in
-soupsieve==2.6
-    # via beautifulsoup4
