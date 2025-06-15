@@ -76,11 +76,12 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO)
 
+    links = []
     frontmatter = {}
 
     markdown_extensions = [
         FencedCodeExtension(), # for parsing code blocks
-        IronVaultExtension(frontmatter=frontmatter),
+        IronVaultExtension(links=links, frontmatter=frontmatter),
     ]
     md = markdown.Markdown(extensions=markdown_extensions)
 
@@ -96,4 +97,5 @@ if __name__ == "__main__":
         logger.info(f"{size} bytes written to {outfile}")
     
     logger.debug(frontmatter)
+    logger.debug(links)
     logger.debug(f"TODO: {sorted(unhandled_nodes)}")

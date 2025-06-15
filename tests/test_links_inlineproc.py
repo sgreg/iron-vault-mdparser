@@ -1,4 +1,7 @@
 import xml.etree.ElementTree as etree
+
+import pytest
+
 from utils import StringCompareData
 
 
@@ -74,3 +77,41 @@ def test_linkproc_convert(md):
     for d in data:
         html = md.convert(d.content)
         assert html == template.format(d.expected)
+
+
+def test_linkproc_collect(linkproc_gen):
+    data = [
+        "[[link]]",
+        "[[different link|label]]",
+        "not a link"
+    ]
+
+    links = []
+    processor = linkproc_gen(links)
+
+    for d in data:
+        match = processor.compiled_re.search(d)
+        if match is not None:
+            processor.handleMatch(match, d)
+
+    assert len(links) == 2
+    assert links[0]["link"] == "link"
+    assert links[0]["label"] == "link"
+    assert links[1]["link"] == "different link"
+    assert links[1]["label"] == "label"
+
+
+def test_linkproc_collect_invalid_list(linkproc_gen):
+    # Ensures that passing not a list as link storage will cause TypeErrors
+
+    with pytest.raises(TypeError):
+        links = "string"
+        linkproc_gen(links)
+
+    with pytest.raises(TypeError):
+        links = {}
+        linkproc_gen(links)
+
+    with pytest.raises(TypeError):
+        links = ()
+        linkproc_gen(links)

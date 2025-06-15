@@ -7,7 +7,7 @@ from markdown.inlinepatterns import InlineProcessor
 class WikiLinkProcessor(InlineProcessor):
     """Markdown inline processor for handling wikilinks.
 
-    This is intended to replace Python Markdown's own wikilinks extension, for two reasons:
+    This is intended to replace Python Markdown's own wikilinks extension, for few reasons:
      1. The original wikilinks extension doesn't handled piped links, i.e. links in the
      style of [[link|label]] -> <a href="link">label</a> and there appears to be no
      motivation to change that (and earlier attempts have been shut down).
@@ -17,12 +17,19 @@ class WikiLinkProcessor(InlineProcessor):
      want that to happen in practice. So for now, it just extracts the link/label and
      returns a <span class="ivm-link">label</span> instead of an actual link.
      This is expected to change eventually.
+     3. Expanding on the previous reason, links themselves are collected in a dedicated
+     list while being parsed. This allows some additional handling of links in the code
+     using this extension. Maybe. Well, I got some ideas and plans with that at least.
     """
 
-    def __init__(self):
+    def __init__(self, links: list[dict] = None):
+        if links is not None and not isinstance(links, list):
+            raise TypeError("Parameter 'links' must be a list")
+
         # [[link as label]]
         # [[link|label]]
         wikilink_pattern = r'\[\[([^]|]+)(?:\|([^]]+))?]]'
+        self.links = links
         super().__init__(wikilink_pattern)
 
     def handleMatch(self, m: re.Match[str], data: str) -> tuple[etree.Element | str, int, int]:
@@ -41,6 +48,9 @@ class WikiLinkProcessor(InlineProcessor):
             element = etree.Element('span')
             element.set('class', 'ivm-link')
             element.text = label
+            if self.links is not None:
+                # TODO this should be its own type maybe?
+                self.links.append({'label': label, 'link': link})
 
         else:
             element = ''

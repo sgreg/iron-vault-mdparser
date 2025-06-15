@@ -50,6 +50,12 @@ def links_inlineprocessor():
     processor = WikiLinkProcessor()
     yield processor
 
+@pytest.fixture(name="linkproc_gen")
+def links_inlineprocessor_generator():
+    def _links_inlineprocessor(data_out_list = None):
+        return WikiLinkProcessor(data_out_list)
+    return _links_inlineprocessor
+
 
 @pytest.fixture(name="parent")
 def parent_div_element():

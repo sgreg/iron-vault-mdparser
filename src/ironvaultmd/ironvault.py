@@ -20,12 +20,17 @@ class IronVaultExtension(Extension):
     def __init__(self, **kwargs):
 
         self.config = {
+            'links': [[], 'List of collected links'],
             'frontmatter': [{}, "YAML Frontmatter parsed into dictionary"]
         }
 
         super().__init__(**kwargs)
 
         self.md = None
+
+        self.links = self.getConfig('links', None)
+        if self.links is not None and not isinstance(self.links, list):
+            raise TypeError("Parameter 'links' must be a list")
 
         self.frontmatter = self.getConfig('frontmatter', None)
         if self.frontmatter is not None and not isinstance(self.frontmatter, dict):
@@ -41,8 +46,10 @@ class IronVaultExtension(Extension):
         md.preprocessors.register(IronVaultFrontmatterPreprocessor(md, self.frontmatter), 'ironvault-frontmatter-preprocessor', 40)
         md.parser.blockprocessors.register(IronVaultMechanicsBlockProcessor(md.parser), 'ironvault-mechanics', 175)
         # wikilinks extension processor has priority 75, so need to make sure ours has higher priority again
-        md.inlinePatterns.register(WikiLinkProcessor(), 'ironvault-wikilinks-inlineprocessor', 100)
+        md.inlinePatterns.register(WikiLinkProcessor(self.links), 'ironvault-wikilinks-inlineprocessor', 100)
 
     def reset(self) -> None:
+        if self.links is not None:
+            self.links.clear()
         if self.frontmatter is not None:
             self.frontmatter.clear()
