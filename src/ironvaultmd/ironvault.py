@@ -17,16 +17,32 @@ from ironvaultmd.processors.links import WikiLinkProcessor
 logger = logging.getLogger(__name__)
 
 class IronVaultExtension(Extension):
+    def __init__(self, **kwargs):
+
+        self.config = {
+            'frontmatter': [{}, "YAML Frontmatter parsed into dictionary"]
+        }
+
+        super().__init__(**kwargs)
+
+        self.md = None
+
+        self.frontmatter = self.getConfig('frontmatter', None)
+        if self.frontmatter is not None and not isinstance(self.frontmatter, dict):
+            raise TypeError("Parameter 'frontmatter' must be a dict")
+
+
     def extendMarkdown(self, md) -> None:
         md.registerExtension(self)
         self.md = md
 
         # fenced_code preprocessor has priority 25, ours must have higher one to make sure it's runs first
         md.preprocessors.register(IronVaultMechanicsPreprocessor(md), 'ironvault-mechanics-preprocessor', 50)
-        md.preprocessors.register(IronVaultFrontmatterPreprocessor(md), 'ironvault-frontmatter-preprocessor', 40)
+        md.preprocessors.register(IronVaultFrontmatterPreprocessor(md, self.frontmatter), 'ironvault-frontmatter-preprocessor', 40)
         md.parser.blockprocessors.register(IronVaultMechanicsBlockProcessor(md.parser), 'ironvault-mechanics', 175)
         # wikilinks extension processor has priority 75, so need to make sure ours has higher priority again
         md.inlinePatterns.register(WikiLinkProcessor(), 'ironvault-wikilinks-inlineprocessor', 100)
 
     def reset(self) -> None:
-        self.md.Frontmatter = {}
+        if self.frontmatter is not None:
+            self.frontmatter.clear()
