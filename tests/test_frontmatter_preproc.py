@@ -128,3 +128,20 @@ def test_frontproc_invalid_dict(frontproc_gen):
     with pytest.raises(TypeError):
         frontmatter = ()
         frontproc_gen(frontmatter)
+
+
+def test_frontproc_no_data(frontproc_gen):
+    # Ensure all is still well when there is no frontmatter in the Markdown
+
+    lines = [
+        "# Just a regular header",
+        "and some regular text",
+    ]
+
+    frontmatter = {}
+    processor = frontproc_gen(frontmatter)
+    processed = processor.run(lines)
+
+    # Expect no errors, empty frontmatter dict, and returned lines are same as the input lines
+    assert frontmatter == {}
+    assert processed == lines

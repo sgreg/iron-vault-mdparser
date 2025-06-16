@@ -20,10 +20,11 @@ def markdown_instance():
     yield md
 
 
-@pytest.fixture(name="frontproc")
-def frontmatter_preprocessor(md):
-    processor = IronVaultFrontmatterPreprocessor(md)
-    yield processor
+@pytest.fixture(name="md_gen")
+def markdown_instance_generator(request):
+    def _markdown_instance(**kwargs):
+        return markdown.Markdown(extensions=[IronVaultExtension(**kwargs)])
+    return _markdown_instance
 
 
 @pytest.fixture(name="frontproc_gen")
