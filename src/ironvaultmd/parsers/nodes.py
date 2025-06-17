@@ -34,11 +34,24 @@ class BurnNodeParser(SimpleContentNodeParser):
 class ClockNodeParser(SimpleContentNodeParser):
     def __init__(self) -> None:
         # clock from=2 name="[[Lone Howls\/Clocks\/Titanhold Bounty Hunters closing in on Dykstra.md|Titanhold Bounty Hunters closing in on Dykstra]]" out-of=6 to=3
-        regex = r'^from=(?P<from>\d+) name="\[\[.*\|(?P<name>.*)\]\]" out-of=(?P<segments>\d+) to=(?P<filled>\d+)$'
+        # clock name="[[Lone Howls\/Clocks\/Titanhold Bounty Hunters closing in on Dykstra.md|Titanhold Bounty Hunters closing in on Dykstra]]" status="added"
+
+        # Note that https://ironvault.quest/blocks/mechanics-blocks.html#%60clock%60 actually shows a different order.
+        # Probably a good idea to capture arbitrary order of parameters in all the node parsers.
+
+        regex = r'^(from=(?P<from>\d+) )?name="\[\[.*\|(?P<name>.*)\]\]" (?(from)out-of=(?P<segments>\d+) to=(?P<filled>\d+)|status="(?P<status>(added|removed|resolved))")$'
+        #          ^...................^^                                 ^^^^^^^
+        #        make 'from=x ' optional,                        check if 'from' group was actually set,
+        #        it's only in clock progresses,                  if so, expect 'out-of' and 'to' here,
+        #        but not in clock status changes                 otherwise expect 'status'
+
         super().__init__("Clock", regex, ["clock"])
 
     def set_content(self, element, data) -> None:
-        element.text = f"<i>Clock</i> for {data['name']} -> {data["filled"]} / {data["segments"]}"
+        if data["status"] is not None:
+            element.text = f"<i>Clock</i> {data["status"]}: {data['name']}"
+        else:
+            element.text = f"<i>Clock</i> for {data['name']} -> {data["filled"]} / {data["segments"]}"
 
 
 class MeterNodeParser(RegexNodeParser):

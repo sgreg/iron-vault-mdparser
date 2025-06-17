@@ -75,13 +75,19 @@ def test_parser_clock(parent):
         ParserData('from=2 name="[[ignored|Clock Name]]" out-of=6 to=100', True, 1, classes),
         ParserData('from=2 name="[[ignored|Clock Name]]" out-of=1 to=3', True, 2, classes),
         ParserData('from=100 name="[[ignored|Clock Name]]" out-of=6 to=3', True, 3, classes),
+        # allow valid status changes (added, removed, resolved)
+        ParserData('name="[[ignored|Clock Name]]" status="added"', True, 4, classes),
+        ParserData('name="[[ignored|Clock Name]]" status="removed"', True, 5, classes),
+        ParserData('name="[[ignored|Clock Name]]" status="resolved"', True, 6, classes),
         # don't allow all else
         ParserData('from=2 name="" out-of=6 to=3', False),
         ParserData('from=2 name="[[ignored]]" out-of=6 to=3', False),
         ParserData('name="[[ignored|Clock Name]]" out-of=6 to=3', False),
         ParserData('from=2 out-of=6 to=3', False),
         ParserData('from=2 name="[[ignored|Clock Name]]" to=3', False),
-        ParserData('from=2 name="[[ignored|Clock Name]]" out-of=6', False), 
+        ParserData('from=2 name="[[ignored|Clock Name]]" out-of=6', False),
+        ParserData('name="[[ignored|Clock Name]]" status="invalid"', False),
+        ParserData('name="[[ignored|Clock Name]]" status="added" out-of=6 to=3', False),
         ParserData("", False),
         ParserData("random data", False),
     ]
