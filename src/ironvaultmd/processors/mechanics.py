@@ -101,6 +101,21 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
     RE_CMD = re.compile(r'^\s*(?P<cmd_name>\S{2,}) +(?P<cmd_params>\S[\S ]*)$')
     RE_OOC = re.compile(r'^\s*- +"(?P<ooc>[^"]*)"$')
 
+    # Missing: (see https://ironvault.quest/blocks/mechanics-blocks.html)
+    #   - oracle-group (known)
+    #   - impact
+    #   - asset
+    #   - initiative (together with position, which is already added)
+    #   - xp
+    #
+    # Other blocks that exist (see https://ironvault.quest/blocks/index.html)
+    #   ...most are actually just for displaying information, which could be considered nice-to-have in the future.
+    #   Like displaying character information, the world in its truths, assets in play. The only problem is that
+    #   they don't actually display anything, but IV itself renders it then with internal info, hmm...
+    #
+    #   For fun, try them out in regular text.
+    #
+
     parsers: dict[str, NodeParser] = {
         "add": AddNodeParser(),
         "burn": BurnNodeParser(),
