@@ -21,8 +21,10 @@ move "[React Under Fire](datasworn:move:starforged\\/combat\\/react_under_fire)"
     expected_html = """<div class="ivm-mechanics">
 <div class="ivm-move">
 <div class="ivm-move-name">React Under Fire</div>
-<div class="ivm-roll ivm-roll-strong">Roll with Edge: 6 + 2 + 0 = 8 vs 6 | 1 strong </div>
-<div class="ivm-meter ivm-meter-increase"><i>Momentum</i>: 2 &rarr; 3</div>
+<div class="ivm-roll ivm-roll-strong">
+    Roll with Edge: 6 + 2 + 0 = 8 vs 6 | 1 strong
+</div>
+<div class="ivm-meter ivm-meter-increase">Momentum: 2 &rarr; 3</div>
 </div>
 <div class="ivm-ooc">// in control</div>
 </div>"""
@@ -131,8 +133,10 @@ More text
 <div class="ivm-mechanics">
 <div class="ivm-move">
 <div class="ivm-move-name">React Under Fire</div>
-<div class="ivm-roll ivm-roll-strong">Roll with Edge: 6 + 2 + 0 = 8 vs 6 | 1 strong </div>
-<div class="ivm-meter ivm-meter-increase"><i>Momentum</i>: 2 &rarr; 3</div>
+<div class="ivm-roll ivm-roll-strong">
+    Roll with Edge: 6 + 2 + 0 = 8 vs 6 | 1 strong
+</div>
+<div class="ivm-meter ivm-meter-increase">Momentum: 2 &rarr; 3</div>
 </div>
 <div class="ivm-ooc">// in control</div>
 </div>

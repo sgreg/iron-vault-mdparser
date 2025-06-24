@@ -33,6 +33,7 @@ def test_parser_add(parent):
         ParserData("random data", False),
     ]
 
+    # FIXME this tests the classes and with that somewhat the parsers, but should compare HTML output as well
     nodes = assert_parser_data(parser, parent, rolls, classes)
     assert "comment" in nodes[1].text
 
@@ -211,6 +212,7 @@ def test_parser_position(parent):
         ParserData("random data", False),
     ]
 
+    # FIXME this doesn't work properly, classes don't get properly checked?
     assert_parser_data(parser, parent, rolls, classes)
 
 
