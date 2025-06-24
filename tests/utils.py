@@ -1,7 +1,7 @@
 import xml.etree.ElementTree as etree
 from typing import NamedTuple
 
-from ironvaultmd.parsers.base import NodeParser
+from ironvaultmd.parsers.base import TemplateRegexNodeParser
 
 
 class ParserData(NamedTuple):
@@ -10,7 +10,7 @@ class ParserData(NamedTuple):
     expected_index: int = 0
     expected_classes: list[str] = []
 
-def assert_parser_data(parser: NodeParser, parent: etree.Element, rolls: list[ParserData], all_classes: list[str]) -> list[etree.Element]:
+def assert_parser_data(parser: TemplateRegexNodeParser, parent: etree.Element, rolls: list[ParserData], all_classes: list[str]) -> list[etree.Element]:
     # make sure parent has no <div> children at this point
     assert parent.find("div") is None
 
