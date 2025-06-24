@@ -1,10 +1,10 @@
 from typing import Any
 
-from ironvaultmd.parsers.base import TemplateRegexNodeParser
+from ironvaultmd.parsers.base import NodeParser
 from ironvaultmd.util import check_dice, check_ticks, convert_link_name
 
 
-class AddNodeParser(TemplateRegexNodeParser):
+class AddNodeParser(NodeParser):
     def __init__(self) -> None:
         # add 1 "Tech asset"   or just
         # add 1
@@ -13,7 +13,7 @@ class AddNodeParser(TemplateRegexNodeParser):
         super().__init__("Add", regex, template)
 
 
-class BurnNodeParser(TemplateRegexNodeParser):
+class BurnNodeParser(NodeParser):
     def __init__(self) -> None:
         # burn from=8 to=2
         regex = r'^from=(?P<from>\d+) to=(?P<to>\d+)$'
@@ -22,7 +22,7 @@ class BurnNodeParser(TemplateRegexNodeParser):
         super().__init__("Burn", regex, template)
 
 
-class ClockNodeParser(TemplateRegexNodeParser):
+class ClockNodeParser(NodeParser):
     def __init__(self) -> None:
         # clock from=2 name="[[Lone Howls\/Clocks\/Titanhold Bounty Hunters closing in on Dykstra.md|Titanhold Bounty Hunters closing in on Dykstra]]" out-of=6 to=3
         # clock name="[[Lone Howls\/Clocks\/Titanhold Bounty Hunters closing in on Dykstra.md|Titanhold Bounty Hunters closing in on Dykstra]]" status="added"
@@ -50,7 +50,7 @@ class ClockNodeParser(TemplateRegexNodeParser):
         return {"text": text}
 
 
-class MeterNodeParser(TemplateRegexNodeParser):
+class MeterNodeParser(NodeParser):
     def __init__(self) -> None:
         # meter "Momentum" from=5 to=6
         regex = r'^"(?P<meter_name>\w+)" from=(?P<from>\d+) to=(?P<to>\d+$)'
@@ -71,7 +71,7 @@ class MeterNodeParser(TemplateRegexNodeParser):
         return data | {"classes": classes}
 
 
-class OocNodeParser(TemplateRegexNodeParser):
+class OocNodeParser(NodeParser):
     """iron-vault-mechanics out-of-character notes node parser"""
     def __init__(self) -> None:
         regex = "(?P<data>.*)"
@@ -79,7 +79,7 @@ class OocNodeParser(TemplateRegexNodeParser):
         super().__init__("OOC", regex, template)
 
 
-class OracleNodeParser(TemplateRegexNodeParser):
+class OracleNodeParser(NodeParser):
     def __init__(self) -> None:
         # oracle name="[Core Oracles \/ Theme](datasworn:oracle_rollable:starforged\/core\/theme)" result="Warning" roll=96
         # oracle name="Will [[Lone Howls\/Clocks\/Clock decrypt Verholm research.md|Clock decrypt Verholm research]] advance? (Likely)" result="No" roll=83
@@ -97,7 +97,7 @@ class OracleNodeParser(TemplateRegexNodeParser):
         return data | {"oracle": oracle}
 
 
-class PositionNodeParser(TemplateRegexNodeParser):
+class PositionNodeParser(NodeParser):
     def __init__(self) -> None:
         #position from="out of combat" to="in control"
         regex = r'^from="(?P<from>.+)" to="(?P<to>.+)"$'
@@ -118,7 +118,7 @@ class PositionNodeParser(TemplateRegexNodeParser):
         return data | {"classes": classes}
 
 
-class ProgressNodeParser(TemplateRegexNodeParser):
+class ProgressNodeParser(NodeParser):
     def __init__(self) -> None:
         # progress: from=8 name="[[Lone Howls\/Progress\/Connection Dykstra.md|Connection Dykstra]]" rank="dangerous" steps=1
         regex = r'^from=(?P<from>\d+) name="\[\[.*\|(?P<name>.*)\]\]" rank="(?P<rank>\w+)" steps=(?P<steps>\d+)$'
@@ -131,7 +131,7 @@ class ProgressNodeParser(TemplateRegexNodeParser):
         return data | {"ticks": ticks}
 
 
-class ProgressRollNodeParser(TemplateRegexNodeParser):
+class ProgressRollNodeParser(NodeParser):
     def __init__(self) -> None:
         # progress-roll name="[[Lone Howls\/Progress\/Combat Tayla.md|Combat Tayla]]" score=8 vs1=1 vs2=4
         # Note, before Dec 2024, name parameter may be missing, so pack the whole 'name="[[..|..]]" ' into optional group '(?: ...)?'
@@ -148,7 +148,7 @@ class ProgressRollNodeParser(TemplateRegexNodeParser):
         return data | extra
 
 
-class RerollNodeParser(TemplateRegexNodeParser):
+class RerollNodeParser(NodeParser):
     def __init__(self) -> None:
         # reroll action="5"
         # reroll vs1="3"
@@ -158,7 +158,7 @@ class RerollNodeParser(TemplateRegexNodeParser):
         super().__init__("Reroll", regex, template)
 
 
-class RollNodeParser(TemplateRegexNodeParser):
+class RollNodeParser(NodeParser):
     def __init__(self) -> None:
         regex = r'^"(?P<stat_name>\w+)" action=(?P<action>\d+) adds=(?P<adds>\d+) stat=(?P<stat>\d+) vs1=(?P<vs1>\d+) vs2=(?P<vs2>\d+)$'
         super().__init__("Roll", regex, None)
@@ -174,7 +174,7 @@ class RollNodeParser(TemplateRegexNodeParser):
         return data | extra
 
 
-class TrackNodeParser(TemplateRegexNodeParser):
+class TrackNodeParser(NodeParser):
     def __init__(self) -> None:
         # track name="[[Lone Howls\/Progress\/Combat Tayla.md|Combat Tayla]]" status="removed"
         regex = r'^name="\[\[.*\|(?P<track_name>.*)\]\]" status="(?P<status>\w+)"$'

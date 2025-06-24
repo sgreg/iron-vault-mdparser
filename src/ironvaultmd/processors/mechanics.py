@@ -5,7 +5,7 @@ import xml.etree.ElementTree as etree
 from markdown.blockprocessors import BlockProcessor
 from markdown.preprocessors import Preprocessor
 
-from ironvaultmd.parsers.base import TemplateRegexNodeParser, FallbackNodeParser
+from ironvaultmd.parsers.base import NodeParser, FallbackNodeParser
 from ironvaultmd.parsers.nodes import (
     AddNodeParser,
     BurnNodeParser,
@@ -116,7 +116,7 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
     #   For fun, try them out in regular text.
     #
 
-    parsers: dict[str, TemplateRegexNodeParser] = {
+    parsers: dict[str, NodeParser] = {
         "add": AddNodeParser(),
         "burn": BurnNodeParser(),
         "clock": ClockNodeParser(),

@@ -10,7 +10,7 @@ from ironvaultmd.templater import templater
 logger = logging.getLogger("ironvaultmd")
 
 
-class TemplateRegexNodeParser:
+class NodeParser:
     """Parser for iron-vault-mechanics nodes supporting regex matching"""
     node_name: str
     regex: re.Pattern[str]
@@ -52,7 +52,7 @@ class TemplateRegexNodeParser:
         return data
 
 
-class FallbackNodeParser(TemplateRegexNodeParser):
+class FallbackNodeParser(NodeParser):
     def __init__(self, name: str):
         regex = "(?P<content>.*)"
         template = '<div class="ivm-node">{{ node_name }}: {{ content }}</div>'
