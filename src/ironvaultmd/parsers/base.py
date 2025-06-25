@@ -47,7 +47,7 @@ class NodeParser:
         else:
             self.template = Template(template)
 
-    def __match(self, data: str) -> dict[str, str | Any] | None:
+    def _match(self, data: str) -> dict[str, str | Any] | None:
         """Try to match the given data string to the parser's regex object and return match group dictionary"""
         match = self.regex.search(data)
 
@@ -59,7 +59,7 @@ class NodeParser:
         return match.groupdict()
 
     def parse(self, parent: etree.Element, data: str) -> None:
-        matches = self.__match(data)
+        matches = self._match(data)
         if matches is None:
             return
 
