@@ -1,13 +1,36 @@
 import logging
 import re
+import traceback
 import xml.etree.ElementTree as etree
 from typing import Any
 
-from jinja2 import Template
+from jinja2 import TemplateNotFound, PackageLoader, Environment, Template
 
-from ironvaultmd.templater import templater
 
 logger = logging.getLogger("ironvaultmd")
+
+
+class Templater:
+    def __init__(self):
+        self.template_loader = PackageLoader('ironvaultmd.parsers', 'templates')
+        self.template_env = Environment(loader=self.template_loader, autoescape=True)
+
+    def get(self, name: str, strict: bool = False) -> Template | None:
+        if not name.endswith(".html"):
+            filename = f"{name.lower().replace(' ', '-')}.html"
+        else:
+            filename = name
+
+        try:
+            return self.template_env.get_template(filename)
+        except TemplateNotFound as err:
+            logger.warning(f"Template {filename} not found")
+            logger.debug(''.join(traceback.TracebackException.from_exception(err).format()))
+            if strict:
+                raise err
+            return None
+
+templater = Templater()
 
 
 class NodeParser:
@@ -39,10 +62,6 @@ class NodeParser:
         matches = self.__match(data)
         if matches is None:
             return
-
-        # template = templater.get(self.node_name)
-        # if template is None:
-        #     return
 
         args = self.create_args(matches)
         out = self.template.render(args)
