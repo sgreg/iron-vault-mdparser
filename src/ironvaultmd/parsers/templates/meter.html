@@ -1,0 +1,10 @@
+{#
+Meter node
+
+classes     list of CSS classes based on the meter progress
+meter_name  name of the meter to adjust
+from        previous value on the meter
+to          new value on the meter
+
+#}
+<div class="{{ classes }}">{{ meter_name }}: {{ from }} &amp;rarr; {{ to }}</div>

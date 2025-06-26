@@ -1,3 +1,16 @@
+{#
+Clock node
+
+name    name of the clock
+
+either
+    status      status change
+or
+    from        old value of filled clock segments
+    to          new value of filled clock segments
+    segments    number of total clock segments
+
+#}
 <div class="ivm-clock">
 {%- if status %}
     Clock {{ status }}: {{ name }}

@@ -1,0 +1,12 @@
+{#
+Progress node
+
+name    name of the track that has progress is marked on
+rank    rank of the track, e.g. "dangerous", "epic"
+from    previous progress value in number of ticks
+to      new progress value in number of ticks
+steps   number of times progress is marked on the track
+ticks   number of ticks the progress refers to based on steps and rank
+
+#}
+<div class="ivm-progress">Progress {{ name }} for {{ rank }}: {{ from }} &amp;rarr; {{ to }}</div>

@@ -39,13 +39,10 @@ class NodeParser:
     regex: re.Pattern[str]
     template: Template
 
-    def __init__(self, name: str, regex: str, template: str | None) -> None:
+    def __init__(self, name: str, regex: str) -> None:
         self.node_name = name
         self.regex = re.compile(regex)
-        if template is None:
-            self.template = templater.get(name, strict=True)
-        else:
-            self.template = Template(template)
+        self.template = templater.get(name, strict=True)
 
     def _match(self, data: str) -> dict[str, str | Any] | None:
         """Try to match the given data string to the parser's regex object and return match group dictionary"""
@@ -74,8 +71,8 @@ class NodeParser:
 class FallbackNodeParser(NodeParser):
     def __init__(self, name: str):
         regex = "(?P<content>.*)"
-        template = '<div class="ivm-node">{{ node_name }}: {{ content }}</div>'
-        super().__init__(name, regex, template)
+        self.name = name
+        super().__init__("Node", regex)
 
     def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
-        return {"node_name": self.node_name, "content": data["content"]}
+        return {"node_name": self.name, "content": data["content"]}

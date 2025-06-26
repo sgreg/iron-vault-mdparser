@@ -1,3 +1,14 @@
+{#
+Progress-roll node
+
+name        progress track name
+score       value of the progress on the track
+vs1         value of the first challenge die
+vs2         value of the second challenge die
+hitmiss     outcome of the roll, "strong", "weak", or "miss"
+match       true if challenge dice are a match
+
+#}
 <div class="ivm-roll roll-{{ hitmiss }}{{ " roll-match" if match }}">
     Roll Progress for {{ name }}: {{ score }} vs {{ vs1 }} | {{ vs2 }} {{ hitmiss }}{{ " WITH MATCH!" if match }}
 </div>

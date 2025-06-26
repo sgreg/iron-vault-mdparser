@@ -42,7 +42,8 @@ def test_parser_fallback(parent):
     node_name = "Node Test"
     parser = FallbackNodeParser(node_name)
 
-    assert parser.node_name == node_name
+    assert parser.node_name == "Node"
+    assert parser.name == node_name
 
     content = "Random Content"
     parser.parse(parent, content)
@@ -55,20 +56,14 @@ def test_parser_fallback(parent):
 
 
 def test_parser_get_template():
-    parser = NodeParser("Roll", "", None)
+    parser = NodeParser("Roll", "")
     assert parser.template is not None
     assert isinstance(parser.template, Template)
     assert parser.template.filename.endswith("/roll.html")
 
-    parser = NodeParser("Test", "", "<div>{{ test }}</div>")
-    assert parser.template is not None
-    assert isinstance(parser.template, Template)
-    assert parser.template.filename == "<template>"
-    assert parser.template.render(test="test") == "<div>test</div>"
-
 def test_parser_regex_match():
     regex = r'^test data "(?P<test_data>.+)"$'
-    parser = NodeParser("Test", regex, "")
+    parser = NodeParser("Node", regex)
 
     match = parser._match('test data "123"')
     assert match is not None
@@ -79,10 +74,9 @@ def test_parser_regex_match():
 
 def test_parser_node_render(parent):
     regex = r'^test data "(?P<test_data>.+)"$'
-    template = "<div>data: {{ test_data }}</div>"
     data = 'test data "123"'
 
-    parser = NodeParser("Test", regex, template)
+    parser = NodeParser("Test", regex)
 
     parser.parse(parent, "no match")
     assert parent.find("div") is None
@@ -95,14 +89,13 @@ def test_parser_node_render(parent):
 
 def test_parser_args_override(parent):
     regex = r'^test data "(?P<test_data>.+)"$'
-    template = "<div>data: {{ test_data }}</div>"
     data = 'test data "123"'
 
     class TestParser(NodeParser):
         def create_args(self, match):
             return {"test_data": "overridden"}
 
-    parser = TestParser("Test", regex, template)
+    parser = TestParser("Test", regex)
 
     parser.parse(parent, "no match")
     assert parent.find("div") is None
