@@ -122,13 +122,13 @@ class ProgressNodeParser(NodeParser):
     def __init__(self) -> None:
         # progress: from=8 name="[[Lone Howls\/Progress\/Connection Dykstra.md|Connection Dykstra]]" rank="dangerous" steps=1
         regex = r'^from=(?P<from>\d+) name="\[\[.*\|(?P<name>.*)\]\]" rank="(?P<rank>\w+)" steps=(?P<steps>\d+)$'
-        # template = '<div class="ivm-progress">Progress <i>{{ name }}</i> for {{ rank }}: {{ from }} &amp;rarr; {{ ticks }}</div>'
-        template = '<div class="ivm-progress">Progress {{ name }} for {{ rank }}: {{ from }} &amp;rarr; {{ ticks }}</div>'
+        # template = '<div class="ivm-progress">Progress <i>{{ name }}</i> for {{ rank }}: {{ from }} &amp;rarr; {{ to }}</div>'
+        template = '<div class="ivm-progress">Progress {{ name }} for {{ rank }}: {{ from }} &amp;rarr; {{ to }}</div>'
         super().__init__("Progress", regex, template)
 
     def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
-        ticks = check_ticks(data["rank"], int(data["from"]), int(data['steps']))
-        return data | {"ticks": ticks}
+        ticks, to = check_ticks(data["rank"], int(data["from"]), int(data['steps']))
+        return data | {"ticks": ticks, "to": to}
 
 
 class ProgressRollNodeParser(NodeParser):

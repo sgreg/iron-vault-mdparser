@@ -54,4 +54,4 @@ class ProgressTickData(NamedTuple):
     rank: str
     current: int
     steps: int
-    expected :int
+    expected: tuple[int, int]

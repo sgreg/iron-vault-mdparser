@@ -60,9 +60,8 @@ def check_dice(score, vs1, vs2) -> tuple[str, bool]:
     return hitmiss, match
 
 
-def check_ticks(rank: str, current: int, steps: int) -> int:
+def check_ticks(rank: str, current: int, steps: int) -> (int, int):
     """Check and return new progress track ticks value"""
-    ticks = 0
     match rank:
         case "epic":
             ticks = 1
@@ -76,6 +75,6 @@ def check_ticks(rank: str, current: int, steps: int) -> int:
             ticks = 12
         case _:
             logger.warning(f"Fail to check ticks, unknown rank {rank}")
-            return current
+            ticks = 0
 
-    return min(current + (ticks * steps), 40)
+    return ticks, min(current + (ticks * steps), 40)
