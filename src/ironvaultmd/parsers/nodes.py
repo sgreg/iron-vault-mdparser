@@ -139,6 +139,9 @@ class ProgressRollNodeParser(NodeParser):
         super().__init__("Progress Roll", regex, None)
 
     def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
+        if data["name"] is None:
+            data["name"] = "undefined"
+
         score = int(data["score"])
         vs1 = int(data["vs1"])
         vs2 = int(data["vs2"])

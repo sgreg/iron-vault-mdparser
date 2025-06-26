@@ -284,6 +284,7 @@ def test_parser_progressroll(parent):
     nodes = assert_parser_data(parser, parent, rolls, classes)
 
     assert "Track Name" in nodes[0].text
+    assert "undefined" in nodes[6].text
 
 
 def test_parser_reroll(parent):
