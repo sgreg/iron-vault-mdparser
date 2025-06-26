@@ -1,9 +1,10 @@
 {#
 Position node
 
-classes     list of CSS classes based on the position itself
-from        old position, one of "nocombat", "control", or "badspot"
-to          new position, one of "nocombat", "control", or "badspot"
+from        old position, "out of combat", "in control", or "in a bad spot"
+to          new position, same as from values
+from_slug   shortened name of the old position, one of "nocombat", "control", or "badspot"
+to_slug     shortened name of the new position, same as from_slug values
 
 #}
-<div class="{{ classes }}">Position {{ from }} &amp;rarr; {{ to }}</div>
+<div class="ivm-position{{ " ivm-position-" ~ to_slug if to_slug }}">Position {{ from }} &amp;rarr; {{ to }}</div>

@@ -1,10 +1,12 @@
 import re
+
 from ironvaultmd.util import (
     split_match,
     create_div,
     convert_link_name,
     check_dice,
     check_ticks,
+    position_slugify,
 )
 from utils import StringCompareData, DiceData, ProgressTickData
 
@@ -120,3 +122,15 @@ def test_util_ticks():
 
     for d in data:
         assert check_ticks(d.rank, d.current, d.steps) == d.expected
+
+def test_util_position_slugify():
+    data = [
+        StringCompareData("out of combat", "nocombat"),
+        StringCompareData("in control", "control"),
+        StringCompareData("in a bad spot", "badspot"),
+    ]
+
+    for d in data:
+        assert position_slugify(d.content) == d.expected
+
+    assert position_slugify("something else") is None

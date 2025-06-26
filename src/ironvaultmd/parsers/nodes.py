@@ -1,7 +1,7 @@
 from typing import Any
 
 from ironvaultmd.parsers.base import NodeParser
-from ironvaultmd.util import check_dice, check_ticks, convert_link_name
+from ironvaultmd.util import check_dice, check_ticks, convert_link_name, position_slugify
 
 
 class AddNodeParser(NodeParser):
@@ -42,18 +42,6 @@ class MeterNodeParser(NodeParser):
         regex = r'^"(?P<meter_name>\w+)" from=(?P<from>\d+) to=(?P<to>\d+$)'
         super().__init__("Meter", regex)
 
-    def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
-        oldval = int(data['from'])
-        newval = int(data['to'])
-
-        classes = "ivm-meter"
-        if newval > oldval:
-            classes += " ivm-meter-increase"
-        elif newval < oldval:
-            classes += " ivm-meter-decrease"
-
-        return data | {"classes": classes}
-
 
 class OocNodeParser(NodeParser):
     """iron-vault-mechanics out-of-character notes node parser"""
@@ -86,17 +74,7 @@ class PositionNodeParser(NodeParser):
         super().__init__("Position", regex)
 
     def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
-        classes = "ivm-position"
-
-        match data["to"]:
-            case "out of combat":
-                classes += " ivm-position-nocombat"
-            case "in control":
-                classes += " ivm-position-control"
-            case "in a bad spot":
-                classes += " ivm-position-badspot"
-
-        return data | {"classes": classes}
+        return data | {"from_slug": position_slugify(data["from"]), "to_slug": position_slugify(data["to"])}
 
 
 class ProgressNodeParser(NodeParser):

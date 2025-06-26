@@ -78,3 +78,17 @@ def check_ticks(rank: str, current: int, steps: int) -> (int, int):
             ticks = 0
 
     return ticks, min(current + (ticks * steps), 40)
+
+
+def position_slugify(position: str) -> str | None:
+    """Convert a given position string to its slugified version, or None if unknown position"""
+    match position:
+        case "out of combat":
+            return "nocombat"
+        case "in control":
+            return "control"
+        case "in a bad spot":
+            return "badspot"
+
+    logger.warning(f"Unhandled position '{position}'")
+    return None
