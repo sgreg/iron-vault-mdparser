@@ -30,24 +30,13 @@ class ClockNodeParser(NodeParser):
         # Note that https://ironvault.quest/blocks/mechanics-blocks.html#%60clock%60 actually shows a different order.
         # Probably a good idea to capture arbitrary order of parameters in all the node parsers.
 
-        regex = r'^(from=(?P<from>\d+) )?name="\[\[.*\|(?P<name>.*)\]\]" (?(from)out-of=(?P<segments>\d+) to=(?P<filled>\d+)|status="(?P<status>(added|removed|resolved))")$'
+        regex = r'^(from=(?P<from>\d+) )?name="\[\[.*\|(?P<name>.*)\]\]" (?(from)out-of=(?P<segments>\d+) to=(?P<to>\d+)|status="(?P<status>(added|removed|resolved))")$'
         #          ^...................^^                                 ^^^^^^^
         #        make 'from=x ' optional,                        check if 'from' group was actually set,
         #        it's only in clock progresses,                  if so, expect 'out-of' and 'to' here,
         #        but not in clock status changes                 otherwise expect 'status'
 
-        template = '<div class="ivm-clock">{{ text }}</div>'
-        super().__init__("Clock", regex, template)
-
-    def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
-        if data["status"] is not None:
-            # text = f"<i>Clock</i> {data["status"]}: {data['name']}"
-            text = f"Clock {data["status"]}: {data['name']}"
-        else:
-            # text = f"<i>Clock</i> for {data['name']} -> {data["filled"]} / {data["segments"]}"
-            text = f"Clock for {data['name']} -> {data["filled"]} / {data["segments"]}"
-
-        return {"text": text}
+        super().__init__("Clock", regex, None)
 
 
 class MeterNodeParser(NodeParser):

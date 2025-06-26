@@ -1,0 +1,7 @@
+<div class="ivm-clock">
+{%- if status %}
+    Clock {{ status }}: {{ name }}
+{%- else %}
+    Clock for {{ name }} &amp;rarr; {{ to }} / {{ segments }}
+{%-  endif %}
+</div>
