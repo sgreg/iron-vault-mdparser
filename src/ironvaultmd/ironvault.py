@@ -7,12 +7,13 @@ import logging
 
 from markdown.extensions import Extension
 
+from ironvaultmd.parsers.base import UserTemplates, templater
 from ironvaultmd.processors.frontmatter import IronVaultFrontmatterPreprocessor
+from ironvaultmd.processors.links import WikiLinkProcessor
 from ironvaultmd.processors.mechanics import (
     IronVaultMechanicsBlockProcessor,
     IronVaultMechanicsPreprocessor,
 )
-from ironvaultmd.processors.links import WikiLinkProcessor
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,8 @@ class IronVaultExtension(Extension):
 
         self.config = {
             'links': [[], 'List of collected links'],
-            'frontmatter': [{}, "YAML Frontmatter parsed into dictionary"]
+            'frontmatter': [{}, "YAML Frontmatter parsed into dictionary"],
+            'templates': [UserTemplates(), "Node parser templates"],
         }
 
         super().__init__(**kwargs)
@@ -35,6 +37,10 @@ class IronVaultExtension(Extension):
         self.frontmatter = self.getConfig('frontmatter', None)
         if self.frontmatter is not None and not isinstance(self.frontmatter, dict):
             raise TypeError("Parameter 'frontmatter' must be a dict")
+
+        templates = self.getConfig('templates', UserTemplates())
+        logger.debug(f"User templates given: {templates}")
+        templater.load_user_templates(templates)
 
 
     def extendMarkdown(self, md) -> None:

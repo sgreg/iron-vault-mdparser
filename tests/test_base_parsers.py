@@ -1,7 +1,8 @@
 import pytest
 from jinja2 import Template, TemplateNotFound
 
-from ironvaultmd.parsers.base import FallbackNodeParser, Templater, NodeParser
+from ironvaultmd.parsers.base import FallbackNodeParser, NodeParser, Templater, UserTemplates
+from ironvaultmd.parsers.nodes import AddNodeParser
 
 
 def test_templater_success():
@@ -11,31 +12,29 @@ def test_templater_success():
         "roll",
         "Roll",
         "ROLL",
-        "roll.html",
-        "progress-roll",
+        "progress_roll",
         "progress roll",
     ]
 
     for name in valid_names:
-        template = templater.get(name)
+        template = templater.get_template(name)
         assert template is not None
         assert isinstance(template, Template)
 
 def test_templater_error():
     templater = Templater()
 
-    valid_names = [
+    invalid_names = [
         "",
         "non existing",
         "non-existing.html",
+        "progress-roll",
+        "roll.html",
     ]
 
-    for name in valid_names:
-        assert templater.get(name, strict=False) is None
-
-    for name in valid_names:
+    for name in invalid_names:
         with pytest.raises(TemplateNotFound):
-            templater.get(name, strict=True)
+            templater.get_template(name)
 
 
 def test_parser_fallback(parent):
@@ -105,3 +104,41 @@ def test_parser_args_override(parent):
     node = parent.find("div")
     assert node is not None
     assert node.text == "data: overridden"
+
+
+def test_user_template_load():
+    templater = Templater()
+
+    user_templates = UserTemplates()
+    user_templates.add = '<div class="test-class">test add</div>'
+    user_templates.meter = '<div class="test-class">test meter</div>'
+
+    templater.load_user_templates(user_templates)
+
+    add_template = templater.get_template("add")
+    meter_template = templater.get_template("meter")
+    roll_template = templater.get_template("roll")
+
+    assert add_template.filename == "<template>"
+    assert meter_template.filename == "<template>"
+    assert roll_template.filename.endswith("/roll.html")
+
+
+def test_user_template_render(md_gen, parent):
+    templater = Templater()
+
+    user_templates = UserTemplates()
+    user_templates.add = '<div class="test-class">test add with value {{ add }}</div>'
+
+    templater.load_user_templates(user_templates)
+    md_gen(templates=user_templates)
+
+    add_parser = AddNodeParser()
+    assert add_parser.template.filename == "<template>"
+
+    add_parser.parse(parent, '2 "for test reasons"')
+    node = parent.find("div")
+
+    assert node is not None
+    assert node.get("class") == "test-class"
+    assert node.text == "test add with value 2"

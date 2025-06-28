@@ -2,6 +2,7 @@ import logging
 import re
 import xml.etree.ElementTree as etree
 
+from markdown.blockparser import BlockParser
 from markdown.blockprocessors import BlockProcessor
 from markdown.preprocessors import Preprocessor
 
@@ -116,20 +117,23 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
     #   For fun, try them out in regular text.
     #
 
-    parsers: dict[str, NodeParser] = {
-        "add": AddNodeParser(),
-        "burn": BurnNodeParser(),
-        "clock": ClockNodeParser(),
-        "meter": MeterNodeParser(),
-        "ooc": OocNodeParser(),
-        "oracle": OracleNodeParser(),
-        "position": PositionNodeParser(),
-        "progress": ProgressNodeParser(),
-        "progress-roll": ProgressRollNodeParser(),
-        "reroll": RerollNodeParser(),
-        "roll": RollNodeParser(),
-        "track": TrackNodeParser(),
-    }
+    def __init__(self, parser: BlockParser):
+        super().__init__(parser)
+
+        self.parsers: dict[str, NodeParser] = {
+            "add": AddNodeParser(),
+            "burn": BurnNodeParser(),
+            "clock": ClockNodeParser(),
+            "meter": MeterNodeParser(),
+            "ooc": OocNodeParser(),
+            "oracle": OracleNodeParser(),
+            "position": PositionNodeParser(),
+            "progress": ProgressNodeParser(),
+            "progress-roll": ProgressRollNodeParser(),
+            "reroll": RerollNodeParser(),
+            "roll": RollNodeParser(),
+            "track": TrackNodeParser(),
+        }
 
     def test(self, parent, block) -> bool:
         match = self.RE_MECHANICS_START.search(block)

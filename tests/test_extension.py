@@ -2,6 +2,7 @@ import pytest
 from markdown import Markdown
 
 from ironvaultmd import IronVaultExtension
+from ironvaultmd.parsers.base import UserTemplates
 
 
 def test_extension_random_mechblock(md):
@@ -101,6 +102,19 @@ def test_extension_links_invalid_type(md_gen):
         md_gen(links=links)
 
 
+def test_extension_templates(md_gen):
+    markdown = """```iron-vault-mechanics
+add 2 "for a reason"
+```"""
+    user_templates = UserTemplates()
+    user_templates.add = '<div class="test-class">test add with value {{ add }}</div>'
+
+    md_instance = md_gen(templates=user_templates)
+    html = md_instance.convert(markdown)
+
+    assert '<div class="test-class">test add with value 2</div>' in html
+
+
 def test_extension_full_features(md_gen):
     markdown = """---
 key1: value1
@@ -138,14 +152,17 @@ More text
 </div>
 <div class="ivm-meter ivm-meter-increase">Momentum: 2 &rarr; 3</div>
 </div>
-<div class="ivm-ooc">// in control</div>
+<div class="my-ooc-class">(ooc: "in control")</div>
 </div>
 <p>More text</p>"""
 
     links = []
     frontmatter = {}
 
-    md_instance = md_gen(links=links, frontmatter=frontmatter)
+    user_templates = UserTemplates()
+    user_templates.ooc = '<div class="my-ooc-class">(ooc: "{{ comment }}")</div>'
+
+    md_instance = md_gen(links=links, frontmatter=frontmatter, templates=user_templates)
     html = md_instance.convert(markdown)
 
     assert links == expected_links
