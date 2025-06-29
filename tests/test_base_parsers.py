@@ -125,12 +125,9 @@ def test_user_template_load():
 
 
 def test_user_template_render(md_gen, parent):
-    templater = Templater()
-
     user_templates = UserTemplates()
     user_templates.add = '<div class="test-class">test add with value {{ add }}</div>'
 
-    templater.load_user_templates(user_templates)
     md_gen(templates=user_templates)
 
     add_parser = AddNodeParser()

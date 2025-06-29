@@ -10,6 +10,7 @@ logger = logging.getLogger("ironvaultmd")
 
 @dataclass
 class UserTemplates:
+    # Nodes
     add: str | None = None
     burn: str | None = None
     clock: str | None = None
@@ -22,6 +23,9 @@ class UserTemplates:
     reroll: str | None = None
     roll: str | None = None
     track: str | None = None
+    # Other elements
+    link: str | None = None
+
 
 class Templater:
     def __init__(self):

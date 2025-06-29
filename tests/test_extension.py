@@ -3,6 +3,7 @@ from markdown import Markdown
 
 from ironvaultmd import IronVaultExtension
 from ironvaultmd.parsers.base import UserTemplates
+from ironvaultmd.processors.links import Link
 
 
 def test_extension_random_mechblock(md):
@@ -82,10 +83,14 @@ Some text with [[a link]] along a [[link|with label]].
     md_instance.convert(markdown)
 
     assert len(links) == 2
-    assert links[0]["link"] == "a link"
-    assert links[0]["label"] == "a link"
-    assert links[1]["link"] == "link"
-    assert links[1]["label"] == "with label"
+
+    assert isinstance(links[0], Link)
+    assert links[0].ref == "a link"
+    assert links[0].label == "a link"
+
+    assert isinstance(links[1], Link)
+    assert links[1].ref == "link"
+    assert links[1].label == "with label"
 
 
 def test_extension_links_invalid_type(md_gen):
@@ -134,8 +139,8 @@ More text
 """
 
     expected_links = [
-        {"link": "a link", "label": "a link"},
-        {"link": "link", "label": "link with label"},
+        Link("a link", "a link"),
+        Link("link", "link with label"),
     ]
 
     expected_frontmatter = {
@@ -143,7 +148,7 @@ More text
         "key2": "value2",
     }
 
-    expected_html = """<p>Regular text with <span class="ivm-link">a link</span> and <span class="ivm-link">link with label</span></p>
+    expected_html = """<p>Regular text with <span>a link (a link)</span> and <span>link with label (link)</span></p>
 <div class="ivm-mechanics">
 <div class="ivm-move">
 <div class="ivm-move-name">React Under Fire</div>
@@ -161,6 +166,7 @@ More text
 
     user_templates = UserTemplates()
     user_templates.ooc = '<div class="my-ooc-class">(ooc: "{{ comment }}")</div>'
+    user_templates.link = '<span>{{ label }} ({{ ref }})</span>'
 
     md_instance = md_gen(links=links, frontmatter=frontmatter, templates=user_templates)
     html = md_instance.convert(markdown)

@@ -2,6 +2,8 @@ import xml.etree.ElementTree as etree
 
 import pytest
 
+from ironvaultmd.parsers.base import UserTemplates, Templater
+from ironvaultmd.processors.links import Link
 from utils import StringCompareData
 
 
@@ -95,10 +97,14 @@ def test_linkproc_collect(linkproc_gen):
             processor.handleMatch(match, d)
 
     assert len(links) == 2
-    assert links[0]["link"] == "link"
-    assert links[0]["label"] == "link"
-    assert links[1]["link"] == "different link"
-    assert links[1]["label"] == "label"
+
+    assert isinstance(links[0], Link)
+    assert links[0].ref == "link"
+    assert links[0].label == "link"
+
+    assert isinstance(links[1], Link)
+    assert links[1].ref == "different link"
+    assert links[1].label == "label"
 
 
 def test_linkproc_collect_invalid_list(linkproc_gen):
@@ -115,3 +121,28 @@ def test_linkproc_collect_invalid_list(linkproc_gen):
     with pytest.raises(TypeError):
         links = ()
         linkproc_gen(links)
+
+
+def test_linkproc_user_template(linkproc_gen, md_gen):
+    user_templates = UserTemplates()
+    user_templates.link = '<div class="test-class">test link "{{ ref }}" with label "{{ label }}"</div>'
+
+    links = []
+
+    md_gen(links=links, templates=user_templates)
+
+    processor = linkproc_gen(links)
+
+    data = "[[link]]"
+    match = processor.compiled_re.search(data)
+    assert match is not None
+    element, _, _ = processor.handleMatch(match, data)
+    assert element.get("class") == "test-class"
+    assert element.text == 'test link "link" with label "link"'
+
+    data = "[[different link|label]]"
+    match = processor.compiled_re.search(data)
+    assert match is not None
+    element, _, _ = processor.handleMatch(match, data)
+    assert element.get("class") == "test-class"
+    assert element.text == 'test link "different link" with label "label"'

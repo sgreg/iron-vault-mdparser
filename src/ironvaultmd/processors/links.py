@@ -1,8 +1,16 @@
 import re
 import xml.etree.ElementTree as etree
+from dataclasses import dataclass
 
 from markdown.inlinepatterns import InlineProcessor
 
+from ironvaultmd.parsers.base import templater
+
+
+@dataclass
+class Link:
+    ref: str
+    label: str
 
 class WikiLinkProcessor(InlineProcessor):
     """Markdown inline processor for handling wikilinks.
@@ -22,7 +30,7 @@ class WikiLinkProcessor(InlineProcessor):
      using this extension. Maybe. Well, I got some ideas and plans with that at least.
     """
 
-    def __init__(self, links: list[dict] = None):
+    def __init__(self, links: list[Link] | None = None):
         if links is not None and not isinstance(links, list):
             raise TypeError("Parameter 'links' must be a list")
 
@@ -30,11 +38,12 @@ class WikiLinkProcessor(InlineProcessor):
         # [[link|label]]
         wikilink_pattern = r'\[\[([^]|]+)(?:\|([^]]+))?]]'
         self.links = links
+        self.template = templater.get_template("link")
         super().__init__(wikilink_pattern)
 
     def handleMatch(self, m: re.Match[str], data: str) -> tuple[etree.Element | str, int, int]:
         if m.group(1).strip():
-            link = m.group(1).strip()
+            ref = m.group(1).strip()
             label = m.group(2)
 
             if label is not None:
@@ -43,14 +52,13 @@ class WikiLinkProcessor(InlineProcessor):
             if not label:
                 # Not a piped link, or label text was empty,
                 # use the link as label text instead then.
-                label = link
+                label = ref
 
-            element = etree.Element('span')
-            element.set('class', 'ivm-link')
-            element.text = label
+            link = Link(ref, label)
+            element = etree.fromstring(self.template.render(link.__dict__))
+
             if self.links is not None:
-                # TODO this should be its own type maybe?
-                self.links.append({'label': label, 'link': link})
+                self.links.append(link)
 
         else:
             element = ''
