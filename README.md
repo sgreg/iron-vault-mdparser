@@ -16,6 +16,7 @@ Supports at this point
  - parsing ` ```iron-vault-mechanics ``` ` blocks (see [below](#supported-mechanics-block-content) for details)
  - collecting frontmatter YAML information into a dictionary
  - regular and labeled wiki-style links, i.e. `[[link]]` and `[[link|label]]` (see also below for details)
+ - user-definable templates for parsing the supported nodes
 
 ### Supported mechanics block content
 
@@ -31,9 +32,20 @@ Currently supported nodes within a mechanics block: add, burn, clock, meter, mov
 position, progress, progress-roll, reroll, roll, track
 
 #### Links
-Links are currently detected but only packed in a `<span class="ivm-link">` element.
-No actual linking is performed yet.
+Links are currently detected and optionally collected into a list with their reference and label,
+but no actual linking is performed. To collect all found links:
 
+By default, links are packed in a `<span class="ivm-link">` element, but a `link` user template string
+can be defined to adjust that behavior - see the sections about templates for more information.
+
+#### User-defined templates
+Nodes are parsed using the [Jinja](https://jinja.palletsprojects.com/en/stable/) templating engine.
+Every supported node has a default template and gets automatically passed all available data to it.
+
+The default templates for each node (and some extra elements) along with a description of the available
+variables can be found from the [`templates/` directory ](src/ironvaultmd/parsers/templates).
+
+Each node template can be overridden when initiating the `IronVaultExtension`. See below for some examples.
 
 ## Installation
 
@@ -58,6 +70,47 @@ with open("/path/to/ironvault/Journals/JournalEntry.md", "r", encoding="utf-8") 
 ```
 
 Check also the [`ironparser.py` example file](src/ironparser.py) for a more complete example to write a given journal Markdown file as HTML file.
+
+### Links
+```python
+import markdown
+from ironvaultmd import IronVaultExtension, Link
+
+my_links: list[Link] = []
+md = markdown.Markdown(extensions=[IronVaultExtension(links=my_links)])
+
+with open("/path/to/ironvault/Journals/JournalEntry.md", "r", encoding="utf-8") as file:
+    print(md.convert(file.read()))
+
+print(my_links)
+```
+
+### Frontmatter
+```python
+import markdown
+from ironvaultmd import IronVaultExtension
+
+my_frontmatter = {}
+md = markdown.Markdown(extensions=[IronVaultExtension(frontmatter=my_frontmatter)])
+
+with open("/path/to/ironvault/Journals/JournalEntry.md", "r", encoding="utf-8") as file:
+    print(md.convert(file.read()))
+
+print(my_frontmatter)
+```
+
+### User Templates
+```python
+import markdown
+from ironvaultmd import IronVaultExtension, IronVaultTemplates
+
+my_templates = IronVaultTemplates()
+my_templates.add  = '<div class="my-own-class">Adding {{ add }}</div>'
+my_templates.roll = '<div class="ivm-roll">{{ total }} vs {{ vs1 }} and {{ vs2 }}</div>'
+my_templates.link = '<i>{{ label }}</i>'
+
+md = markdown.Markdown(extensions=[IronVaultExtension(templates=my_templates)])
+```
 
 ## Developing
 
