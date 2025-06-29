@@ -1,5 +1,6 @@
 import pytest
 
+from ironvaultmd import unhandled_nodes
 from ironvaultmd.processors.mechanics import MechanicsBlockException
 
 
@@ -189,12 +190,44 @@ def test_mechblock_parse_multiple(parent, mechblock):
 def test_mechblock_parse_multiple_with_unknown(parent, mechblock):
     lines = [
         "add 2",
-        # "unknown content", # this fails to fail at the moment
+        # "unknown content", # this fails to fail at the moment [1]
         "unknown",
         "add 1",
     ]
+
+    # [1]   mechanics block processor matches currently anything with more than one word in the 2nd+ line
+    #       see comment in parse_content() method's RE_CMD_NODE_CHECK.search() branch.
+    #       making use of that now in test_mechblock_unhandled_node() below.
 
     content = "\n".join(lines)
     mechblock.parse_content(parent, content)
 
     assert len(parent.findall("div")) == 2
+
+
+def test_mechblock_unhandled_node(parent, mechblock):
+    # This works due to not-so-great implementations in the parser.
+    # See also the comment in test_mechblock_parse_multiple_with_unknown() above
+
+    lines = [
+        "add 2",
+        "unknown content",
+        "unknown other content",
+    ]
+
+    content = "\n".join(lines)
+    mechblock.parse_content(parent, content)
+    nodes = parent.findall("div")
+    assert len(nodes) == 3
+
+    assert "ivm-add" in nodes[0].get("class")
+    assert "ivm-node" in nodes[1].get("class")
+    assert "ivm-node" in nodes[2].get("class")
+
+    # expected parsed content is defined in node.html template
+    assert nodes[1].text == "unknown: content"
+    assert nodes[2].text == "unknown: other content"
+
+    # verify it was added only once to unhandled_nodes
+    assert len(unhandled_nodes) == 1
+    assert unhandled_nodes[0] == "unknown"
