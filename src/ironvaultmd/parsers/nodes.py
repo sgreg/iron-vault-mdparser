@@ -1,7 +1,7 @@
 from typing import Any
 
 from ironvaultmd.parsers.base import NodeParser
-from ironvaultmd.util import check_dice, check_ticks, convert_link_name, position_slugify
+from ironvaultmd.util import check_dice, check_ticks, convert_link_name, initiative_slugify, position_slugify
 
 
 class AddNodeParser(NodeParser):
@@ -34,6 +34,16 @@ class ClockNodeParser(NodeParser):
         #        but not in clock status changes                 otherwise expect 'status'
 
         super().__init__("Clock", regex)
+
+
+class InitiativeNodeParser(NodeParser):
+    def __init__(self) -> None:
+        # initiative from="out of combat" to="has initiative"
+        regex = r'^from="(?P<from>.+)" to="(?P<to>.+)"$'
+        super().__init__("Initiative", regex)
+
+    def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
+        return data | {"from_slug": initiative_slugify(data["from"]), "to_slug": initiative_slugify(data["to"])}
 
 
 class MeterNodeParser(NodeParser):

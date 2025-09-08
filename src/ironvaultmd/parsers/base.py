@@ -14,6 +14,7 @@ class UserTemplates:
     add: str | None = None
     burn: str | None = None
     clock: str | None = None
+    initiative: str | None = None
     meter: str | None = None
     ooc: str | None = None
     oracle: str | None = None

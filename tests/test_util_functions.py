@@ -6,6 +6,7 @@ from ironvaultmd.util import (
     convert_link_name,
     check_dice,
     check_ticks,
+    initiative_slugify,
     position_slugify,
 )
 from utils import StringCompareData, DiceData, ProgressTickData
@@ -122,6 +123,18 @@ def test_util_ticks():
 
     for d in data:
         assert check_ticks(d.rank, d.current, d.steps) == d.expected
+
+def test_util_initiative_slugify():
+    data = [
+        StringCompareData("out of combat", "nocombat"),
+        StringCompareData("has initiative", "initiative"),
+        StringCompareData("no initiative", "noinitiative"),
+    ]
+
+    for d in data:
+        assert initiative_slugify(d.content) == d.expected
+
+    assert initiative_slugify("something else") is None
 
 def test_util_position_slugify():
     data = [

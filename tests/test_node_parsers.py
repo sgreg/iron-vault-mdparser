@@ -4,6 +4,7 @@ from ironvaultmd.parsers.nodes import (
     AddNodeParser,
     BurnNodeParser,
     ClockNodeParser,
+    InitiativeNodeParser,
     MeterNodeParser,
     OocNodeParser,
     OracleNodeParser,
@@ -95,6 +96,42 @@ def test_parser_clock(parent):
 
     nodes = assert_parser_data(parser, parent, rolls, classes)
     assert "Clock Name" in nodes[0].text
+
+
+def test_parser_initiative(parent):
+    parser = InitiativeNodeParser()
+
+    assert parser.node_name == "Initiative"
+    assert parser.regex
+
+    classes = [
+        "initiative-nocombat",
+        "initiative-initiative",
+        "initiative-noinitiative",
+    ]
+
+    rolls = [
+        ParserData('from="out of combat" to="has initiative"', True, 0, ["initiative-initiative"]),
+        ParserData('from="out of combat" to="no initiative"', True, 1, ["initiative-noinitiative"]),
+        ParserData('from="no initiative" to="has initiative"', True, 2, ["initiative-initiative"]),
+        ParserData('from="no initiative" to="out of combat"', True, 3, ["initiative-nocombat"]),
+        ParserData('from="has initiative" to="no initiative"', True, 4, ["initiative-noinitiative"]),
+        ParserData('from="has initiative" to="out of combat"', True, 5, ["initiative-nocombat"]),
+        ParserData('from="out of combat" to="out of combat"', True, 6, ["initiative-nocombat"]),
+        ParserData('from="has initiative" to="has initiative"', True, 7, ["initiative-initiative"]),
+        ParserData('from="no initiative" to="no initiative"', True, 8, ["initiative-noinitiative"]),
+        ParserData('from="out of combat" to="unknown"', True, 9, []),
+        ParserData('from="has initiative" to="unknown"', True, 10, []),
+        ParserData('from="no initiative" to="unknown"', True, 11, []),
+        ParserData('from=out of combat to="unknown"', False),
+        ParserData('from="out of combat" to=has initiative', False),
+        ParserData(' to="has initiative"', False),
+        ParserData('from="out of combat"', False),
+        ParserData("", False),
+        ParserData("random data", False),
+    ]
+
+    assert_parser_data(parser, parent, rolls, classes)
 
 
 def test_parser_meter(parent):
@@ -212,7 +249,6 @@ def test_parser_position(parent):
         ParserData("random data", False),
     ]
 
-    # FIXME this doesn't work properly, classes don't get properly checked?
     assert_parser_data(parser, parent, rolls, classes)
 
 

@@ -80,6 +80,20 @@ def check_ticks(rank: str, current: int, steps: int) -> (int, int):
     return ticks, min(current + (ticks * steps), 40)
 
 
+def initiative_slugify(initiative: str) -> str | None:
+    """Convert a given initiative string to its slugified version, or None if unknown initiative value"""
+    match initiative:
+        case "out of combat":
+            return "nocombat"
+        case "has initiative":
+            return "initiative"
+        case "no initiative":
+            return "noinitiative"
+
+    logger.warning(f"Unhandled initiative '{initiative}'")
+    return None
+
+
 def position_slugify(position: str) -> str | None:
     """Convert a given position string to its slugified version, or None if unknown position"""
     match position:

@@ -1,0 +1,10 @@
+{#
+Initiative node
+
+from        old initiative status, "out of combat", "has initiative", or "no initiative"
+to          new initiative status, same as from values
+from_slug   shortened name of the old initiative status, one of "nocombat", "initiative", or "noinitiative"
+to_slug     shortened name of the new initiative value, same as from_slug values
+
+#}
+<div class="ivm-initiative{{ " ivm-initiative-" ~ to_slug if to_slug }}">{{ from|capitalize }} &amp;rarr; {{ to|capitalize }}</div>
