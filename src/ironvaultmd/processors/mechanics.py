@@ -11,6 +11,7 @@ from ironvaultmd.parsers.nodes import (
     AddNodeParser,
     BurnNodeParser,
     ClockNodeParser,
+    ImpactNodeParser,
     InitiativeNodeParser,
     MeterNodeParser,
     OocNodeParser,
@@ -98,14 +99,13 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
     #  - actor name=[[link|name]] { move {} }  for when "Always record actor" (or multiplayer?) is enabled
     # Should probably collect all content into a data object to e.g. match a roll to a move or a reroll to a previous roll
     RE_MOVE_NODE = re.compile(r'move +"\[(?P<move_name>[^]]+)]\((?P<move_link>[^)]+)\)" +\{(?P<move_content>[\s\S]*?)}')
-    RE_CMD_NODE_CHECK = re.compile(r'(^|\n)(\b(add|burn|clock|initiative|meter|oracle|position|progress|progress-roll|reroll|roll|track)\b|- "[^"]*")')
+    RE_CMD_NODE_CHECK = re.compile(r'(^|\n)(\b(add|burn|clock|impact|initiative|meter|oracle|position|progress|progress-roll|reroll|roll|track)\b|- "[^"]*")')
 
     RE_CMD = re.compile(r'^\s*(?P<cmd_name>\S{2,}) +(?P<cmd_params>\S[\S ]*)$')
     RE_OOC = re.compile(r'^\s*- +"(?P<ooc>[^"]*)"$')
 
     # Missing: (see https://ironvault.quest/blocks/mechanics-blocks.html)
     #   - oracle-group (known)
-    #   - impact
     #   - asset
     #   - xp
     #
@@ -124,6 +124,7 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
             "add": AddNodeParser(),
             "burn": BurnNodeParser(),
             "clock": ClockNodeParser(),
+            "impact": ImpactNodeParser(),
             "initiative": InitiativeNodeParser(),
             "meter": MeterNodeParser(),
             "ooc": OocNodeParser(),

@@ -29,7 +29,7 @@ and results may be disappointing.
 
 #### Mechanics nodes
 Currently supported nodes within a mechanics block:
-add, burn, clock, initiative, meter, move, out-of-character comments,
+add, burn, clock, impact, initiative, meter, move, out-of-character comments,
 oracle (note, only single oracle nodes, no oracle groups),
 position, progress, progress-roll, reroll, roll, track.
 

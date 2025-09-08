@@ -36,6 +36,18 @@ class ClockNodeParser(NodeParser):
         super().__init__("Clock", regex)
 
 
+class ImpactNodeParser(NodeParser):
+    def __init__(self) -> None:
+        # impact "Permanently Harmed" true
+        regex = r'^"(?P<impact>[^\"]+)" (?P<marked>(true|false))$'
+        super().__init__("Impact", regex)
+
+    def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
+        # change 'marked' from string to bool
+        data["marked"] = data["marked"] == "true"
+        return data
+
+
 class InitiativeNodeParser(NodeParser):
     def __init__(self) -> None:
         # initiative from="out of combat" to="has initiative"

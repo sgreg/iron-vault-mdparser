@@ -4,6 +4,7 @@ from ironvaultmd.parsers.nodes import (
     AddNodeParser,
     BurnNodeParser,
     ClockNodeParser,
+    ImpactNodeParser,
     InitiativeNodeParser,
     MeterNodeParser,
     OocNodeParser,
@@ -96,6 +97,33 @@ def test_parser_clock(parent):
 
     nodes = assert_parser_data(parser, parent, rolls, classes)
     assert "Clock Name" in nodes[0].text
+
+
+
+def test_parser_impact(parent):
+    parser = ImpactNodeParser();
+
+    assert parser.node_name == "Impact"
+    assert parser.regex
+
+    classes = [
+        "impact",
+        "impact-marked",
+        "impact-unmarked",
+    ]
+
+    data = [
+        ParserData('"Wounded" true', True, 0, ["impact", "impact-marked"]),
+        ParserData('"Wounded" false', True, 1, ["impact", "impact-unmarked"]),
+        ParserData('"Permanently Harmed" true', True, 2, ["impact", "impact-marked"]),
+        ParserData('"Permanently Harmed" false', True, 3, ["impact", "impact-unmarked"]),
+        ParserData('"some random something" true', True, 4, ["impact", "impact-marked"]),
+        ParserData('"Wounded" unknown', False),
+        ParserData('"Wounded"', False),
+        ParserData('Wounded false', False)
+    ]
+
+    assert_parser_data(parser, parent, data, classes)
 
 
 def test_parser_initiative(parent):
