@@ -1,0 +1,9 @@
+{#
+XP node
+
+from    old xp value
+to      new xp value
+diff    difference in total xp, positive or negative
+
+#}
+<div class="ivm-xp ivm-xp-{{ "inc" if diff >= 0 else "dec" }}">XP: {{ "{:+}".format(diff) }} ({{ from }} &amp;rarr; {{ to }})</div>

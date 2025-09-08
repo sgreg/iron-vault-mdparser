@@ -25,6 +25,7 @@ class UserTemplates:
     reroll: str | None = None
     roll: str | None = None
     track: str | None = None
+    xp: str | None = None
     # Other elements
     link: str | None = None
 

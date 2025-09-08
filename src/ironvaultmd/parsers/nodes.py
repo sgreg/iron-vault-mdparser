@@ -163,3 +163,14 @@ class TrackNodeParser(NodeParser):
         # see https://ironvault.quest/blocks/mechanics-blocks.html#%60track%60
         regex = r'^name="\[\[.*\|(?P<track_name>.*)\]\]" status="(?P<status>\w+)"$'
         super().__init__("Track", regex)
+
+
+class XpNodeParser(NodeParser):
+    def __init__(self) -> None:
+        # xp from=3 to=5
+        regex = r'^from=(?P<from>\d+) to=(?P<to>\d+)$'
+        super().__init__("XP", regex)
+
+    def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
+        diff: int = int(data["to"]) - int(data["from"])
+        return data | {"diff": diff}

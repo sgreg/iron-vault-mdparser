@@ -22,6 +22,7 @@ from ironvaultmd.parsers.nodes import (
     RerollNodeParser,
     RollNodeParser,
     TrackNodeParser,
+    XpNodeParser,
 )
 from ironvaultmd.util import add_unhandled_node, create_div, split_match
 
@@ -99,7 +100,7 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
     #  - actor name=[[link|name]] { move {} }  for when "Always record actor" (or multiplayer?) is enabled
     # Should probably collect all content into a data object to e.g. match a roll to a move or a reroll to a previous roll
     RE_MOVE_NODE = re.compile(r'move +"\[(?P<move_name>[^]]+)]\((?P<move_link>[^)]+)\)" +\{(?P<move_content>[\s\S]*?)}')
-    RE_CMD_NODE_CHECK = re.compile(r'(^|\n)(\b(add|burn|clock|impact|initiative|meter|oracle|position|progress|progress-roll|reroll|roll|track)\b|- "[^"]*")')
+    RE_CMD_NODE_CHECK = re.compile(r'(^|\n)(\b(add|burn|clock|impact|initiative|meter|oracle|position|progress|progress-roll|reroll|roll|track|xp)\b|- "[^"]*")')
 
     RE_CMD = re.compile(r'^\s*(?P<cmd_name>\S{2,}) +(?P<cmd_params>\S[\S ]*)$')
     RE_OOC = re.compile(r'^\s*- +"(?P<ooc>[^"]*)"$')
@@ -107,7 +108,6 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
     # Missing: (see https://ironvault.quest/blocks/mechanics-blocks.html)
     #   - oracle-group (known)
     #   - asset
-    #   - xp
     #
     # Other blocks that exist (see https://ironvault.quest/blocks/index.html)
     #   ...most are actually just for displaying information, which could be considered nice-to-have in the future.
@@ -135,6 +135,7 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
             "reroll": RerollNodeParser(),
             "roll": RollNodeParser(),
             "track": TrackNodeParser(),
+            "xp": XpNodeParser(),
         }
 
     def test(self, parent, block) -> bool:

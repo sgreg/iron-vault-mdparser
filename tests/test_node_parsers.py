@@ -15,6 +15,7 @@ from ironvaultmd.parsers.nodes import (
     RerollNodeParser,
     RollNodeParser,
     TrackNodeParser,
+    XpNodeParser,
 )
 
 
@@ -455,3 +456,32 @@ def test_parser_track(parent):
 
     nodes = assert_parser_data(parser, parent, rolls, classes)
     assert "Track Name" in nodes[0].text
+
+
+def test_parser_xp(parent):
+    parser = XpNodeParser()
+
+    assert parser.node_name == "XP"
+    assert parser.regex
+
+    classes = [
+        "ivm-xp",
+        "ivm-xp-inc",
+        "ivm-xp-dec",
+    ]
+
+    rolls = [
+        ParserData("from=2 to=4", True, 0, ["ivm-xp", "ivm-xp-inc"]),
+        ParserData("from=6 to=2", True, 1, ["ivm-xp", "ivm-xp-dec"]),
+        ParserData("from=2 to=2", True, 2, ["ivm-xp", "ivm-xp-inc"]), # pointless but still valid
+        ParserData("to=2", False),
+        ParserData("from=8", False),
+        ParserData("from=text to=2", False),
+        ParserData("from=8 to=text", False),
+        ParserData("from=-1 to=2", False),
+        ParserData("from=8 to=-1", False),
+        ParserData("", False),
+        ParserData("random data", False),
+    ]
+
+    assert_parser_data(parser, parent, rolls, classes)
