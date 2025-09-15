@@ -36,7 +36,7 @@ class WikiLinkProcessor(InlineProcessor):
 
         # [[link as label]]
         # [[link|label]]
-        wikilink_pattern = r'\[\[([^]|]+)(?:\|([^]]+))?]]'
+        wikilink_pattern = r'!?\[\[([^]|]+)(?:\|([^]]+))?]]'
         self.links = links
         self.template = templater.get_template("link")
         super().__init__(wikilink_pattern)

@@ -23,6 +23,10 @@ def test_linkproc_match_success(linkproc):
         StringCompareData("this is [[a link|with a label]] in the middle of it all", "with a label"),
         StringCompareData("first text, and then the [[link]]", "link"),
         StringCompareData("first text, and then the [[link|label]]", "label"),
+        StringCompareData("![[embedded link]]", "embedded link"),
+        StringCompareData("![[embedded link|label]]", "label"),
+        StringCompareData("first text, and then the ![[embedded link]]", "embedded link"),
+        StringCompareData("first text, and then the ![[embedded link|label]]", "label"),
     ]
 
     for d in data:
@@ -72,6 +76,9 @@ def test_linkproc_convert(md):
         StringCompareData("[[link|label]]", "label"),
         StringCompareData("[[multi word link]]", "multi word link"),
         StringCompareData("[[multi word link|multi word label]]", "multi word label"),
+        StringCompareData("![[embedded link]]", "embedded link"),
+        StringCompareData("![[embedded link|label]]", "label"),
+        StringCompareData("![[embedded link|multi word label]]", "multi word label"),
     ]
 
     template = '<p><span class="ivm-link">{0}</span></p>'
@@ -85,6 +92,8 @@ def test_linkproc_collect(linkproc_gen):
     data = [
         "[[link]]",
         "[[different link|label]]",
+        "![[embedded link]]",
+        "![[embedded link|with label]]"
         "not a link"
     ]
 
@@ -96,7 +105,7 @@ def test_linkproc_collect(linkproc_gen):
         if match is not None:
             processor.handleMatch(match, d)
 
-    assert len(links) == 2
+    assert len(links) == 4
 
     assert isinstance(links[0], Link)
     assert links[0].ref == "link"
@@ -105,6 +114,14 @@ def test_linkproc_collect(linkproc_gen):
     assert isinstance(links[1], Link)
     assert links[1].ref == "different link"
     assert links[1].label == "label"
+
+    assert isinstance(links[2], Link)
+    assert links[2].ref == "embedded link"
+    assert links[2].label == "embedded link"
+
+    assert isinstance(links[3], Link)
+    assert links[3].ref == "embedded link"
+    assert links[3].label == "with label"
 
 
 def test_linkproc_collect_invalid_list(linkproc_gen):
@@ -146,3 +163,10 @@ def test_linkproc_user_template(linkproc_gen, md_gen):
     element, _, _ = processor.handleMatch(match, data)
     assert element.get("class") == "test-class"
     assert element.text == 'test link "different link" with label "label"'
+
+    data = "![[embedded link]]"
+    match = processor.compiled_re.search(data)
+    assert match is not None
+    element, _, _ = processor.handleMatch(match, data)
+    assert element.get("class") == "test-class"
+    assert element.text == 'test link "embedded link" with label "embedded link"'
