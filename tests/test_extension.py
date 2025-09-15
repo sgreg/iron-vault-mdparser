@@ -125,7 +125,7 @@ def test_extension_full_features(md_gen):
 key1: value1
 key2: value2
 ---
-Regular text with [[a link]] and [[link|link with label]]
+Regular text with [[a link]], [[link|link with label]], [[link#anchor|link with anchor]]
 
 ```iron-vault-mechanics
 move "[React Under Fire](datasworn:move:starforged\\/combat\\/react_under_fire)" {
@@ -139,8 +139,9 @@ More text
 """
 
     expected_links = [
-        Link("a link", "a link"),
-        Link("link", "link with label"),
+        Link("a link", "", "a link"),
+        Link("link", "", "link with label"),
+        Link("link", "anchor", "link with anchor")
     ]
 
     expected_frontmatter = {
@@ -148,7 +149,7 @@ More text
         "key2": "value2",
     }
 
-    expected_html = """<p>Regular text with <span>a link (a link)</span> and <span>link with label (link)</span></p>
+    expected_html = """<p>Regular text with <span>a link (a link)</span>, <span>link with label (link)</span>, <span>link with anchor (link)</span></p>
 <div class="ivm-mechanics">
 <div class="ivm-move">
 <div class="ivm-move-name">React Under Fire</div>

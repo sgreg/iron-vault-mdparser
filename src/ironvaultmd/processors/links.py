@@ -10,6 +10,7 @@ from ironvaultmd.parsers.base import templater
 @dataclass
 class Link:
     ref: str
+    anchor: str
     label: str
 
 class WikiLinkProcessor(InlineProcessor):
@@ -36,7 +37,9 @@ class WikiLinkProcessor(InlineProcessor):
 
         # [[link as label]]
         # [[link|label]]
-        wikilink_pattern = r'!?\[\[([^]|]+)(?:\|([^]]+))?]]'
+        # [[link#anchor]]
+        # [[link#anchor|with label]]
+        wikilink_pattern = r'!?\[\[([^]|#]+)(?:#([^|\]]+))?(?:\|([^]]+))?]]'
         self.links = links
         self.template = templater.get_template("link")
         super().__init__(wikilink_pattern)
@@ -44,7 +47,13 @@ class WikiLinkProcessor(InlineProcessor):
     def handleMatch(self, m: re.Match[str], data: str) -> tuple[etree.Element | str, int, int]:
         if m.group(1).strip():
             ref = m.group(1).strip()
-            label = m.group(2)
+            anchor = m.group(2)
+            label = m.group(3)
+
+            if anchor is not None:
+                anchor = anchor.strip()
+            else:
+                anchor = ""
 
             if label is not None:
                 # Piped wikilink with a dedicated label text.
@@ -54,7 +63,7 @@ class WikiLinkProcessor(InlineProcessor):
                 # use the link as label text instead then.
                 label = ref
 
-            link = Link(ref, label)
+            link = Link(ref, anchor, label)
             element = etree.fromstring(self.template.render(link.__dict__))
 
             if self.links is not None:

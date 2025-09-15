@@ -27,6 +27,8 @@ def test_linkproc_match_success(linkproc):
         StringCompareData("![[embedded link|label]]", "label"),
         StringCompareData("first text, and then the ![[embedded link]]", "embedded link"),
         StringCompareData("first text, and then the ![[embedded link|label]]", "label"),
+        StringCompareData("[[link#anchor]]", "link"),
+        StringCompareData("[[link#anchor|label]]", "label"),
     ]
 
     for d in data:
@@ -58,11 +60,23 @@ def test_linkproc_nomatch(linkproc):
         "[[|]]",
         "[[ |]]",
         "[[| ]]",
+        # "[[ | ]]" # FIXME this actually matches
+        "[[#]]",
+        "[[#|]]",
+        "[[ #|]]",
+        "[[# |]]",
+        "[[#| ]]",
+        "[[# | ]]",
+        #"[[ # | ]]", # FIXME so does hits
         "not a link in sight",
         "[[ open but not closed",
         "[[link|label but not closed",
+        "[[link#anchor but not closed",
+        "[[link#anchor|label but not closed",
         "same but [[ in the middle of it all",
         "same but [[link|label in the middle of it all",
+        "same but [[link#anchor in the middle of it all",
+        "same but [[link#anchor|label in the middle of it all",
     ]
 
     for d in data:
@@ -79,6 +93,8 @@ def test_linkproc_convert(md):
         StringCompareData("![[embedded link]]", "embedded link"),
         StringCompareData("![[embedded link|label]]", "label"),
         StringCompareData("![[embedded link|multi word label]]", "multi word label"),
+        StringCompareData("[[link#anchor]]", "link"),
+        StringCompareData("[[link#anchor|label]]", "label"),
     ]
 
     template = '<p><span class="ivm-link">{0}</span></p>'
@@ -93,7 +109,9 @@ def test_linkproc_collect(linkproc_gen):
         "[[link]]",
         "[[different link|label]]",
         "![[embedded link]]",
-        "![[embedded link|with label]]"
+        "![[embedded link|with label]]",
+        "[[link#anchor]]",
+        "[[link#anchor|label]]",
         "not a link"
     ]
 
@@ -105,23 +123,37 @@ def test_linkproc_collect(linkproc_gen):
         if match is not None:
             processor.handleMatch(match, d)
 
-    assert len(links) == 4
+    assert len(links) == 6
 
     assert isinstance(links[0], Link)
     assert links[0].ref == "link"
+    assert links[0].anchor == ""
     assert links[0].label == "link"
 
     assert isinstance(links[1], Link)
     assert links[1].ref == "different link"
+    assert links[0].anchor == ""
     assert links[1].label == "label"
 
     assert isinstance(links[2], Link)
     assert links[2].ref == "embedded link"
+    assert links[0].anchor == ""
     assert links[2].label == "embedded link"
 
     assert isinstance(links[3], Link)
     assert links[3].ref == "embedded link"
+    assert links[0].anchor == ""
     assert links[3].label == "with label"
+
+    assert isinstance(links[4], Link)
+    assert links[4].ref == "link"
+    assert links[4].anchor == "anchor"
+    assert links[4].label == "link"
+
+    assert isinstance(links[5], Link)
+    assert links[5].ref == "link"
+    assert links[5].anchor == "anchor"
+    assert links[5].label == "label"
 
 
 def test_linkproc_collect_invalid_list(linkproc_gen):
@@ -170,3 +202,35 @@ def test_linkproc_user_template(linkproc_gen, md_gen):
     element, _, _ = processor.handleMatch(match, data)
     assert element.get("class") == "test-class"
     assert element.text == 'test link "embedded link" with label "embedded link"'
+
+
+def test_linkproc_user_template_anchor(linkproc_gen, md_gen):
+    user_templates = UserTemplates()
+    user_templates.link = '<div class="test-class">test link "{{ ref }}{{ "#" ~ anchor if anchor }}" with label "{{ label }}"</div>'
+
+    links = []
+
+    md_gen(links=links, templates=user_templates)
+
+    processor = linkproc_gen(links)
+
+    data = "[[link]]"
+    match = processor.compiled_re.search(data)
+    assert match is not None
+    element, _, _ = processor.handleMatch(match, data)
+    assert element.get("class") == "test-class"
+    assert element.text == 'test link "link" with label "link"'
+
+    data = "[[link#anchor]]"
+    match = processor.compiled_re.search(data)
+    assert match is not None
+    element, _, _ = processor.handleMatch(match, data)
+    assert element.get("class") == "test-class"
+    assert element.text == 'test link "link#anchor" with label "link"'
+
+    data = "[[link#anchor|label]]"
+    match = processor.compiled_re.search(data)
+    assert match is not None
+    element, _, _ = processor.handleMatch(match, data)
+    assert element.get("class") == "test-class"
+    assert element.text == 'test link "link#anchor" with label "label"'
