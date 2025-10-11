@@ -178,6 +178,9 @@ def test_parser_meter(parent):
         ParserData('"Momentum" from=5 to=6', True, 0, ["meter-increase"]),
         ParserData('"Momentum" from=6 to=5', True, 1, ["meter-decrease"]),
         ParserData('"Momentum" from=6 to=6', True, 2, []),
+        ParserData('"!@#$%^&*()" from=5 to=6', True, 3, ["meter-increase"]),
+        ParserData('"Multi-word meter \\/ name" from=6 to=5', True, 4, ["meter-decrease"]),
+        ParserData('"[[Linked meter|Meter with Link]]" from=5 to=6', True, 5, ["meter-increase"]),
         ParserData('Momentum from=6 to=6', False),
         ParserData('"" from=5 to=6', False),
         ParserData('from=5 to=6', False),
@@ -193,6 +196,9 @@ def test_parser_meter(parent):
 
     nodes = assert_parser_data(parser, parent, rolls, classes)
     assert "Momentum" in nodes[0].text
+    assert "!@#$%^&*()" in nodes[3].text
+    assert "Multi-word meter / name" in nodes[4].text
+    assert "Meter with Link" in nodes[5].text
 
 
 def test_parser_ooc(parent):

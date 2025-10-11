@@ -61,8 +61,12 @@ class InitiativeNodeParser(NodeParser):
 class MeterNodeParser(NodeParser):
     def __init__(self) -> None:
         # meter "Momentum" from=5 to=6
-        regex = r'^"(?P<meter_name>\w+)" from=(?P<from>\d+) to=(?P<to>\d+$)'
+        regex = r'^"(?P<meter_name>[^"]+)" from=(?P<from>\d+) to=(?P<to>\d+$)'
         super().__init__("Meter", regex)
+
+    def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
+        data["meter_name"] = convert_link_name(data["meter_name"])
+        return data
 
 
 class OocNodeParser(NodeParser):
