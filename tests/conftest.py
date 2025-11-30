@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as etree
+from typing import Generator
 
 import markdown
 import pytest
@@ -6,6 +7,7 @@ import pytest
 from ironvaultmd.ironvault import (
     IronVaultExtension,
 )
+from ironvaultmd.parsers.context import Context
 from ironvaultmd.processors.frontmatter import IronVaultFrontmatterPreprocessor
 from ironvaultmd.processors.mechanics import (
     IronVaultMechanicsBlockProcessor,
@@ -62,3 +64,9 @@ def links_inlineprocessor_generator():
 def parent_div_element():
     root = etree.ElementTree(etree.fromstring("<body></body>")).getroot()
     yield etree.SubElement(root, "div")
+
+
+@pytest.fixture(name="ctx")
+def parser_context(parent) -> Generator[Context]:
+    context = Context(parent)
+    yield context

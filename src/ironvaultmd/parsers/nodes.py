@@ -1,6 +1,8 @@
+from dataclasses import asdict
 from typing import Any
 
 from ironvaultmd.parsers.base import NodeParser
+from ironvaultmd.parsers.context import Context
 from ironvaultmd.util import check_dice, check_ticks, convert_link_name, initiative_slugify, position_slugify
 
 
@@ -42,7 +44,7 @@ class ImpactNodeParser(NodeParser):
         regex = r'^"(?P<impact>[^\"]+)" (?P<marked>(true|false))$'
         super().__init__("Impact", regex)
 
-    def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
         # change 'marked' from string to bool
         data["marked"] = data["marked"] == "true"
         return data
@@ -54,7 +56,7 @@ class InitiativeNodeParser(NodeParser):
         regex = r'^from="(?P<from>.+)" to="(?P<to>.+)"$'
         super().__init__("Initiative", regex)
 
-    def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
         return data | {"from_slug": initiative_slugify(data["from"]), "to_slug": initiative_slugify(data["to"])}
 
 
@@ -64,7 +66,7 @@ class MeterNodeParser(NodeParser):
         regex = r'^"(?P<meter_name>[^"]+)" from=(?P<from>\d+) to=(?P<to>\d+$)'
         super().__init__("Meter", regex)
 
-    def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
         data["meter_name"] = convert_link_name(data["meter_name"])
         return data
 
@@ -83,7 +85,7 @@ class OracleNodeParser(NodeParser):
         regex = r'^name="(\[(?P<oracle_name>[^\]]+)\]\(datasworn:.+\)|(?P<oracle_text>[^"]+))" result="(?P<result>[^"]+)" roll=(?P<roll>\d+)$'
         super().__init__("Oracle", regex)
 
-    def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
         oracle = "undefined"
         if data["oracle_name"] is not None:
             oracle = convert_link_name(data["oracle_name"])
@@ -99,7 +101,7 @@ class PositionNodeParser(NodeParser):
         regex = r'^from="(?P<from>.+)" to="(?P<to>.+)"$'
         super().__init__("Position", regex)
 
-    def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
         return data | {"from_slug": position_slugify(data["from"]), "to_slug": position_slugify(data["to"])}
 
 
@@ -109,7 +111,7 @@ class ProgressNodeParser(NodeParser):
         regex = r'^from=(?P<from>\d+) name="\[\[.*\|(?P<name>.*)\]\]" rank="(?P<rank>\w+)" steps=(?P<steps>\d+)$'
         super().__init__("Progress", regex)
 
-    def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
         ticks, to = check_ticks(data["rank"], int(data["from"]), int(data['steps']))
         return data | {"ticks": ticks, "to": to}
 
@@ -121,7 +123,7 @@ class ProgressRollNodeParser(NodeParser):
         regex = r'^(?:name="\[\[.*\|(?P<name>.*)\]\]" )?score=(?P<score>\d+) vs1=(?P<vs1>\d+) vs2=(?P<vs2>\d+)$'
         super().__init__("Progress Roll", regex)
 
-    def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
         if data["name"] is None:
             data["name"] = "undefined"
 
@@ -148,7 +150,7 @@ class RollNodeParser(NodeParser):
         regex = r'^"(?P<stat_name>\w+)" action=(?P<action>\d+) adds=(?P<adds>\d+) stat=(?P<stat>\d+) vs1=(?P<vs1>\d+) vs2=(?P<vs2>\d+)$'
         super().__init__("Roll", regex)
 
-    def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
         total = min(int(data["action"]) + int(data["stat"]) + int(data["adds"]), 10)
         vs1 = int(data["vs1"])
         vs2 = int(data["vs2"])
@@ -175,6 +177,6 @@ class XpNodeParser(NodeParser):
         regex = r'^from=(?P<from>\d+) to=(?P<to>\d+)$'
         super().__init__("XP", regex)
 
-    def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
         diff: int = int(data["to"]) - int(data["from"])
         return data | {"diff": diff}

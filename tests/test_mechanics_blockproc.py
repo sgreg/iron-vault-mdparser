@@ -88,11 +88,11 @@ def test_mechblock_run_fail(parent, mechblock):
             mechblock.run(parent, blocks)
 
 
-def test_mechblock_parse_move(parent, mechblock):
+def test_mechblock_parse_move(ctx, mechblock):
     content = 'move "[Compel](datasworn link)" {\nadd 2\n}'
-    mechblock.parse_content(parent, content)
+    mechblock.parse_content(ctx, content)
 
-    nodes = parent.findall("div")
+    nodes = ctx.parent.findall("div")
     assert len(nodes) == 1
 
     node = nodes[0]
@@ -100,17 +100,17 @@ def test_mechblock_parse_move(parent, mechblock):
     assert node.find("div") is not None
 
 
-def test_mechblock_parse_move_after_content(parent, mechblock):
+def test_mechblock_parse_move_after_content(ctx, mechblock):
     content = 'move "[Compel](datasworn link)" {\nadd 2\n}\nadd 2'
-    mechblock.parse_content(parent, content)
+    mechblock.parse_content(ctx, content)
 
-    nodes = parent.findall("div")
+    nodes = ctx.parent.findall("div")
     assert len(nodes) == 2
 
     assert "ivm-move" in nodes[0].get("class")
     assert "ivm-add" in nodes[1].get("class")
 
-def test_mechblock_parse_multiple_moves(parent, mechblock):
+def test_mechblock_parse_multiple_moves(ctx, mechblock):
     content = """move "[Compel](link)" {
     add 2
 }
@@ -119,8 +119,8 @@ move "[Face Danger](link)" {
 }
 """
 
-    mechblock.parse_content(parent, content)
-    nodes = parent.findall("div")
+    mechblock.parse_content(ctx, content)
+    nodes = ctx.parent.findall("div")
 
     assert len(nodes) == 2
 
@@ -132,7 +132,7 @@ move "[Face Danger](link)" {
         assert "ivm-move-name" in move_text_node.get("class")
         assert expected_move_names[idx] in move_text_node.text
 
-def test_mechblock_parse_multiple_moves_with_content(parent, mechblock):
+def test_mechblock_parse_multiple_moves_with_content(ctx, mechblock):
     content = """track name="[[Link|Name]]" status="added"
 move "[Compel](link)" {
     add 2
@@ -144,8 +144,8 @@ move "[Face Danger](link)" {
 - "Comment"
 """
 
-    mechblock.parse_content(parent, content)
-    nodes = parent.findall("div")
+    mechblock.parse_content(ctx, content)
+    nodes = ctx.parent.findall("div")
 
     expected_div_classes = ["ivm-track", "ivm-move", "ivm-progress", "ivm-move", "ivm-ooc"]
     assert len(nodes) == len(expected_div_classes)
@@ -153,41 +153,41 @@ move "[Face Danger](link)" {
     for idx, node in enumerate(nodes):
         assert expected_div_classes[idx] in node.get("class")
 
-def test_mechblock_parse_node(parent, mechblock):
-    mechblock.parse_content(parent, "add 2")
+def test_mechblock_parse_node(ctx, mechblock):
+    mechblock.parse_content(ctx, "add 2")
 
-    node = parent.find("div")
+    node = ctx.parent.find("div")
     assert node is not None
     assert "ivm-add" in node.get("class")
     assert "add" in node.text.lower()
 
 
-def test_mechblock_parse_ooc(parent, mechblock):
-    mechblock.parse_content(parent, '- "comment comment comment"')
+def test_mechblock_parse_ooc(ctx, mechblock):
+    mechblock.parse_content(ctx, '- "comment comment comment"')
 
-    node = parent.find("div")
+    node = ctx.parent.find("div")
     assert node is not None
     assert "ivm-ooc" in node.get("class")
     assert "comment comment comment" in node.text
 
 
-def test_mechblock_parse_unknown(parent, mechblock):
-    mechblock.parse_content(parent, "unknown")
+def test_mechblock_parse_unknown(ctx, mechblock):
+    mechblock.parse_content(ctx, "unknown")
 
-    node = parent.find("div")
+    node = ctx.parent.find("div")
     assert node is None
 
 
-def test_mechblock_parse_multiple(parent, mechblock):
+def test_mechblock_parse_multiple(ctx, mechblock):
     multiplier = 3
 
     content = "add 2\n" * multiplier
-    mechblock.parse_content(parent, content)
+    mechblock.parse_content(ctx, content)
 
-    assert len(parent.findall("div")) == multiplier
+    assert len(ctx.parent.findall("div")) == multiplier
 
 
-def test_mechblock_parse_multiple_with_unknown(parent, mechblock):
+def test_mechblock_parse_multiple_with_unknown(ctx, mechblock):
     lines = [
         "add 2",
         # "unknown content", # this fails to fail at the moment [1]
@@ -200,12 +200,12 @@ def test_mechblock_parse_multiple_with_unknown(parent, mechblock):
     #       making use of that now in test_mechblock_unhandled_node() below.
 
     content = "\n".join(lines)
-    mechblock.parse_content(parent, content)
+    mechblock.parse_content(ctx, content)
 
-    assert len(parent.findall("div")) == 2
+    assert len(ctx.parent.findall("div")) == 2
 
 
-def test_mechblock_unhandled_node(parent, mechblock):
+def test_mechblock_unhandled_node(ctx, mechblock):
     # This works due to not-so-great implementations in the parser.
     # See also the comment in test_mechblock_parse_multiple_with_unknown() above
 
@@ -216,8 +216,8 @@ def test_mechblock_unhandled_node(parent, mechblock):
     ]
 
     content = "\n".join(lines)
-    mechblock.parse_content(parent, content)
-    nodes = parent.findall("div")
+    mechblock.parse_content(ctx, content)
+    nodes = ctx.parent.findall("div")
     assert len(nodes) == 3
 
     assert "ivm-add" in nodes[0].get("class")

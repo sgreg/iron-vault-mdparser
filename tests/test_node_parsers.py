@@ -19,7 +19,7 @@ from ironvaultmd.parsers.nodes import (
 )
 
 
-def test_parser_add(parent):
+def test_parser_add(ctx):
     parser = AddNodeParser()
 
     assert parser.node_name == "Add"
@@ -37,11 +37,11 @@ def test_parser_add(parent):
     ]
 
     # FIXME this tests the classes and with that somewhat the parsers, but should compare HTML output as well
-    nodes = assert_parser_data(parser, parent, rolls, classes)
+    nodes = assert_parser_data(parser, ctx, rolls, classes)
     assert "comment" in nodes[1].text
 
 
-def test_parser_burn(parent):
+def test_parser_burn(ctx):
     parser = BurnNodeParser()
 
     assert parser.node_name == "Burn"
@@ -62,10 +62,10 @@ def test_parser_burn(parent):
         ParserData("random data", False),
     ]
 
-    assert_parser_data(parser, parent, rolls, classes)
+    assert_parser_data(parser, ctx, rolls, classes)
 
 
-def test_parser_clock(parent):
+def test_parser_clock(ctx):
     parser = ClockNodeParser()
 
     assert parser.node_name == "Clock"
@@ -96,12 +96,12 @@ def test_parser_clock(parent):
         ParserData("random data", False),
     ]
 
-    nodes = assert_parser_data(parser, parent, rolls, classes)
+    nodes = assert_parser_data(parser, ctx, rolls, classes)
     assert "Clock Name" in nodes[0].text
 
 
 
-def test_parser_impact(parent):
+def test_parser_impact(ctx):
     parser = ImpactNodeParser();
 
     assert parser.node_name == "Impact"
@@ -124,10 +124,10 @@ def test_parser_impact(parent):
         ParserData('Wounded false', False)
     ]
 
-    assert_parser_data(parser, parent, data, classes)
+    assert_parser_data(parser, ctx, data, classes)
 
 
-def test_parser_initiative(parent):
+def test_parser_initiative(ctx):
     parser = InitiativeNodeParser()
 
     assert parser.node_name == "Initiative"
@@ -160,10 +160,10 @@ def test_parser_initiative(parent):
         ParserData("random data", False),
     ]
 
-    assert_parser_data(parser, parent, rolls, classes)
+    assert_parser_data(parser, ctx, rolls, classes)
 
 
-def test_parser_meter(parent):
+def test_parser_meter(ctx):
     parser = MeterNodeParser()
 
     assert parser.node_name == "Meter"
@@ -194,18 +194,18 @@ def test_parser_meter(parent):
         ParserData("random data", False),
     ]
 
-    nodes = assert_parser_data(parser, parent, rolls, classes)
+    nodes = assert_parser_data(parser, ctx, rolls, classes)
     assert "Momentum" in nodes[0].text
     assert "!@#$%^&*()" in nodes[3].text
     assert "Multi-word meter / name" in nodes[4].text
     assert "Meter with Link" in nodes[5].text
 
 
-def test_parser_ooc(parent):
+def test_parser_ooc(ctx):
     parser = OocNodeParser()
 
     assert parser.node_name == "OOC"
-    assert parent.find("div") is None
+    assert ctx.parent.find("div") is None
 
     contents = [
         "",
@@ -214,16 +214,16 @@ def test_parser_ooc(parent):
     ]
 
     for content in contents:
-        parser.parse(parent, content)
+        parser.parse(ctx, content)
 
-    nodes = parent.findall("div")
+    nodes = ctx.parent.findall("div")
     assert len(nodes) == len(contents)
     for idx, node in enumerate(nodes):
         assert node.get("class") == "ivm-ooc"
         assert contents[idx] in node.text
 
 
-def test_parser_oracle(parent):
+def test_parser_oracle(ctx):
     parser = OracleNodeParser()
 
     assert parser.node_name == "Oracle"
@@ -246,12 +246,12 @@ def test_parser_oracle(parent):
         ParserData("random data", False),
     ]
 
-    nodes = assert_parser_data(parser, parent, rolls, classes)
+    nodes = assert_parser_data(parser, ctx, rolls, classes)
     assert "Oracle Name" in nodes[0].text
     assert "Something" in nodes[0].text
 
 
-def test_parser_position(parent):
+def test_parser_position(ctx):
     parser = PositionNodeParser()
 
     assert parser.node_name == "Position"
@@ -284,10 +284,10 @@ def test_parser_position(parent):
         ParserData("random data", False),
     ]
 
-    assert_parser_data(parser, parent, rolls, classes)
+    assert_parser_data(parser, ctx, rolls, classes)
 
 
-def test_parser_progress(parent):
+def test_parser_progress(ctx):
     parser = ProgressNodeParser()
 
     assert parser.node_name == "Progress"
@@ -312,11 +312,11 @@ def test_parser_progress(parent):
         ParserData("random data", False),
     ]
 
-    nodes = assert_parser_data(parser, parent, rolls, classes)
+    nodes = assert_parser_data(parser, ctx, rolls, classes)
     assert "Track Name" in nodes[0].text
 
 
-def test_parser_progressroll(parent):
+def test_parser_progressroll(ctx):
     parser = ProgressRollNodeParser()
 
     assert parser.node_name == "Progress Roll"
@@ -352,13 +352,13 @@ def test_parser_progressroll(parent):
         ParserData("random data", False)
     ]
 
-    nodes = assert_parser_data(parser, parent, rolls, classes)
+    nodes = assert_parser_data(parser, ctx, rolls, classes)
 
     assert "Track Name" in nodes[0].text
     assert "undefined" in nodes[6].text
 
 
-def test_parser_reroll(parent):
+def test_parser_reroll(ctx):
     parser = RerollNodeParser()
 
     assert parser.node_name == "Reroll"
@@ -392,10 +392,10 @@ def test_parser_reroll(parent):
         ParserData("random data", False),
     ]
 
-    assert_parser_data(parser, parent, rolls, classes)
+    assert_parser_data(parser, ctx, rolls, classes)
 
 
-def test_parser_roll(parent):
+def test_parser_roll(ctx):
     parser = RollNodeParser()
 
     assert parser.node_name == "Roll"
@@ -436,10 +436,10 @@ def test_parser_roll(parent):
         ParserData('random data', False),
     ]
 
-    assert_parser_data(parser, parent, rolls, classes)
+    assert_parser_data(parser, ctx, rolls, classes)
 
 
-def test_parser_track(parent):
+def test_parser_track(ctx):
     parser = TrackNodeParser()
 
     assert parser.node_name == "Track"
@@ -460,11 +460,11 @@ def test_parser_track(parent):
         ParserData("random data", False),
     ]
 
-    nodes = assert_parser_data(parser, parent, rolls, classes)
+    nodes = assert_parser_data(parser, ctx, rolls, classes)
     assert "Track Name" in nodes[0].text
 
 
-def test_parser_xp(parent):
+def test_parser_xp(ctx):
     parser = XpNodeParser()
 
     assert parser.node_name == "XP"
@@ -490,4 +490,4 @@ def test_parser_xp(parent):
         ParserData("random data", False),
     ]
 
-    assert_parser_data(parser, parent, rolls, classes)
+    assert_parser_data(parser, ctx, rolls, classes)

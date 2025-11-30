@@ -1,12 +1,12 @@
 import logging
 import re
-import xml.etree.ElementTree as etree
 
 from markdown.blockparser import BlockParser
 from markdown.blockprocessors import BlockProcessor
 from markdown.preprocessors import Preprocessor
 
 from ironvaultmd.parsers.base import NodeParser, FallbackNodeParser
+from ironvaultmd.parsers.context import Context
 from ironvaultmd.parsers.nodes import (
     AddNodeParser,
     BurnNodeParser,
@@ -171,10 +171,11 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
 
         logger.debug(f"mechanics block content: {repr(content)}")
         element = create_div(parent, ["mechanics"])
-        self.parse_content(element, content)
+        ctx = Context(element)
+        self.parse_content(ctx, content)
 
 
-    def parse_content(self, parent, content: str, indent=0) -> None:
+    def parse_content(self, ctx: Context, content: str, indent=0) -> None:
         logger.debug(f"x> adding content {repr(content)}")
 
         if (move_node_match := self.RE_MOVE_NODE.search(content)) is not None:
@@ -185,15 +186,17 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
             before, after = split_match(content, move_node_match)
 
             if before:
-                self.parse_content(parent, before, indent)
+                self.parse_content(ctx, before, indent)
 
-            element = create_div(parent, ["move"])
+            element = create_div(ctx.parent, ["move"])
             create_div(element, ["move-name"]).text = f"{move_node_match.group("move_name")}"
 
-            self.parse_content(element, move_node_match.group("move_content"), indent + 4)
+            ctx.push(element)
+            self.parse_content(ctx, move_node_match.group("move_content"), indent + 4)
+            ctx.pop()
 
             if after:
-                self.parse_content(parent, after, indent)
+                self.parse_content(ctx, after, indent)
 
         elif self.RE_CMD_NODE_CHECK.search(content) is not None:
             # Note: this only verifies valid comments for the very first line
@@ -217,14 +220,14 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
                     logger.debug(f"skipping unknown content {repr(line)}")
                     continue
 
-                self.add_node(parent, name, data)
+                self.add_node(ctx, name, data)
 
 
-    def add_node(self, parent: etree.Element, name: str, data: str) -> None:
+    def add_node(self, ctx: Context, name: str, data: str) -> None:
         parser = self.parsers.get(name)
 
         if parser is None:
             parser = FallbackNodeParser(name)
             add_unhandled_node(name)
 
-        parser.parse(parent, data)
+        parser.parse(ctx, data)

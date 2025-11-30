@@ -37,7 +37,7 @@ def test_templater_error():
             templater.get_template(name)
 
 
-def test_parser_fallback(parent):
+def test_parser_fallback(ctx):
     node_name = "Node Test"
     parser = FallbackNodeParser(node_name)
 
@@ -45,9 +45,9 @@ def test_parser_fallback(parent):
     assert parser.name == node_name
 
     content = "Random Content"
-    parser.parse(parent, content)
+    parser.parse(ctx, content)
 
-    node = parent.find("div")
+    node = ctx.parent.find("div")
     assert node is not None
     assert "ivm-node" in node.get("class")
     assert node_name in node.text
@@ -71,37 +71,37 @@ def test_parser_regex_match():
     no_match = parser._match('nothing that will match')
     assert no_match is None
 
-def test_parser_node_render(parent):
+def test_parser_node_render(ctx):
     regex = r'^test data "(?P<test_data>.+)"$'
     data = 'test data "123"'
 
     parser = NodeParser("Test", regex)
 
-    parser.parse(parent, "no match")
-    assert parent.find("div") is None
+    parser.parse(ctx, "no match")
+    assert ctx.parent.find("div") is None
 
-    parser.parse(parent, data)
+    parser.parse(ctx, data)
 
-    node = parent.find("div")
+    node = ctx.parent.find("div")
     assert node is not None
     assert node.text == "data: 123"
 
-def test_parser_args_override(parent):
+def test_parser_args_override(ctx):
     regex = r'^test data "(?P<test_data>.+)"$'
     data = 'test data "123"'
 
     class TestParser(NodeParser):
-        def create_args(self, match):
+        def create_args(self, match, context):
             return {"test_data": "overridden"}
 
     parser = TestParser("Test", regex)
 
-    parser.parse(parent, "no match")
-    assert parent.find("div") is None
+    parser.parse(ctx, "no match")
+    assert ctx.parent.find("div") is None
 
-    parser.parse(parent, data)
+    parser.parse(ctx, data)
 
-    node = parent.find("div")
+    node = ctx.parent.find("div")
     assert node is not None
     assert node.text == "data: overridden"
 
@@ -124,7 +124,7 @@ def test_user_template_load():
     assert roll_template.filename.endswith("/roll.html")
 
 
-def test_user_template_render(md_gen, parent):
+def test_user_template_render(md_gen, ctx):
     user_templates = UserTemplates()
     user_templates.add = '<div class="test-class">test add with value {{ add }}</div>'
 
@@ -133,8 +133,8 @@ def test_user_template_render(md_gen, parent):
     add_parser = AddNodeParser()
     assert add_parser.template.filename == "<template>"
 
-    add_parser.parse(parent, '2 "for test reasons"')
-    node = parent.find("div")
+    add_parser.parse(ctx, '2 "for test reasons"')
+    node = ctx.parent.find("div")
 
     assert node is not None
     assert node.get("class") == "test-class"

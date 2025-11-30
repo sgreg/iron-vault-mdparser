@@ -6,6 +6,8 @@ from typing import Any
 
 from jinja2 import Template, PackageLoader, Environment, TemplateNotFound
 
+from ironvaultmd.parsers.context import Context
+
 logger = logging.getLogger("ironvaultmd")
 
 @dataclass
@@ -90,16 +92,16 @@ class NodeParser:
         logger.debug(match)
         return match.groupdict()
 
-    def parse(self, parent: etree.Element, data: str) -> None:
+    def parse(self, ctx: Context, data: str) -> None:
         matches = self._match(data)
         if matches is None:
             return
 
-        args = self.create_args(matches)
+        args = self.create_args(matches, ctx)
         out = self.template.render(args)
-        parent.append(etree.fromstring(out))
+        ctx.parent.append(etree.fromstring(out))
 
-    def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
         return data
 
 
@@ -109,5 +111,5 @@ class FallbackNodeParser(NodeParser):
         self.name = name
         super().__init__("Node", regex)
 
-    def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
         return {"node_name": self.name, "content": data["content"]}
