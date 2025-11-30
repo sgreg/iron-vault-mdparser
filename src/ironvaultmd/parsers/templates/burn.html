@@ -1,8 +1,13 @@
 {#
 Burn momentum node
 
-from    old momentum value
-to      new momentum value
+from        old momentum value
+to          new momentum value
+score       new roll score (which should be the same as the old momentum value)
+vs1         value of the first challenge die of the roll the momentum was burnt for
+vs2         value of the second challenge die of the roll the momentum was burnt for
+hitmiss     outcome of the roll, "strong", "weak", or "miss"
+match       true if challenge dice are a match
 
 #}
-<div class="ivm-meter ivm-meter-burn">Burn Momentum: {{ from }} &amp;rarr; {{ to }}</div>
+<div class="ivm-meter ivm-meter-burn">Burn Momentum: {{ from }} &amp;rarr; {{ to }} = {{ score }} vs {{ vs1 }} | {{ vs2 }} {{ hitmiss }}{{ " WITH MATCH!" if match }}</div>

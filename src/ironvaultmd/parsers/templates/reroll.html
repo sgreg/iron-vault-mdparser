@@ -1,8 +1,13 @@
 {#
 Reroll node
 
-dice    name of the die that was rerolled, "action", "vs1", or "vs2"
-value   value of the new die roll
+die         name of the die that was rerolled, "action", "vs1", or "vs2"
+value       value of the new die roll
+score       total value of the action die + stat + adds of the currently rerolled initial roll
+vs1         value of the first challenge die of the currently rerolled initial roll
+vs2         value of the second challenge die of the currently rerolled initial roll
+hitmiss     new outcome of the roll, "strong", "weak", or "miss"
+match       true if challenge dice are a match
 
 #}
-<div class="ivm-reroll">Reroll {{ dice }} &amp;rarr; {{ value }}</div>
+<div class="ivm-reroll">Reroll {{ die }} &amp;rarr; {{ value }} = {{ score }} vs {{ vs1 }} | {{ vs2 }} {{ hitmiss }}{{ " WITH MATCH!" if match }}</div>

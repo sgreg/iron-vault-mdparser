@@ -5,7 +5,7 @@ stat_name   name of the stat used for the roll
 stat        value of the stat used for the roll
 action      value of the rolled action die
 adds        value of adds added to the roll
-total       total value counting for the roll
+score       total value counting for the roll
 vs1         value of the first challenge die
 vs2         value of the second challenge die
 hitmiss     outcome of the roll, "strong", "weak", or "miss"
@@ -13,5 +13,5 @@ match       true if challenge dice are a match
 
 #}
 <div class="ivm-roll ivm-roll-{{ hitmiss }}{{ " ivm-roll-match" if match }}">
-    Roll with {{ stat_name }}: {{ action }} + {{ stat }} + {{ adds }} = {{ total }} vs {{ vs1 }} | {{ vs2 }} {{ hitmiss }}{{ " WITH MATCH!" if match }}
+    Roll with {{ stat_name }}: {{ action }} + {{ stat }} + {{ adds }} = {{ score }} vs {{ vs1 }} | {{ vs2 }} {{ hitmiss }}{{ " WITH MATCH!" if match }}
 </div>

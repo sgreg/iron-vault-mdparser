@@ -20,6 +20,10 @@ class BurnNodeParser(NodeParser):
         regex = r'^from=(?P<from>\d+) to=(?P<to>\d+)$'
         super().__init__("Burn", regex)
 
+    def create_args(self, data: dict[str, str | Any], ctx: Context) -> dict[str, str | Any]:
+        result = ctx.roll.burn(data["from"])
+        return data | asdict(result)
+
 
 class ClockNodeParser(NodeParser):
     def __init__(self) -> None:
@@ -123,17 +127,12 @@ class ProgressRollNodeParser(NodeParser):
         regex = r'^(?:name="\[\[.*\|(?P<name>.*)\]\]" )?score=(?P<score>\d+) vs1=(?P<vs1>\d+) vs2=(?P<vs2>\d+)$'
         super().__init__("Progress Roll", regex)
 
-    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, str | Any], ctx: Context) -> dict[str, str | Any]:
         if data["name"] is None:
             data["name"] = "undefined"
 
-        score = int(data["score"])
-        vs1 = int(data["vs1"])
-        vs2 = int(data["vs2"])
-
-        hitmiss, match = check_dice(score, vs1, vs2)
-        extra = {"hitmiss": hitmiss, "match": match}
-        return data | extra
+        result = ctx.roll.progress_roll(data["score"], data["vs1"], data["vs2"])
+        return data | asdict(result)
 
 
 class RerollNodeParser(NodeParser):
@@ -141,8 +140,12 @@ class RerollNodeParser(NodeParser):
         # reroll action="5"
         # reroll vs1="3"
         # reroll vs2="4"
-        regex = r'^(?P<dice>action|vs1|vs2)="(?P<value>\d+)"$'
+        regex = r'^(?P<die>action|vs1|vs2)="(?P<value>\d+)"$'
         super().__init__("Reroll", regex)
+
+    def create_args(self, data: dict[str, str | Any], ctx: Context) -> dict[str, str | Any]:
+        result = ctx.roll.reroll(data["die"], data["value"])
+        return data | asdict(result)
 
 
 class RollNodeParser(NodeParser):
@@ -150,15 +153,9 @@ class RollNodeParser(NodeParser):
         regex = r'^"(?P<stat_name>\w+)" action=(?P<action>\d+) adds=(?P<adds>\d+) stat=(?P<stat>\d+) vs1=(?P<vs1>\d+) vs2=(?P<vs2>\d+)$'
         super().__init__("Roll", regex)
 
-    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
-        total = min(int(data["action"]) + int(data["stat"]) + int(data["adds"]), 10)
-        vs1 = int(data["vs1"])
-        vs2 = int(data["vs2"])
-
-        hitmiss, match = check_dice(total, vs1, vs2)
-
-        extra = {"total": total, "hitmiss": hitmiss, "match": match}
-        return data | extra
+    def create_args(self, data: dict[str, str | Any], ctx: Context) -> dict[str, str | Any]:
+        result = ctx.roll.roll(data["action"], data["stat"], data["adds"], data["vs1"], data["vs2"])
+        return data | asdict(result)
 
 
 class TrackNodeParser(NodeParser):
