@@ -103,6 +103,10 @@ body {
     color: #000
 }
 
+.ivm-roll-result {
+    font-weight: bold;
+}
+
 .ivm-roll-miss {
     background-color: #c00;
 }

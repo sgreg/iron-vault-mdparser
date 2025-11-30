@@ -27,6 +27,9 @@ move "[React Under Fire](datasworn:move:starforged\\/combat\\/react_under_fire)"
     Roll with Edge: 6 + 2 + 0 = 8 vs 6 | 1 strong
 </div>
 <div class="ivm-meter ivm-meter-increase">Momentum: 2 &rarr; 3</div>
+<div class="ivm-roll-result ivm-roll-strong">
+    8 vs 6 | 1 strong
+</div>
 </div>
 <div class="ivm-ooc">// in control</div>
 </div>"""
@@ -157,6 +160,9 @@ More text
     Roll with Edge: 6 + 2 + 0 = 8 vs 6 | 1 strong
 </div>
 <div class="ivm-meter ivm-meter-increase">Momentum: 2 &rarr; 3</div>
+<div class="ivm-roll-result ivm-roll-strong">
+    8 vs 6 | 1 strong
+</div>
 </div>
 <div class="my-ooc-class">(ooc: "in control")</div>
 </div>

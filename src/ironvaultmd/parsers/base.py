@@ -1,7 +1,7 @@
 import logging
 import re
 import xml.etree.ElementTree as etree
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import Any
 
 from jinja2 import Template, PackageLoader, Environment, TemplateNotFound
@@ -30,6 +30,7 @@ class UserTemplates:
     xp: str | None = None
     # Other elements
     link: str | None = None
+    roll_outcome: str | None = None
 
 
 class Templater:
@@ -113,3 +114,14 @@ class FallbackNodeParser(NodeParser):
 
     def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
         return {"node_name": self.name, "content": data["content"]}
+
+
+# TODO: find a better home for this
+def add_roll_result(ctx: Context):
+    if not ctx.roll.rolled:
+        logger.debug("No roll context, skipping")
+        return
+
+    template = templater.get_template("roll_result")
+    element = etree.fromstring(template.render(asdict(ctx.roll.get())))
+    ctx.parent.append(element)

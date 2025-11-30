@@ -5,7 +5,7 @@ from markdown.blockparser import BlockParser
 from markdown.blockprocessors import BlockProcessor
 from markdown.preprocessors import Preprocessor
 
-from ironvaultmd.parsers.base import NodeParser, FallbackNodeParser
+from ironvaultmd.parsers.base import NodeParser, FallbackNodeParser, add_roll_result
 from ironvaultmd.parsers.context import Context
 from ironvaultmd.parsers.nodes import (
     AddNodeParser,
@@ -193,6 +193,7 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
 
             ctx.push(element)
             self.parse_content(ctx, move_node_match.group("move_content"), indent + 4)
+            add_roll_result(ctx)
             ctx.pop()
 
             if after:
