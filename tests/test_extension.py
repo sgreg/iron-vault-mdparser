@@ -2,7 +2,7 @@ import pytest
 from markdown import Markdown
 
 from ironvaultmd import IronVaultExtension
-from ironvaultmd.parsers.base import UserTemplates
+from ironvaultmd.parsers.templater import UserTemplates
 from ironvaultmd.processors.links import Link
 
 

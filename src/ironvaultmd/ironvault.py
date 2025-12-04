@@ -7,7 +7,7 @@ import logging
 
 from markdown.extensions import Extension
 
-from ironvaultmd.parsers.base import UserTemplates, templater
+from ironvaultmd.parsers.templater import UserTemplates, templater
 from ironvaultmd.processors.frontmatter import IronVaultFrontmatterPreprocessor
 from ironvaultmd.processors.links import WikiLinkProcessor
 from ironvaultmd.processors.mechanics import (

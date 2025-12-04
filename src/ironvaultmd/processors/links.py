@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from markdown.inlinepatterns import InlineProcessor
 
-from ironvaultmd.parsers.base import templater
+from ironvaultmd.parsers.templater import templater
 
 
 @dataclass

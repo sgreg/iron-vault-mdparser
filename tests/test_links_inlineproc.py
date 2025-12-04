@@ -2,7 +2,7 @@ import xml.etree.ElementTree as etree
 
 import pytest
 
-from ironvaultmd.parsers.base import UserTemplates, Templater
+from ironvaultmd.parsers.templater import UserTemplates, Templater
 from ironvaultmd.processors.links import Link
 from utils import StringCompareData
 

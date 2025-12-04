@@ -1,7 +1,6 @@
 import pytest
 from jinja2 import Template, TemplateNotFound
 
-from ironvaultmd.parsers.base import FallbackNodeParser, NodeParser
 from ironvaultmd.parsers.nodes import AddNodeParser
 from ironvaultmd.parsers.templater import Templater, UserTemplates
 
@@ -36,75 +35,6 @@ def test_templater_error():
     for name in invalid_names:
         with pytest.raises(TemplateNotFound):
             templater.get_template(name)
-
-
-def test_parser_fallback(ctx):
-    node_name = "Node Test"
-    parser = FallbackNodeParser(node_name)
-
-    assert parser.node_name == "Node"
-    assert parser.name == node_name
-
-    content = "Random Content"
-    parser.parse(ctx, content)
-
-    node = ctx.parent.find("div")
-    assert node is not None
-    assert "ivm-node" in node.get("class")
-    assert node_name in node.text
-    assert content in node.text
-
-
-def test_parser_get_template():
-    parser = NodeParser("Roll", "")
-    assert parser.template is not None
-    assert isinstance(parser.template, Template)
-    assert parser.template.filename.endswith("/roll.html")
-
-def test_parser_regex_match():
-    regex = r'^test data "(?P<test_data>.+)"$'
-    parser = NodeParser("Node", regex)
-
-    match = parser._match('test data "123"')
-    assert match is not None
-    assert match.get("test_data", "") == "123"
-
-    no_match = parser._match('nothing that will match')
-    assert no_match is None
-
-def test_parser_node_render(ctx):
-    regex = r'^test data "(?P<test_data>.+)"$'
-    data = 'test data "123"'
-
-    parser = NodeParser("Test", regex)
-
-    parser.parse(ctx, "no match")
-    assert ctx.parent.find("div") is None
-
-    parser.parse(ctx, data)
-
-    node = ctx.parent.find("div")
-    assert node is not None
-    assert node.text == "data: 123"
-
-def test_parser_args_override(ctx):
-    regex = r'^test data "(?P<test_data>.+)"$'
-    data = 'test data "123"'
-
-    class TestParser(NodeParser):
-        def create_args(self, match, context):
-            return {"test_data": "overridden"}
-
-    parser = TestParser("Test", regex)
-
-    parser.parse(ctx, "no match")
-    assert ctx.parent.find("div") is None
-
-    parser.parse(ctx, data)
-
-    node = ctx.parent.find("div")
-    assert node is not None
-    assert node.text == "data: overridden"
 
 
 def test_user_template_load():
