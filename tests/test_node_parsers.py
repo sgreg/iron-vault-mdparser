@@ -7,6 +7,7 @@ from ironvaultmd.parsers.nodes import (
     ImpactNodeParser,
     InitiativeNodeParser,
     MeterNodeParser,
+    MoveNodeParser,
     OocNodeParser,
     OracleNodeParser,
     PositionNodeParser,
@@ -199,6 +200,28 @@ def test_parser_meter(ctx):
     assert "!@#$%^&*()" in nodes[3].text
     assert "Multi-word meter / name" in nodes[4].text
     assert "Meter with Link" in nodes[5].text
+
+
+def test_parser_move(ctx):
+    parser = MoveNodeParser()
+
+    assert parser.node_name == "Move"
+    assert parser.regex
+
+    classes = ["move"]
+
+    rolls = [
+        ParserData('"[Move Name](datasworn:path)"', True, 0, classes),
+        ParserData('[Move Name](datasworn:path)', False),
+        ParserData(' "[Move Name](datasworn:path)"', False),
+        ParserData('[Move Name](datasworn:path) ', False),
+        ParserData("Move Name", False),
+    ]
+
+    nodes = assert_parser_data(parser, ctx, rolls, classes)
+    move_name = nodes[0].findall('div')
+    assert move_name is not None
+    assert "Move Name" in move_name[0].text
 
 
 def test_parser_ooc(ctx):

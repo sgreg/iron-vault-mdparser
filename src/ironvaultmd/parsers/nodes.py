@@ -75,6 +75,17 @@ class MeterNodeParser(NodeParser):
         return data
 
 
+class MoveNodeParser(NodeParser):
+    # Note, this is for standalone / non-rolling moves
+    def __init__(self) -> None:
+        # move "[Aid Your Ally](datasworn:move:starforged\/adventure\/aid_your_ally)"
+        regex = r'^"\[(?P<move_name>[^]]+)]\((?P<move_link>[^)]+)\)"$'
+        super().__init__("Move", regex)
+
+    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
+        return {"name": data["move_name"]}
+
+
 class OocNodeParser(NodeParser):
     """iron-vault-mechanics out-of-character notes node parser"""
     def __init__(self) -> None:

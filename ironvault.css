@@ -25,9 +25,18 @@ body {
     background-color: #999;
 }
 
+.ivm-mechanics > :not(:first-child) {
+    margin-top: 10px;
+}
+
 
 .ivm-move {
+    border: 1px dashed black;
+    padding: 10px;
+}
 
+.iv-m:not(:first-child) {
+    margin-top: 10px;
 }
 
 .ivm-move-name {
