@@ -27,11 +27,13 @@ However, this only happened in December 2024, so somewhere around Iron Vault ver
 Currently, neither journals created with an older version, nor OG Ironsworn, Delve, or Sundered Isles campaigns are supported,
 and results may be disappointing.
 
-#### Mechanics nodes
-Currently supported nodes within a mechanics block:
+#### Mechanics blocks and nodes
+Currently supported blocks within a mechanics block:
+actor, move, oracle-group, oracle, prompted oracle
+
+Currently supported nodes within a mechanics block or any of the other blocks:
 add, burn, clock, impact, initiative, meter, move, out-of-character comments,
-oracle (note, only single oracle nodes, no oracle groups),
-position, progress, progress-roll, reroll, roll, track, xp.
+oracle, position, progress, progress-roll, reroll, roll, track, xp.
 
 #### Links
 Links are currently detected and optionally collected into a list with their reference and label,

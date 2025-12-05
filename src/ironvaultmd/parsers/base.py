@@ -13,7 +13,6 @@ from ironvaultmd.util import create_div
 logger = logging.getLogger("ironvaultmd")
 
 
-
 class NodeParser:
     """Parser for iron-vault-mechanics nodes supporting regex matching"""
     node_name: str
@@ -76,27 +75,28 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
         logger.debug(match)
         return match.groupdict()
 
-    def parse(self, ctx: Context, data: str) -> etree.Element:
+    def create_element(self, ctx: Context, data: str) -> etree.Element:
         matches = self._match(data)
         if matches is None:
-            raise Exception("shoulda match")
+            element = create_div(ctx.parent, ["block"])
+            element.text = f"{self.block_name}: {data}"
+            return element
 
-        return self.populate(matches, ctx)
+        return self.create_child_element(matches, ctx)
 
-    def populate(self, _: dict[str, str | Any], __: Context) -> etree.Element:
+    def create_child_element(self, data: dict[str, str | Any], ctx: Context) -> etree.Element:
         raise NotImplementedError
 
 
 class FallbackBlockParser(MechanicsBlockParser):
     def __init__(self, name: str):
         regex = "(?P<content>.*)"
-        self.name = name
-        super().__init__("Block", regex)
+        super().__init__(name, regex)
 
-    def populate(self, data: dict[str, str | Any], ctx: Context) -> etree.Element:
+    def create_child_element(self, data: dict[str, str | Any], ctx: Context) -> etree.Element:
         logger.info(f"help I have no Idea what I'm doing, data {data}")
-        element = create_div(ctx.parent, ["block-" + self.name])
-        element.text = f"{self.name}: {data["content"]}"
+        element = create_div(ctx.parent, ["block", "block-" + self.block_name])
+        element.text = f"{self.block_name}: {data["content"]}"
         return element
 
 

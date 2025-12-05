@@ -1,6 +1,5 @@
 import logging
 import re
-import xml.etree.ElementTree as etree
 
 from markdown.blockparser import BlockParser
 from markdown.blockprocessors import BlockProcessor
@@ -13,7 +12,13 @@ from ironvaultmd.parsers.base import (
     FallbackBlockParser,
     add_roll_result,
 )
-from ironvaultmd.parsers.blocks import MoveBlockParser
+from ironvaultmd.parsers.blocks import (
+    ActorBlockParser,
+    MoveBlockParser,
+    OracleGroupBlockParser,
+    OracleBlockParser,
+    OraclePromptBlockParser,
+)
 from ironvaultmd.parsers.context import Context
 from ironvaultmd.parsers.nodes import (
     AddNodeParser,
@@ -104,20 +109,9 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
     RE_MECHANICS_START = re.compile(r'(^|\n),,,iron-vault-mechanics(\n|$)')
     RE_MECHANICS_SECTION = re.compile(r'(^|\n),,,iron-vault-mechanics\n(?P<mechanics>[\s\S]*)\n,,,(\n|$)')
 
-    # note, this exists also for
-    #  - oracle-group { oracle ...\noracle ... }  e.g. create entity/character or something
-    #  - actor name=[[link|name]] { move {} }  for when "Always record actor" (or multiplayer?) is enabled
-    # Should probably collect all content into a data object to e.g. match a roll to a move or a reroll to a previous roll
-    RE_BLOCK_CHECK = re.compile(r'(^|\n)(?P<name>actor|move|oracle-group|oracle|-) (?P<params>[^{]*) \{(?P<content>[^}]*)}')
-    RE_CMD_NODE_CHECK = re.compile(r'(^|\n)(\b(add|burn|clock|impact|initiative|meter|move|oracle|position|progress|progress-roll|reroll|roll|track|xp)\b|- "[^"]*")')
+    RE_BLOCK_LINE = re.compile(r'^(?P<name>actor|move|oracle-group|oracle|-) (?P<params>[^{]*) \{')
+    RE_NODE_LINE = re.compile(r'^(?P<name>add|burn|clock|impact|initiative|meter|move|oracle|position|progress|progress-roll|reroll|roll|track|xp|-) (?P<params>.*)$')
 
-    RE_CMD = re.compile(r'^\s*(?P<cmd_name>\S{2,}) +(?P<cmd_params>\S[\S ]*)$')
-    RE_OOC = re.compile(r'^\s*- +"(?P<ooc>[^"]*)"$')
-
-    # Missing: (see https://ironvault.quest/blocks/mechanics-blocks.html)
-    #   - oracle-group (known)
-    #   - asset
-    #
     # Other blocks that exist (see https://ironvault.quest/blocks/index.html)
     #   ...most are actually just for displaying information, which could be considered nice-to-have in the future.
     #   Like displaying character information, the world in its truths, assets in play. The only problem is that
@@ -129,7 +123,15 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
     def __init__(self, parser: BlockParser):
         super().__init__(parser)
 
-        self.parsers: dict[str, NodeParser] = {
+        self.block_parsers: dict[str, MechanicsBlockParser] = {
+            "actor": ActorBlockParser(),
+            "move": MoveBlockParser(),
+            "oracle-group": OracleGroupBlockParser(),
+            "oracle": OracleBlockParser(),
+            "-": OraclePromptBlockParser(),
+        }
+
+        self.node_parsers: dict[str, NodeParser] = {
             "add": AddNodeParser(),
             "burn": BurnNodeParser(),
             "clock": ClockNodeParser(),
@@ -137,7 +139,7 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
             "initiative": InitiativeNodeParser(),
             "meter": MeterNodeParser(),
             "move": MoveNodeParser(),
-            "ooc": OocNodeParser(),
+            "-": OocNodeParser(),
             "oracle": OracleNodeParser(),
             "position": PositionNodeParser(),
             "progress": ProgressNodeParser(),
@@ -146,14 +148,6 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
             "roll": RollNodeParser(),
             "track": TrackNodeParser(),
             "xp": XpNodeParser(),
-        }
-
-        self.block_parsers: dict[str, MechanicsBlockParser] = {
-            # "actor": FallbackBlockParser("Actor"),
-            "move": MoveBlockParser(),
-            # "oracle-group": FallbackBlockParser("Oracle Group"),
-            # "oracle": FallbackBlockParser("Oracle"),
-            # "-": FallbackBlockParser("OOC"),
         }
 
     def test(self, parent, block) -> bool:
@@ -192,66 +186,38 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
         ctx = Context(element)
         self.parse_content(ctx, content)
 
-
     def parse_content(self, ctx: Context, content: str, indent=0) -> None:
         logger.debug(f"x> adding content {repr(content)}")
 
-        if (block_match := self.RE_BLOCK_CHECK.search(content)) is not None:
-            # Split up the match to make sure anything before or after is handled as well
-            before, after = split_match(content, block_match)
+        lines = [chunk for chunk in content.split("\n") if chunk]
+        for idx, line in enumerate(lines):
+            logger.debug(f"line #{idx: 2d}: '{line}'")
 
-            if before:
-                self.parse_content(ctx, before, indent)
+            if (block_match := self.RE_BLOCK_LINE.search(line)) is not None:
+                name = block_match.group("name")
+                data = block_match.group("params")
 
-            name = block_match.group("name")
-            data = block_match.group("params")
-            element = self.add_block(ctx, name, data)
+                parser = self.block_parsers.get(name)
 
-            ctx.push(element)
-            self.parse_content(ctx, block_match.group("content"), indent + 4)
-            add_roll_result(ctx)
-            ctx.pop()
+                if parser is None:
+                    parser = FallbackBlockParser(name)
+                    add_unhandled_node(f"{name} block")
 
-            if after:
-                self.parse_content(ctx, after, indent)
+                element = parser.create_element(ctx, data)
+                ctx.push(element)
 
-        elif self.RE_CMD_NODE_CHECK.search(content) is not None:
-            # Note: this only verifies valid comments for the very first line
-            #       after it passes the first check, the line splitting here is
-            #       only interested if it matches "<words> <words>"
-            #       Should add checks for each line then.
-            lines = [c for c in content.split("\n") if c]
+            elif (node_match := self.RE_NODE_LINE.search(line)) is not None:
+                name = node_match.group("name")
+                data = node_match.group("params")
 
-            for line in lines:
-                if (cmd_match := self.RE_CMD.search(line)) is not None:
-                    logger.debug(f"{" " * indent}CMD: {cmd_match.group("cmd_name")}({cmd_match.group("cmd_params")})")
-                    name = cmd_match.group("cmd_name")
-                    data = cmd_match.group("cmd_params")
+                parser = self.node_parsers.get(name)
 
-                elif (ooc_match := self.RE_OOC.search(line)) is not None:
-                    logger.debug(f"{" " * indent}// {ooc_match.group("ooc")}")
-                    name = "ooc"
-                    data = ooc_match.group("ooc")
+                if parser is None:
+                    parser = FallbackNodeParser(name)
+                    add_unhandled_node(name)
 
-                else:
-                    logger.debug(f"skipping unknown content {repr(line)}")
-                    continue
+                parser.parse(ctx, data)
 
-                self.add_node(ctx, name, data)
-
-
-    def add_node(self, ctx: Context, name: str, data: str) -> None:
-        parser = self.parsers.get(name)
-
-        if parser is None:
-            parser = FallbackNodeParser(name)
-            add_unhandled_node(name)
-
-        parser.parse(ctx, data)
-
-    def add_block(self, ctx: Context, name: str, data: str) -> etree.Element:
-        parser = self.block_parsers.get(name)
-        if parser is None:
-            parser = FallbackBlockParser(name)
-
-        return parser.parse(ctx, data)
+            elif line == '}':
+                add_roll_result(ctx)
+                ctx.pop()

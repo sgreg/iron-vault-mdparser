@@ -30,18 +30,47 @@ body {
 }
 
 
+.ivm-block {
+    border: 1px dashed black;
+    padding: 10px;
+    background-color: #999900;
+}
+
+
 .ivm-move {
     border: 1px dashed black;
     padding: 10px;
 }
 
-.iv-m:not(:first-child) {
+.ivm-move:not(:first-child) {
     margin-top: 10px;
 }
 
 .ivm-move-name {
     font-weight: bold;
     margin-bottom: 10px;
+}
+
+
+.ivm-actor {
+    border: 1px solid black;
+    padding: 10px;
+}
+
+.ivm-actor-name {
+    font-weight: bold;
+    font-style: italic;
+    padding-bottom: 10px;
+}
+
+
+.ivm-oracle-block {
+    border: 1px dashed black;
+    padding: 10px;
+}
+
+.ivm-oracle-name {
+    font-weight: bold;
 }
 
 

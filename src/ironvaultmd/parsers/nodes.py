@@ -89,7 +89,7 @@ class MoveNodeParser(NodeParser):
 class OocNodeParser(NodeParser):
     """iron-vault-mechanics out-of-character notes node parser"""
     def __init__(self) -> None:
-        regex = "^(?P<comment>.*)$"
+        regex = r'^"(?P<comment>[^"]*)"$'
         super().__init__("OOC", regex)
 
 

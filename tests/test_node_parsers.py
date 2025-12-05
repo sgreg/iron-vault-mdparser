@@ -237,7 +237,7 @@ def test_parser_ooc(ctx):
     ]
 
     for content in contents:
-        parser.parse(ctx, content)
+        parser.parse(ctx, f'"{content}"')
 
     nodes = ctx.parent.findall("div")
     assert len(nodes) == len(contents)
