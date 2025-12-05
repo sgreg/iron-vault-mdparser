@@ -1,11 +1,19 @@
 import logging
 import re
+import xml.etree.ElementTree as etree
 
 from markdown.blockparser import BlockParser
 from markdown.blockprocessors import BlockProcessor
 from markdown.preprocessors import Preprocessor
 
-from ironvaultmd.parsers.base import NodeParser, FallbackNodeParser, add_roll_result
+from ironvaultmd.parsers.base import (
+    NodeParser,
+    FallbackNodeParser,
+    MechanicsBlockParser,
+    FallbackBlockParser,
+    add_roll_result,
+)
+from ironvaultmd.parsers.blocks import MoveBlockParser
 from ironvaultmd.parsers.context import Context
 from ironvaultmd.parsers.nodes import (
     AddNodeParser,
@@ -100,7 +108,7 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
     #  - oracle-group { oracle ...\noracle ... }  e.g. create entity/character or something
     #  - actor name=[[link|name]] { move {} }  for when "Always record actor" (or multiplayer?) is enabled
     # Should probably collect all content into a data object to e.g. match a roll to a move or a reroll to a previous roll
-    RE_MOVE_NODE = re.compile(r'move +"\[(?P<move_name>[^]]+)]\((?P<move_link>[^)]+)\)" +\{(?P<move_content>[\s\S]*?)}')
+    RE_BLOCK_CHECK = re.compile(r'(^|\n)(?P<name>actor|move|oracle-group|oracle|-) (?P<params>[^{]*) \{(?P<content>[^}]*)}')
     RE_CMD_NODE_CHECK = re.compile(r'(^|\n)(\b(add|burn|clock|impact|initiative|meter|move|oracle|position|progress|progress-roll|reroll|roll|track|xp)\b|- "[^"]*")')
 
     RE_CMD = re.compile(r'^\s*(?P<cmd_name>\S{2,}) +(?P<cmd_params>\S[\S ]*)$')
@@ -138,6 +146,14 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
             "roll": RollNodeParser(),
             "track": TrackNodeParser(),
             "xp": XpNodeParser(),
+        }
+
+        self.block_parsers: dict[str, MechanicsBlockParser] = {
+            # "actor": FallbackBlockParser("Actor"),
+            "move": MoveBlockParser(),
+            # "oracle-group": FallbackBlockParser("Oracle Group"),
+            # "oracle": FallbackBlockParser("Oracle"),
+            # "-": FallbackBlockParser("OOC"),
         }
 
     def test(self, parent, block) -> bool:
@@ -180,21 +196,19 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
     def parse_content(self, ctx: Context, content: str, indent=0) -> None:
         logger.debug(f"x> adding content {repr(content)}")
 
-        if (move_node_match := self.RE_MOVE_NODE.search(content)) is not None:
-            logger.debug(f"{" " * indent}MOVE: {move_node_match.group("move_name")}")
-
+        if (block_match := self.RE_BLOCK_CHECK.search(content)) is not None:
             # Split up the match to make sure anything before or after is handled as well
-            # Regex itself could have some improvement maybe to match better here? Hmm...
-            before, after = split_match(content, move_node_match)
+            before, after = split_match(content, block_match)
 
             if before:
                 self.parse_content(ctx, before, indent)
 
-            element = create_div(ctx.parent, ["move"])
-            create_div(element, ["move-name"]).text = f"{move_node_match.group("move_name")}"
+            name = block_match.group("name")
+            data = block_match.group("params")
+            element = self.add_block(ctx, name, data)
 
             ctx.push(element)
-            self.parse_content(ctx, move_node_match.group("move_content"), indent + 4)
+            self.parse_content(ctx, block_match.group("content"), indent + 4)
             add_roll_result(ctx)
             ctx.pop()
 
@@ -234,3 +248,10 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
             add_unhandled_node(name)
 
         parser.parse(ctx, data)
+
+    def add_block(self, ctx: Context, name: str, data: str) -> etree.Element:
+        parser = self.block_parsers.get(name)
+        if parser is None:
+            parser = FallbackBlockParser(name)
+
+        return parser.parse(ctx, data)
