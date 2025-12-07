@@ -7,9 +7,7 @@ from markdown.preprocessors import Preprocessor
 
 from ironvaultmd.parsers.base import (
     NodeParser,
-    FallbackNodeParser,
     MechanicsBlockParser,
-    FallbackBlockParser,
 )
 from ironvaultmd.parsers.blocks import (
     ActorBlockParser,
@@ -37,7 +35,7 @@ from ironvaultmd.parsers.nodes import (
     TrackNodeParser,
     XpNodeParser,
 )
-from ironvaultmd.util import add_unhandled_node, create_div, split_match
+from ironvaultmd.util import create_div, split_match
 
 logger = logging.getLogger("ironvaultmd")
 
@@ -197,11 +195,6 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
                 data = block_match.group("params")
 
                 parser = self.block_parsers.get(name)
-
-                if parser is None:
-                    parser = FallbackBlockParser(name)
-                    add_unhandled_node(f"{name} block")
-
                 element = parser.begin(ctx, data)
                 ctx.push(name, element)
 
@@ -210,19 +203,9 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
                 data = node_match.group("params")
 
                 parser = self.node_parsers.get(name)
-
-                if parser is None:
-                    # hmm.. this shouldn't really happen anymore?
-                    # In the past, the node_match regex only cared for the first line to match,
-                    # but now this checks every line explicitly, so if a valid node name matches,
-                    # there has to be a parser for that. Same case for the block_parers above.
-                    parser = FallbackNodeParser(name)
-                    add_unhandled_node(name)
-
                 parser.parse(ctx, data)
 
             elif line == '}':
                 parser = self.block_parsers.get(ctx.name)
-                if parser is not None:
-                    parser.finalize(ctx)
+                parser.finalize(ctx)
                 ctx.pop()

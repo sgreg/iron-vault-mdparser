@@ -40,13 +40,6 @@ def convert_link_name(raw: str) -> str:
     return raw.replace("\\/", "/")
 
 
-unhandled_nodes: list[str] = []
-def add_unhandled_node(node: str) -> None:
-    """Keep track of iron-vault-mechanics nodes that aren't handled yet (for dev purpose only)"""
-    if node not in unhandled_nodes:
-        unhandled_nodes.append(node)
-
-
 def check_dice(score, vs1, vs2) -> tuple[str, bool]:
     """Check dice values against each other and return hit/miss and match situation of it"""
     if score > vs1 and score > vs2:

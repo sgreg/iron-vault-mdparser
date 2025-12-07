@@ -1,24 +1,7 @@
 import pytest
 from jinja2 import Template
 
-from ironvaultmd.parsers.base import FallbackNodeParser, NodeParser, FallbackBlockParser, MechanicsBlockParser
-
-
-def test_node_fallback(ctx):
-    node_name = "Node Test"
-    parser = FallbackNodeParser(node_name)
-
-    assert parser.node_name == "Node"
-    assert parser.name == node_name
-
-    content = "Random Content"
-    parser.parse(ctx, content)
-
-    node = ctx.parent.find("div")
-    assert node is not None
-    assert "ivm-node" in node.get("class")
-    assert node_name in node.text
-    assert content in node.text
+from ironvaultmd.parsers.base import NodeParser, MechanicsBlockParser
 
 
 def test_node_get_template():
@@ -71,22 +54,6 @@ def test_node_args_override(ctx):
     node = ctx.parent.find("div")
     assert node is not None
     assert node.text == "data: overridden"
-
-
-def test_block_fallback(ctx):
-    name = "test"
-    parser = FallbackBlockParser(name)
-
-    assert parser.block_name == name
-    assert parser.regex
-
-    content = "Random Content"
-    element = parser.begin(ctx, content)
-    assert element is not None
-    assert "ivm-block" in element.get("class")
-    assert "ivm-block-test" in element.get("class")
-    assert name in element.text
-    assert content in element.text
 
 
 def test_block_unimplemented(ctx):

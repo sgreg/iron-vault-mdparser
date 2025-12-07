@@ -1,6 +1,5 @@
 import pytest
 
-from ironvaultmd import unhandled_nodes
 from ironvaultmd.processors.mechanics import MechanicsBlockException
 
 

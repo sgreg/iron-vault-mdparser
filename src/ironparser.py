@@ -7,7 +7,6 @@ import markdown
 from markdown.extensions.fenced_code import FencedCodeExtension
 
 from ironvaultmd import IronVaultExtension, IronVaultTemplates, Link
-from ironvaultmd.util import unhandled_nodes
 
 logger = logging.getLogger("ironparser")
 
@@ -100,4 +99,3 @@ if __name__ == "__main__":
     
     logger.debug(frontmatter)
     logger.debug(links)
-    logger.debug(f"TODO: {sorted(unhandled_nodes)}")

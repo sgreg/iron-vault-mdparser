@@ -48,16 +48,6 @@ class NodeParser:
         return data
 
 
-class FallbackNodeParser(NodeParser):
-    def __init__(self, name: str):
-        regex = "(?P<content>.*)"
-        self.name = name
-        super().__init__("Node", regex)
-
-    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
-        return {"node_name": self.name, "content": data["content"]}
-
-
 class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, so let's just best use another name
     def __init__(self, name:str, regex: str):
         self.block_name = name
@@ -89,14 +79,3 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
     def finalize(self, ctx):
         # To be overridden by child classes as needed, do nothing by default
         pass
-
-
-class FallbackBlockParser(MechanicsBlockParser):
-    def __init__(self, name: str):
-        regex = "(?P<content>.*)"
-        super().__init__(name, regex)
-
-    def create_root(self, data: dict[str, str | Any], ctx: Context) -> etree.Element:
-        element = create_div(ctx.parent, ["block", "block-" + self.block_name])
-        element.text = f"{self.block_name}: {data["content"]}"
-        return element
