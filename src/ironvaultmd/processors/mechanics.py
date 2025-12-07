@@ -10,7 +10,6 @@ from ironvaultmd.parsers.base import (
     FallbackNodeParser,
     MechanicsBlockParser,
     FallbackBlockParser,
-    add_roll_result,
 )
 from ironvaultmd.parsers.blocks import (
     ActorBlockParser,
@@ -65,7 +64,7 @@ class IronVaultMechanicsPreprocessor(Preprocessor):
     END = "```"
     NEW_END = ",,,"
 
-    def run(self, lines: list[str]) -> list[str]: # NOSONAR: don't complain about cognitive complexity, it's a parser after all
+    def run(self, lines: list[str]) -> list[str]: # NOSONAR don't complain about cognitive complexity, it's a parser after all
         inside = False
         new_lines = []
 
@@ -186,7 +185,7 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
         ctx = Context(element)
         self.parse_content(ctx, content)
 
-    def parse_content(self, ctx: Context, content: str, indent=0) -> None:
+    def parse_content(self, ctx: Context, content: str) -> None:
         logger.debug(f"x> adding content {repr(content)}")
 
         lines = [chunk for chunk in content.split("\n") if chunk]
@@ -203,8 +202,8 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
                     parser = FallbackBlockParser(name)
                     add_unhandled_node(f"{name} block")
 
-                element = parser.create_element(ctx, data)
-                ctx.push(element)
+                element = parser.begin(ctx, data)
+                ctx.push(name, element)
 
             elif (node_match := self.RE_NODE_LINE.search(line)) is not None:
                 name = node_match.group("name")
@@ -213,11 +212,17 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
                 parser = self.node_parsers.get(name)
 
                 if parser is None:
+                    # hmm.. this shouldn't really happen anymore?
+                    # In the past, the node_match regex only cared for the first line to match,
+                    # but now this checks every line explicitly, so if a valid node name matches,
+                    # there has to be a parser for that. Same case for the block_parers above.
                     parser = FallbackNodeParser(name)
                     add_unhandled_node(name)
 
                 parser.parse(ctx, data)
 
             elif line == '}':
-                add_roll_result(ctx)
+                parser = self.block_parsers.get(ctx.name)
+                if parser is not None:
+                    parser.finalize(ctx)
                 ctx.pop()

@@ -42,6 +42,10 @@ but no actual linking is performed. To collect all found links:
 By default, links are packed in a `<span class="ivm-link">` element, but a `link` user template string
 can be defined to adjust that behavior - see the sections about templates for more information.
 
+#### Roll results
+Roll results of a move are collected, including dice rerolls and burning momentum.
+The outcome is added as CSS classes to the enclosing move block, along with a dedicated roll result node.
+
 #### User-defined templates
 Nodes are parsed using the [Jinja](https://jinja.palletsprojects.com/en/stable/) templating engine.
 Every supported node has a default template and gets automatically passed all available data to it.

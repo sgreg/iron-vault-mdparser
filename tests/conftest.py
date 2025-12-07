@@ -70,3 +70,8 @@ def parent_div_element():
 def parser_context(parent) -> Generator[Context]:
     context = Context(parent)
     yield context
+
+@pytest.fixture(name="block_ctx")
+def parser_content(ctx, parent):
+    ctx.push("block", parent)
+    yield ctx

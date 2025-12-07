@@ -7,26 +7,6 @@ from ironvaultmd.util import check_dice
 logger = logging.getLogger("ironvaultmd")
 
 
-class Context:
-    def __init__(self, parent: etree.Element):
-        self._elements: list[etree.Element] = [parent]
-        self.roll = RollContext()
-
-    @property
-    def parent(self) -> etree.Element:
-        return self._elements[-1]
-
-    def push(self, element: etree.Element) -> None:
-        self._elements.append(element)
-        self.roll = RollContext()
-
-    def pop(self) -> None:
-        if len(self._elements) == 1:
-            logger.warning("Attempting to remove last context element, ignoring")
-            return
-        self._elements.pop()
-
-
 @dataclass
 class RollResult:
     score: int
@@ -110,3 +90,46 @@ class RollContext:
 
         hitmiss, match = check_dice(score, self.vs1, self.vs2)
         return RollResult(score, self.vs1, self.vs2, hitmiss, match)
+
+
+class BlockContext:
+    def __init__(self, name: str, root: etree.Element):
+        self.name = name
+        self.root = root
+        self.roll = RollContext()
+
+
+class Context:
+    def __init__(self, root: etree.Element):
+        self.root = root
+        self.blocks: list[BlockContext] = []
+
+    @property
+    def parent(self) -> etree.Element:
+        if len(self.blocks) > 0:
+            return self.blocks[-1].root
+        return self.root
+
+    @property
+    def name(self) -> str:
+        if len(self.blocks) == 0:
+            return "root"
+        return self.blocks[-1].name
+
+    @property
+    def roll(self) -> RollContext | None:
+        if len(self.blocks) == 0:
+            return None
+        return self.blocks[-1].roll
+
+    def push(self, name: str, element: etree.Element) -> None:
+        block = BlockContext(name, element)
+        self.blocks.append(block)
+        logger.debug(f"CONTEXT: pushing #{len(self.blocks)} {repr(block)}  str {str(block)}")
+
+    def pop(self) -> None:
+        if len(self.blocks) == 0:
+            logger.warning("pop() called on empty stack, ignoring")
+            return
+        logger.debug(f"CONTEXT: popping #{len(self.blocks)} -> #{len(self.blocks) - 1}")
+        self.blocks.pop()

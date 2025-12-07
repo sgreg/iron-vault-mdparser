@@ -5,25 +5,33 @@ from ironvaultmd.util import create_div
 def test_context_stack(parent):
     ctx = Context(parent)
 
-    assert len(ctx._elements) == 1
+    assert len(ctx.blocks) == 0
     assert ctx.parent == parent
+    assert ctx.name == "root"
+    assert ctx.roll is None
 
     # Create and push a new element
     element = create_div(ctx.parent)
-    ctx.push(element)
+    ctx.push("test", element)
     # Verify there are 2 elements in the stack and 'parent' points to the new one
-    assert len(ctx._elements) == 2
+    assert len(ctx.blocks) == 1
     assert ctx.parent == element
+    assert ctx.name == "test"
+    assert ctx.roll is not None
 
     # Pop the stack and verify 'parent' is the initial element again
     ctx.pop()
-    assert len(ctx._elements) == 1
+    assert len(ctx.blocks) == 0
     assert ctx.parent == parent
+    assert ctx.name == "root"
+    assert ctx.roll is None
 
     # Make sure pop() won't remove the last element
     ctx.pop()
-    assert len(ctx._elements) == 1
+    assert len(ctx.blocks) == 0
     assert ctx.parent == parent
+    assert ctx.name == "root"
+    assert ctx.roll is None
 
 
 def test_rollcontext_roll():

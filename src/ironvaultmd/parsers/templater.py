@@ -25,7 +25,7 @@ class UserTemplates:
     xp: str | None = None
     # Other elements
     link: str | None = None
-    roll_outcome: str | None = None
+    roll_result: str | None = None
 
 
 class Templater:

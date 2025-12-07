@@ -46,6 +46,27 @@ body {
     margin-top: 10px;
 }
 
+.ivm-move-result-miss {
+    background-color: #c00;
+}
+
+.ivm-move-result-weak {
+    background-color: orange;
+}
+
+.ivm-move-result-strong {
+    background-color: #0c0;
+}
+
+.ivm-move-result-match {
+    font-weight: bold;
+    content: "MATCH";
+}
+
+.ivm-move-result-match > .ivm-move-name::after {
+    content: "  (MATCH!)";
+}
+
 .ivm-move-name {
     font-weight: bold;
     margin-bottom: 10px;

@@ -1,7 +1,6 @@
 import logging
 import re
 import xml.etree.ElementTree as etree
-from dataclasses import asdict
 from typing import Any
 
 from jinja2 import Template
@@ -75,17 +74,21 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
         logger.debug(match)
         return match.groupdict()
 
-    def create_element(self, ctx: Context, data: str) -> etree.Element:
+    def begin(self, ctx: Context, data: str) -> etree.Element:
         matches = self._match(data)
         if matches is None:
             element = create_div(ctx.parent, ["block"])
             element.text = f"{self.block_name}: {data}"
             return element
 
-        return self.create_child_element(matches, ctx)
+        return self.create_root(matches, ctx)
 
-    def create_child_element(self, data: dict[str, str | Any], ctx: Context) -> etree.Element:
+    def create_root(self, data: dict[str, str | Any], ctx: Context) -> etree.Element:
         raise NotImplementedError
+
+    def finalize(self, ctx):
+        # To be overridden by child classes as needed, do nothing by default
+        pass
 
 
 class FallbackBlockParser(MechanicsBlockParser):
@@ -93,19 +96,7 @@ class FallbackBlockParser(MechanicsBlockParser):
         regex = "(?P<content>.*)"
         super().__init__(name, regex)
 
-    def create_child_element(self, data: dict[str, str | Any], ctx: Context) -> etree.Element:
-        logger.info(f"help I have no Idea what I'm doing, data {data}")
+    def create_root(self, data: dict[str, str | Any], ctx: Context) -> etree.Element:
         element = create_div(ctx.parent, ["block", "block-" + self.block_name])
         element.text = f"{self.block_name}: {data["content"]}"
         return element
-
-
-# TODO: find a better home for this
-def add_roll_result(ctx: Context):
-    if not ctx.roll.rolled:
-        logger.debug("No roll context, skipping")
-        return
-
-    template = templater.get_template("roll_result")
-    element = etree.fromstring(template.render(asdict(ctx.roll.get())))
-    ctx.parent.append(element)

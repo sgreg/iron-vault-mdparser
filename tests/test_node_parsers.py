@@ -42,7 +42,7 @@ def test_parser_add(ctx):
     assert "comment" in nodes[1].text
 
 
-def test_parser_burn(ctx):
+def test_parser_burn(block_ctx):
     parser = BurnNodeParser()
 
     assert parser.node_name == "Burn"
@@ -63,7 +63,7 @@ def test_parser_burn(ctx):
         ParserData("random data", False),
     ]
 
-    assert_parser_data(parser, ctx, rolls, classes)
+    assert_parser_data(parser, block_ctx, rolls, classes)
 
 
 def test_parser_clock(ctx):
@@ -339,7 +339,7 @@ def test_parser_progress(ctx):
     assert "Track Name" in nodes[0].text
 
 
-def test_parser_progressroll(ctx):
+def test_parser_progressroll(block_ctx):
     parser = ProgressRollNodeParser()
 
     assert parser.node_name == "Progress Roll"
@@ -375,13 +375,13 @@ def test_parser_progressroll(ctx):
         ParserData("random data", False)
     ]
 
-    nodes = assert_parser_data(parser, ctx, rolls, classes)
+    nodes = assert_parser_data(parser, block_ctx, rolls, classes)
 
     assert "Track Name" in nodes[0].text
     assert "undefined" in nodes[6].text
 
 
-def test_parser_reroll(ctx):
+def test_parser_reroll(block_ctx):
     parser = RerollNodeParser()
 
     assert parser.node_name == "Reroll"
@@ -415,10 +415,10 @@ def test_parser_reroll(ctx):
         ParserData("random data", False),
     ]
 
-    assert_parser_data(parser, ctx, rolls, classes)
+    assert_parser_data(parser, block_ctx, rolls, classes)
 
 
-def test_parser_roll(ctx):
+def test_parser_roll(block_ctx):
     parser = RollNodeParser()
 
     assert parser.node_name == "Roll"
@@ -459,7 +459,7 @@ def test_parser_roll(ctx):
         ParserData('random data', False),
     ]
 
-    assert_parser_data(parser, ctx, rolls, classes)
+    assert_parser_data(parser, block_ctx, rolls, classes)
 
 
 def test_parser_track(ctx):
