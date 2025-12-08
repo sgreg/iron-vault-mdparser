@@ -2,6 +2,8 @@ import pytest
 from jinja2 import Template
 
 from ironvaultmd.parsers.base import NodeParser, MechanicsBlockParser
+from ironvaultmd.parsers.nodes import RollNodeParser
+from ironvaultmd.parsers.templater import templater
 
 
 def test_node_get_template():
@@ -54,6 +56,34 @@ def test_node_args_override(ctx):
     node = ctx.parent.find("div")
     assert node is not None
     assert node.text == "data: overridden"
+
+def test_node_template_disable(block_ctx):
+    # Disable template for this parser
+    templater.user_templates.roll = ''
+
+    parser = RollNodeParser()
+    assert parser.template is None
+
+    # Verify roll context is reset
+    assert not block_ctx.roll.rolled
+
+    # Parse valid data
+    data = '"iron" action=3 adds=0 stat=2 vs1=6 vs2=3'
+    parser.parse(block_ctx, data)
+
+    # Verify no div element was rendered
+    assert block_ctx.parent.find("<div>") is None
+
+    # Verify roll context is set now, even without a template
+    assert block_ctx.roll.rolled
+
+    # Verify roll result is as expected from the parsed data
+    result = block_ctx.roll.get()
+    assert result.score == 5
+    assert result.vs1 == 6
+    assert result.vs2 == 3
+    assert result.hitmiss == "weak"
+    assert not result.match
 
 
 def test_block_unimplemented(ctx):

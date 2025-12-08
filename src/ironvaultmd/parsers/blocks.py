@@ -44,8 +44,9 @@ class MoveBlockParser(MechanicsBlockParser):
 
         # Add the final roll result as an own <div>
         template = templater.get_template("roll_result")
-        element = etree.fromstring(template.render(asdict(result)))
-        ctx.parent.append(element)
+        if template is not None:
+            element = etree.fromstring(template.render(asdict(result)))
+            ctx.parent.append(element)
 
         # Style the main move block <div> with classes based on the roll result
         class_hitmiss = f"ivm-move-result-{result.hitmiss}"

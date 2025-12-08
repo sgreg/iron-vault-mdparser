@@ -54,6 +54,7 @@ The default templates for each node (and some extra elements) along with a descr
 variables can be found from the [`templates/` directory ](src/ironvaultmd/parsers/templates).
 
 Each node template can be overridden when initiating the `IronVaultExtension`. See below for some examples.
+Setting a template to an empty string (`''`) will prevent the node from being parsed to HTML altogether.
 
 ## Installation
 
@@ -116,6 +117,7 @@ my_templates = IronVaultTemplates()
 my_templates.add  = '<div class="my-own-class">Adding {{ add }}</div>'
 my_templates.roll = '<div class="ivm-roll">{{ total }} vs {{ vs1 }} and {{ vs2 }}</div>'
 my_templates.link = '<i>{{ label }}</i>'
+my_templates.xp = '' # don't add xp nodes to HTML output
 
 md = markdown.Markdown(extensions=[IronVaultExtension(templates=my_templates)])
 ```

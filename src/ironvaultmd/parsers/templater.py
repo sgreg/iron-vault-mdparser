@@ -45,12 +45,16 @@ class Templater:
                 self.user_templates.__dict__[name] = None
 
 
-    def get_template(self, name: str) -> Template:
+    def get_template(self, name: str) -> Template | None:
         logger.debug(f"Getting template for '{name}'")
         key = name.lower().replace(' ', '_')
 
         user_template = self.user_templates.__dict__.get(key, None)
         if isinstance(user_template, str):
+            if str(user_template) == '':
+                logger.debug("  -> found empty user template")
+                return None
+
             logger.debug("  -> found user template")
             return Template(user_template)
 

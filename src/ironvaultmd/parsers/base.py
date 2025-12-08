@@ -16,7 +16,7 @@ class NodeParser:
     """Parser for iron-vault-mechanics nodes supporting regex matching"""
     node_name: str
     regex: re.Pattern[str]
-    template: Template
+    template: Template | None
 
     def __init__(self, name: str, regex: str) -> None:
         self.node_name = name
@@ -40,9 +40,10 @@ class NodeParser:
             return
 
         args = self.create_args(matches, ctx)
-        out = self.template.render(args)
-        # store `out` in context somewhere, and have within context (or somewhere) append to parents on pop() or so
-        ctx.parent.append(etree.fromstring(out))
+
+        if self.template is not None:
+            out = self.template.render(args)
+            ctx.parent.append(etree.fromstring(out))
 
     def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
         return data

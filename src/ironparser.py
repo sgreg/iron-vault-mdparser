@@ -79,6 +79,7 @@ if __name__ == "__main__":
     frontmatter = {}
     templates = IronVaultTemplates()
     templates.progress = '<div class="ivm-progress">Progress for <b>{{ name }}</b> ({{ rank }}): {{ from }} &amp;rarr; {{ to }}</div>'
+    templates.roll_result = '' # Don't add dedicated roll result div
 
     markdown_extensions = [
         FencedCodeExtension(), # for parsing code blocks

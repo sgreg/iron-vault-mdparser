@@ -1,7 +1,9 @@
+import logging
+
 import pytest
 from jinja2 import Template, TemplateNotFound
 
-from ironvaultmd.parsers.nodes import AddNodeParser
+from ironvaultmd.parsers.nodes import AddNodeParser, MeterNodeParser
 from ironvaultmd.parsers.templater import Templater, UserTemplates
 
 
@@ -70,3 +72,25 @@ def test_user_template_render(md_gen, ctx):
     assert node is not None
     assert node.get("class") == "test-class"
     assert node.text == "test add with value 2"
+
+def test_user_template_disable(md_gen, ctx):
+    user_templates = UserTemplates()
+    user_templates.add = ''
+    user_templates.meter = '<div class="test-class">{{ meter_name }} {{ from }} to {{ to }}</div>'
+
+    md_gen(templates=user_templates)
+
+    add_parser = AddNodeParser()
+    meter_parser = MeterNodeParser()
+
+    assert add_parser.template is None
+    assert meter_parser.template is not None
+
+    add_parser.parse(ctx, '2 "for test reasons"')
+    meter_parser.parse(ctx, '"test meter" from=5 to=3')
+
+    # Verify only one div exists and it's the meter one
+    nodes = ctx.parent.findall("div")
+    assert len(nodes) == 1
+    assert nodes[0].get("class") == "test-class"
+    assert nodes[0].text == "test meter 5 to 3"
