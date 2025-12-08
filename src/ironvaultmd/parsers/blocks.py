@@ -70,12 +70,23 @@ class OracleGroupBlockParser(MechanicsBlockParser):
 
 class OracleBlockParser(MechanicsBlockParser):
     def __init__(self):
-        regex = r'^name="\[(?P<oracle_name>[^\]]+)\]\(datasworn:.+\)" result="(?P<result>[^"]+)" roll=(?P<roll>\d+)$'
+        # See the oracle node parser, there can be two types (that I know of so far):
+        # oracle name="[Core Oracles \/ Theme](datasworn:oracle_rollable:starforged\/core\/theme)" result="Warning" roll=96
+        # oracle name="Will [[Lone Howls\/Clocks\/Clock decrypt Verholm research.md|Clock decrypt Verholm research]] advance? (Likely)" result="No" roll=83
+        regex = r'^name="(\[(?P<oracle_name>[^\]]+)\]\(datasworn:.+\)|(?P<oracle_text>[^"]+))" result="(?P<result>[^"]+)" roll=(?P<roll>\d+)$'
         super().__init__("Oracle", regex)
 
     def create_root(self, data: dict[str, str | Any], ctx: Context) -> etree.Element:
+        # This is also taken straight from the oracle node parser.
+        # Should probably combine those to some common place?
+        oracle = "undefined"
+        if data["oracle_name"] is not None:
+            oracle = convert_link_name(data["oracle_name"])
+        elif data["oracle_text"] is not None:
+            oracle = convert_link_name(data["oracle_text"])
+
         element = create_div(ctx.parent, ["oracle-block"])
-        create_div(element, ["oracle-name"]).text = f"Oracle {convert_link_name(data["oracle_name"])} rolled a {data["roll"]} == {data["result"]}"
+        create_div(element, ["oracle-name"]).text = f"Oracle {oracle} rolled a {data["roll"]} == {data["result"]}"
         return element
 
 

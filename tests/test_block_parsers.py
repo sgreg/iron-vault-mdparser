@@ -174,6 +174,17 @@ def test_parser_oracle(ctx):
     for sub in ["Oracle Name", "Oracle Result", "55"]:
         assert sub in children[0].text
 
+    data = 'name="Will [[ignore|some clock]] advance?" result="Clock Result" roll=23'
+    element = parser.begin(ctx, data)
+    assert element is not None
+    assert element.get("class") == "ivm-oracle-block"
+
+    children = element.findall("div")
+    assert len(children) == 1
+    assert children[0].get("class") == "ivm-oracle-name"
+    for sub in ["Will some clock advance", "Clock Result", "23"]:
+        assert sub in children[0].text
+
     data = 'Invalid data'
     element = parser.begin(ctx, data)
     assert element is not None
