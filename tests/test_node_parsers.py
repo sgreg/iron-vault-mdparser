@@ -360,6 +360,7 @@ def test_parser_progressroll(block_ctx):
         ParserData('name="[[ignored|Track Name]]" score=6 vs1=6 vs2=6', True, 4, ["roll-miss", "roll-match"]),
         ParserData('name="[[ignored|Track Name]]" score=6 vs1=3 vs2=3', True, 5, ["roll-strong", "roll-match"]),
         ParserData('score=6 vs1=3 vs2=5', True, 6, ["roll-strong"]),
+        ParserData('score=6 vs1=3 vs2=5 name="[[ignored|Name in the back]]"', True, 7, ["roll-strong"]),
         ParserData('name="" score=6 vs1=3 vs2=5', False),
         ParserData('name="[[ignored]]" score=6 vs1=3 vs2=5', False),
         ParserData('score=text vs1=3 vs2=5', False),
@@ -379,6 +380,7 @@ def test_parser_progressroll(block_ctx):
 
     assert "Track Name" in nodes[0].text
     assert "undefined" in nodes[6].text
+    assert "Name in the back" in nodes[7].text
 
 
 def test_parser_reroll(block_ctx):

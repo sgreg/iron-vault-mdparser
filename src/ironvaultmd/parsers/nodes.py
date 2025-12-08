@@ -135,12 +135,18 @@ class ProgressRollNodeParser(NodeParser):
     def __init__(self) -> None:
         # progress-roll name="[[Lone Howls\/Progress\/Combat Tayla.md|Combat Tayla]]" score=8 vs1=1 vs2=4
         # Note, before Dec 2024, name parameter may be missing, so pack the whole 'name="[[..|..]]" ' into optional group '(?: ...)?'
-        regex = r'^(?:name="\[\[.*\|(?P<name>.*)\]\]" )?score=(?P<score>\d+) vs1=(?P<vs1>\d+) vs2=(?P<vs2>\d+)$'
+        # Addition: in some cases the name might be in the back: progress-roll score=8 vs1=1 vs2=4 name="[[...|...]]"
+        regex = r'^(?:name="\[\[.*\|(?P<name_front>.*)\]\]" )?score=(?P<score>\d+) vs1=(?P<vs1>\d+) vs2=(?P<vs2>\d+)(?: name="\[\[.*\|(?P<name_back>.*)\]\]")?$'
         super().__init__("Progress Roll", regex)
 
     def create_args(self, data: dict[str, str | Any], ctx: Context) -> dict[str, str | Any]:
-        if data["name"] is None:
-            data["name"] = "undefined"
+        name = data["name_front"]
+        if name is None:
+            name = data["name_back"]
+        if name is None:
+            name = "undefined"
+
+        data["name"] = name
 
         result = ctx.roll.progress_roll(data["score"], data["vs1"], data["vs2"])
         return data | asdict(result)
