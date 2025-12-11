@@ -99,13 +99,13 @@ def test_util_dice():
 def test_util_ticks():
     data = [
         ProgressTickData("troublesome", 0, 1, (12, 12)),
-        ProgressTickData("troublesome", 0, 2, (12, 24)),
-        ProgressTickData("troublesome", 0, 3, (12, 36)),
-        ProgressTickData("troublesome", 0, 4, (12, 40)),
+        ProgressTickData("troublesome", 0, 2, (24, 24)),
+        ProgressTickData("troublesome", 0, 3, (36, 36)),
+        ProgressTickData("troublesome", 0, 4, (48, 40)),
         ProgressTickData("troublesome", 1, 1, (12, 13)),
         ProgressTickData("troublesome", 12, 1, (12, 24)),
         ProgressTickData("troublesome", 24, 1, (12, 36)),
-        ProgressTickData("troublesome", 24, 2, (12, 40)),
+        ProgressTickData("troublesome", 24, 2, (24, 40)),
         ProgressTickData("troublesome", 36, 1, (12, 40)),
         ProgressTickData("dangerous", 0, 1, (8, 8)),
         ProgressTickData("dangerous", 1, 1, (8, 9)),

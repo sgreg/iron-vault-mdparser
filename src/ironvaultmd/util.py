@@ -141,8 +141,7 @@ def check_ticks(rank: str, current: int, steps: int) -> tuple[int, int]:
         case _:
             logger.warning(f"Fail to check ticks, unknown rank {rank}")
 
-    # FIXME this currently returns just ticks per step, `ticks` should be multiplied by `steps`
-    return ticks, min(current + (ticks * steps), 40)
+    return ticks * steps, min(current + (ticks * steps), 40)
 
 
 def initiative_slugify(initiative: str) -> str | None:
