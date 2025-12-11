@@ -1,3 +1,14 @@
+"""Mechanics block processors for Iron Vault Markdown.
+
+This module contains a preprocessor and a block processor to support fenced
+mechanics sections in Markdown documents. Mechanics sections are fenced with
+```iron-vault-mechanics and describe game actions which are parsed into an
+intermediate representation using dedicated block and node parsers.
+
+The preprocessor normalizes fencing so that the block processor can reliably
+detect and consume entire mechanics sections as a single block.
+"""
+
 import logging
 import re
 
@@ -41,19 +52,20 @@ logger = logging.getLogger("ironvaultmd")
 
 
 class MechanicsBlockException(Exception):
-    pass
+    """Raised when a mechanics block is malformed or inconsistent."""
 
 
 class IronVaultMechanicsPreprocessor(Preprocessor):
     """Markdown preprocessor for handling mechanics blocks.
 
     This serves two purposes:
+
      1. Convert triple backticks that enclose iron-vault-mechanics blocks to triple commas,
-     so this extension can nicely coexist with extensions like fenced_code that would
-     otherwise convert those backticks into <pre></pre> content
+        so this extension can nicely coexist with extensions like fenced_code that would
+        otherwise convert those backticks into `<pre></pre>` content
      2. Make sure iron-vault-mechanics blocks are fully contained within a single `block`
-     when passing them on to `IronVaultMechanicsBlockProcessor` by surrounding it with
-     newlines, and removing newlines from inside the block
+        when passing them on to `IronVaultMechanicsBlockProcessor` by surrounding it with
+        newlines, and removing newlines from inside the block
     """
 
     START = "```iron-vault-mechanics"
@@ -63,6 +75,22 @@ class IronVaultMechanicsPreprocessor(Preprocessor):
     NEW_END = ",,,"
 
     def run(self, lines: list[str]) -> list[str]: # NOSONAR don't complain about cognitive complexity, it's a parser after all
+        """Rewrite mechanics fences and ensure block boundaries.
+
+        Converts triple backticks around mechanics blocks to triple commas to
+        avoid collisions with other Markdown extensions and ensures that a
+        mechanics block is isolated as its own parser block by inserting blank
+        lines before and after the fenced section.
+
+        Args:
+            lines: The Markdown document, split into lines.
+
+        Returns:
+            The normalized list of lines.
+
+        Raises:
+            MechanicsBlockException: If nested mechanics blocks are detected.
+        """
         inside = False
         new_lines = []
 
@@ -99,6 +127,21 @@ class IronVaultMechanicsPreprocessor(Preprocessor):
 
 
 class IronVaultMechanicsBlockProcessor(BlockProcessor):
+    """Block processor that parses mechanics sections.
+
+    The processor identifies mechanics sections normalized by
+    `IronVaultMechanicsPreprocessor` and iterates over their content, delegating
+    to specific block and node parsers based on their line prefixes.
+
+    Attributes:
+        RE_MECHANICS_START: Regex to detect the start fence of a mechanics block.
+        RE_MECHANICS_SECTION: Regex to capture the entire mechanics section
+            content including start and end fences.
+        RE_BLOCK_LINE: Regex used to detect the start of a mechanics subblock.
+        RE_NODE_LINE: Regex used to detect mechanics node lines within a block.
+        block_parsers: Mapping of block names to `MechanicsBlockParser` instances.
+        node_parsers: Mapping of node names to `NodeParser` instances.
+    """
     # Note, preprocessor removes now all content before and after the mechanics block,
     # so could consider tweaking the regex strings accordingly for these two here.
     # Also, empty but otherwise valid block fails to match now and raises an exception,
@@ -118,6 +161,11 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
     #
 
     def __init__(self, parser: BlockParser):
+        """Initialize the block and node parser registries.
+
+        Args:
+            parser: The Markdown `BlockParser` that owns this processor.
+        """
         super().__init__(parser)
 
         self.block_parsers: dict[str, MechanicsBlockParser] = {
@@ -148,11 +196,31 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
         }
 
     def test(self, parent, block) -> bool:
+        """Return whether the given block begins a mechanics section.
+
+        Args:
+            parent: The parent HTML element (unused).
+            block: The text block to test.
+
+        Returns:
+            True if the block contains a mechanics start fence; otherwise False.
+        """
         match = self.RE_MECHANICS_START.search(block)
         logger.debug(f" >>> VLT testing ({'Y' if match is not None else 'N'}) {repr(block)} -> '{match}'")
         return match is not None
 
     def run(self, parent, blocks) -> None:
+        """Process a mechanics section and append the rendered result.
+
+        Args:
+            parent: The parent HTML element to which the output is appended.
+            blocks: The list of remaining text blocks; the current block is
+                consumed from this list.
+
+        Raises:
+            MechanicsBlockException: If the section cannot be isolated or is
+                otherwise malformed.
+        """
         logger.debug(f"\nrun, {len(blocks)} blocks: '{blocks}'")
 
         block = blocks.pop(0)
@@ -184,6 +252,12 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
         self.parse_content(ctx, content)
 
     def parse_content(self, ctx: Context, content: str) -> None:
+        """Parse mechanics content lines using block and node parsers.
+
+        Args:
+            ctx: The parsing context carrying the current HTML element and stack.
+            content: The raw mechanics section content (without fences).
+        """
         logger.debug(f"x> adding content {repr(content)}")
 
         lines = [chunk for chunk in content.split("\n") if chunk]

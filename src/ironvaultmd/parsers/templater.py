@@ -1,3 +1,11 @@
+"""Jinja templating helper for mechanics rendering.
+
+This module provides a thin wrapper around Jinja to load default HTML
+templates shipped with the package and to optionally override them with
+user-provided snippets at runtime. Parsers obtain templates via the shared
+`templater` instance defined at the bottom of this module.
+"""
+
 import logging
 from dataclasses import dataclass
 
@@ -7,6 +15,31 @@ logger = logging.getLogger("ironvaultmd")
 
 @dataclass
 class UserTemplates:
+    """Container for optional user-provided template overrides.
+
+    Set any field to a non-empty string to override the corresponding default
+    template. Set to an empty string to disable rendering for that element, or
+    to `None` to use the packaged default template.
+
+    Attributes:
+        add: Template for the `add` node.
+        burn: Template for the `burn` node.
+        clock: Template for the `clock` node.
+        impact: Template for the `impact` node.
+        initiative: Template for the `initiative` node.
+        meter: Template for the `meter` node.
+        ooc: Template for the out-of-character node.
+        oracle: Template for the `oracle` node.
+        position: Template for the `position` node.
+        progress: Template for the `progress` node.
+        progress_roll: Template for the `progress-roll` node.
+        reroll: Template for the `reroll` node.
+        roll: Template for the `roll` node.
+        track: Template for the `track` node.
+        xp: Template for the `xp` node.
+        link: Template for wiki links rendered by the links processor.
+        roll_result: Template for a summarized roll result appended to a move.
+    """
     # Nodes
     add: str | None = None
     burn: str | None = None
@@ -29,12 +62,27 @@ class UserTemplates:
 
 
 class Templater:
+    """Helper that resolves Jinja templates for mechanics elements.
+
+    It first checks for an override provided via `UserTemplates` and, if not
+    present, falls back to loading the default template file from the
+    `templates` package directory.
+    """
     def __init__(self):
+        """Initialize the templating environment."""
         self.template_loader = PackageLoader('ironvaultmd.parsers', 'templates')
         self.template_env = Environment(loader=self.template_loader, autoescape=True)
         self.user_templates = UserTemplates()
 
     def load_user_templates(self, user_templates: UserTemplates):
+        """Load or reset user template overrides.
+
+        Args:
+            user_templates: A `UserTemplates` instance whose non-`None` values
+                will override the corresponding defaults. `None` resets an
+                override to packaged defaults, an empty string disables output
+                for that template.
+        """
         for name, value in user_templates.__dict__.items():
             if value is not None:
                 logger.debug(f"Setting user template for '{name}': '{value}'")
@@ -46,6 +94,22 @@ class Templater:
 
 
     def get_template(self, name: str) -> Template | None:
+        """Return a Jinja template by element name or `None`.
+
+        The `name` is normalized to match a template file named
+        `<name>.html` where name is lowercased and spaces replaced with
+        underscores. User overrides take precedence.
+
+        Args:
+            name: Element name, e.g., `Roll Result` or `oracle`.
+
+        Returns:
+            A compiled Jinja `Template` or `None` when explicitly disabled.
+
+        Raises:
+            TemplateNotFound: If no default template exists for `name` and no
+                override is provided.
+        """
         logger.debug(f"Getting template for '{name}'")
         key = name.lower().replace(' ', '_')
 
@@ -68,3 +132,4 @@ class Templater:
             raise err
 
 templater = Templater()
+"""Shared templater instance used by parsers to render output."""

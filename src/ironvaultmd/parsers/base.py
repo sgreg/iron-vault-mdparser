@@ -1,3 +1,15 @@
+"""Base classes for Iron Vault mechanics parsers.
+
+This module defines abstract helpers used by concrete parsers in
+`ironvaultmd.parsers.blocks` and `ironvaultmd.parsers.nodes`.
+
+- `NodeParser` implements a small framework for single-line node parsers that
+  match input using a compiled regular expression and optionally render output
+  using a Jinja template.
+- `MechanicsBlockParser` provides a similar framework for higher-level block
+  parsers that own a subtree in the output document.
+"""
+
 import logging
 import re
 import xml.etree.ElementTree as etree
@@ -13,18 +25,44 @@ logger = logging.getLogger("ironvaultmd")
 
 
 class NodeParser:
-    """Parser for iron-vault-mechanics nodes supporting regex matching"""
+    """Base class for single-line mechanics node parsers.
+
+    Subclasses should provide a `regex` pattern describing the accepted input
+    for a node and may override `create_args` to transform captured values into
+    template arguments. If a template with the same name exists, the parsed
+    node will be rendered and appended to the current parent element.
+
+    Attributes:
+        node_name: Human-readable name of the node (also used to load the
+            default template via the `Templater`).
+        regex: Compiled regular expression used to match a node line.
+        template: Jinja `Template` resolved for `node_name`, or `None` if no
+            template is available.
+    """
     node_name: str
     regex: re.Pattern[str]
     template: Template | None
 
     def __init__(self, name: str, regex: str) -> None:
+        """Initialize the node parser.
+
+        Args:
+            name: Display name for the node (used for template lookup).
+            regex: Regular expression string for matching input lines.
+        """
         self.node_name = name
         self.regex = re.compile(regex)
         self.template = templater.get_template(name)
 
     def _match(self, data: str) -> dict[str, str | Any] | None:
-        """Try to match the given data string to the parser's regex object and return match group dictionary"""
+        """Try to match input text and return a group dictionary.
+
+        Args:
+            data: Node parameters string/
+
+        Returns:
+            A dict of named regex groups if the pattern matches; otherwise `None`.
+        """
         match = self.regex.search(data)
 
         if match is None:
@@ -35,6 +73,19 @@ class NodeParser:
         return match.groupdict()
 
     def parse(self, ctx: Context, data: str) -> None:
+        """Parse a node line and append rendered output if applicable.
+
+        This is handled by dedicated subclasses specific to a node name.
+        The node name itself is therefore not part of the `data` string,
+        only its parameters.
+
+        Rendered output is appended directly to the parent HTML element
+        stored within the passed `Context`.
+
+        Args:
+            ctx: Current parsing `Context`.
+            data: Node parameters string.
+        """
         matches = self._match(data)
         if matches is None:
             return
@@ -46,16 +97,52 @@ class NodeParser:
             ctx.parent.append(etree.fromstring(out))
 
     def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
+        """Build template arguments from regex groups.
+
+        Subclasses override this to post-process captured values or to add
+        context-derived information.
+
+        Args:
+            data: Named regex groups captured from the input line.
+            _: The current parsing `Context` (unused by the base implementation).
+
+        Returns:
+            A dictionary that will be passed to the Jinja template as context.
+        """
         return data
 
 
 class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, so let's just best use another name
+    """Base class for mechanics block parsers.
+
+    Block parsers own a subtree in the output and typically span multiple
+    lines. They create a root element in `begin`, may add additional content as
+    nodes are parsed, and can perform finalization in `finalize`.
+
+    Attributes:
+        block_name: Human-readable name of the block.
+        regex: Compiled pattern used to match and extract parameters from the
+            block's opening line.
+    """
     def __init__(self, name:str, regex: str):
+        """Create the block parser.
+
+        Args:
+            name: Display name for the block
+            regex: Regular expression string for the opening line.
+        """
         self.block_name = name
         self.regex = re.compile(regex)
 
     def _match(self, data: str) -> dict[str, str | Any] | None:
-        """Try to match the given data string to the parser's regex object and return match group dictionary"""
+        """Try to match the block opening line and return a group dictionary.
+
+        Args:
+            data: Raw block parameter string.
+
+        Returns:
+            A dict of named regex groups if the pattern matches; otherwise `None`.
+        """
         match = self.regex.search(data)
 
         if match is None:
@@ -66,6 +153,19 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
         return match.groupdict()
 
     def begin(self, ctx: Context, data: str) -> etree.Element:
+        """Create and return the block's root element.
+
+        If the opening line cannot be matched, a generic block element is
+        created containing a textual representation of the original input.
+
+        Args:
+            ctx: Current parsing `Context`.
+            data: Block parameter string from the opening line.
+
+        Returns:
+            The newly created HTML element which becomes the current parent in
+            the context stack.
+        """
         matches = self._match(data)
         if matches is None:
             element = create_div(ctx.parent, ["block"])
@@ -75,8 +175,29 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
         return self.create_root(matches, ctx)
 
     def create_root(self, data: dict[str, str | Any], ctx: Context) -> etree.Element:
+        """Create the block's root element from matched groups.
+
+        Must be implemented by subclasses.
+
+        Args:
+            data: Named regex groups for the opening line.
+            ctx: Current parsing `Context`.
+
+        Returns:
+            The root element appended to the current parent.
+
+        Raises:
+            NotImplementedError: In the base class.
+        """
         raise NotImplementedError
 
     def finalize(self, ctx):
-        # To be overridden by child classes as needed, do nothing by default
+        """Finalize the block after all nested nodes have been parsed.
+
+        Subclasses may override this to add computed results or to update the
+        block's styling. The default implementation does nothing.
+
+        Args:
+            ctx: Current parsing `Context`.
+        """
         pass
