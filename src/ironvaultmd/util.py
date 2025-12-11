@@ -110,7 +110,7 @@ def check_dice(score, vs1, vs2) -> tuple[str, bool]:
     return hitmiss, match
 
 
-def check_ticks(rank: str, current: int, steps: int) -> (int, int):
+def check_ticks(rank: str, current: int, steps: int) -> tuple[int, int]:
     """Compute ticks gained and new total for a progress track.
 
     Args:
@@ -126,6 +126,7 @@ def check_ticks(rank: str, current: int, steps: int) -> (int, int):
         If `rank` is unknown, a warning is logged and `ticks_per_step` remains
         0; the total will then be unchanged.
     """
+    ticks = 0
     match rank:
         case "epic":
             ticks = 1
@@ -139,7 +140,6 @@ def check_ticks(rank: str, current: int, steps: int) -> (int, int):
             ticks = 12
         case _:
             logger.warning(f"Fail to check ticks, unknown rank {rank}")
-            ticks = 0
 
     # FIXME this currently returns just ticks per step, `ticks` should be multiplied by `steps`
     return ticks, min(current + (ticks * steps), 40)

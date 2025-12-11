@@ -12,7 +12,7 @@ from typing import Any
 
 from ironvaultmd.parsers.base import NodeParser
 from ironvaultmd.parsers.context import Context
-from ironvaultmd.util import check_dice, check_ticks, convert_link_name, initiative_slugify, position_slugify
+from ironvaultmd.util import check_ticks, convert_link_name, initiative_slugify, position_slugify
 
 
 class AddNodeParser(NodeParser):

@@ -51,7 +51,7 @@ class ActorBlockParser(MechanicsBlockParser):
             The created actor `<div>` element.
         """
         element = create_div(ctx.parent, ["actor"])
-        create_div(element, ["actor-name"]).text = f"{data["name"]}"
+        create_div(element, ["actor-name"]).text = f"{data['name']}"
         return element
 
 
@@ -78,7 +78,7 @@ class MoveBlockParser(MechanicsBlockParser):
             The created move `<div>` element.
         """
         element = create_div(ctx.parent, ["move"])
-        create_div(element, ["move-name"]).text = f"{data["move_name"]}"
+        create_div(element, ["move-name"]).text = f"{data['move_name']}"
         return element
 
     def finalize(self, ctx):
@@ -126,7 +126,7 @@ class OracleGroupBlockParser(MechanicsBlockParser):
             The created oracle-block `<div>` element.
         """
         element = create_div(ctx.parent, ["oracle-block"])
-        create_div(element, ["oracle-name"]).text = f"Oracle: {data["name"]}"
+        create_div(element, ["oracle-name"]).text = f"Oracle: {data['name']}"
         return element
 
 
@@ -159,7 +159,7 @@ class OracleBlockParser(MechanicsBlockParser):
             oracle = convert_link_name(data["oracle_text"])
 
         element = create_div(ctx.parent, ["oracle-block"])
-        create_div(element, ["oracle-name"]).text = f"Oracle {oracle} rolled a {data["roll"]} == {data["result"]}"
+        create_div(element, ["oracle-name"]).text = f"Oracle {oracle} rolled a {data['roll']} == {data['result']}"
         return element
 
 
@@ -181,5 +181,5 @@ class OraclePromptBlockParser(MechanicsBlockParser):
             The created oracle-block `<div>` element.
         """
         element = create_div(ctx.parent, ["oracle-block"])
-        create_div(element, ["oracle-name"]).text = f"Oracle: {data["comment"]}"
+        create_div(element, ["oracle-name"]).text = f"Oracle: {data['comment']}"
         return element
