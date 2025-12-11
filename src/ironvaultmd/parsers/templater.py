@@ -11,7 +11,9 @@ from dataclasses import dataclass
 
 from jinja2 import Template, PackageLoader, Environment, TemplateNotFound
 
-logger = logging.getLogger("ironvaultmd")
+from ironvaultmd import logger_name
+
+logger = logging.getLogger(logger_name)
 
 @dataclass
 class UserTemplates:

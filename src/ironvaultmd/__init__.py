@@ -41,9 +41,11 @@ Example:
 
 Attributes:
     __version__: Package version string.
+    logger_name: Name of the package logger used throughout the codebase.
 """
 
 __version__ = "0.2.0"
+logger_name = "ironvaultmd"
 
 from .ironvault import IronVaultExtension as IronVaultExtension
 from .parsers.templater import UserTemplates as IronVaultTemplates

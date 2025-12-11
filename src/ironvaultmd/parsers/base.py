@@ -17,11 +17,12 @@ from typing import Any
 
 from jinja2 import Template
 
+from ironvaultmd import logger_name
 from ironvaultmd.parsers.context import Context
 from ironvaultmd.parsers.templater import templater
 from ironvaultmd.util import create_div
 
-logger = logging.getLogger("ironvaultmd")
+logger = logging.getLogger(logger_name)
 
 
 class NodeParser:

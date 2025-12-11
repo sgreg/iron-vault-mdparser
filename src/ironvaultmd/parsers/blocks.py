@@ -18,12 +18,13 @@ import xml.etree.ElementTree as etree
 from dataclasses import asdict
 from typing import Any
 
+from ironvaultmd import logger_name
 from ironvaultmd.parsers.base import MechanicsBlockParser
 from ironvaultmd.parsers.context import Context
 from ironvaultmd.parsers.templater import templater
 from ironvaultmd.util import create_div, convert_link_name
 
-logger = logging.getLogger("ironvaultmd")
+logger = logging.getLogger(logger_name)
 
 
 # These should probably all use some templates as well

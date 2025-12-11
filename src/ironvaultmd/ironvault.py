@@ -39,6 +39,7 @@ import logging
 
 from markdown.extensions import Extension
 
+from ironvaultmd import logger_name
 from ironvaultmd.parsers.templater import UserTemplates, templater
 from ironvaultmd.processors.frontmatter import IronVaultFrontmatterPreprocessor
 from ironvaultmd.processors.links import WikiLinkProcessor
@@ -47,7 +48,7 @@ from ironvaultmd.processors.mechanics import (
     IronVaultMechanicsPreprocessor,
 )
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(logger_name)
 
 class IronVaultExtension(Extension):
     """Markdown extension that registers the Iron‑Vault processors.

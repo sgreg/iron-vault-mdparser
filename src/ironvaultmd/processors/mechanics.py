@@ -16,6 +16,7 @@ from markdown.blockparser import BlockParser
 from markdown.blockprocessors import BlockProcessor
 from markdown.preprocessors import Preprocessor
 
+from ironvaultmd import logger_name
 from ironvaultmd.parsers.base import (
     NodeParser,
     MechanicsBlockParser,
@@ -48,7 +49,7 @@ from ironvaultmd.parsers.nodes import (
 )
 from ironvaultmd.util import create_div, split_match
 
-logger = logging.getLogger("ironvaultmd")
+logger = logging.getLogger(logger_name)
 
 
 class MechanicsBlockException(Exception):

@@ -16,9 +16,10 @@ import logging
 import xml.etree.ElementTree as etree
 from dataclasses import dataclass
 
+from ironvaultmd import logger_name
 from ironvaultmd.util import check_dice
 
-logger = logging.getLogger("ironvaultmd")
+logger = logging.getLogger(logger_name)
 
 
 @dataclass

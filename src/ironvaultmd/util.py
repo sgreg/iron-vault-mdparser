@@ -14,7 +14,9 @@ import logging
 import re
 import xml.etree.ElementTree as etree
 
-logger = logging.getLogger("ironvaultmd")
+from ironvaultmd import logger_name
+
+logger = logging.getLogger(logger_name)
 
 
 def split_match(text: str, match: re.Match[str]) -> tuple[str, str]:
