@@ -12,7 +12,7 @@ from typing import Any
 
 from ironvaultmd.parsers.base import NodeParser
 from ironvaultmd.parsers.context import Context
-from ironvaultmd.util import check_ticks, convert_link_name, initiative_slugify, position_slugify
+from ironvaultmd.util import check_ticks, convert_link_name, initiative_slugify, position_slugify, ticks_to_progress
 
 
 class AddNodeParser(NodeParser):
@@ -225,24 +225,33 @@ class ProgressNodeParser(NodeParser):
     def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
         """Compute and add the new progress state based on rank and progress.
 
-        Converts numeric values `from` and `steps` to integers.
-        Adds the number of ticks the track is progressed based on `steps` and
-        `rank`, and the resulting total number of ticks to the dictionary.
+        Rearranges the `data` groups dictionary to contain progress in both
+        number of total ticks, and as tuples `(boxes, ticks)`.
 
         Args:
             data: Regex groups including `rank`, `from`, and `steps`.
             _: Current parsing context (unused).
 
         Returns:
-            The original groups merged with computed `ticks` and `to`
-            (total ticks progressed) based on the rank and number of steps,
-            and its numeric values converted to integers.
+            The original groups rearranged to contain the old and new progress
+            state in both ticks and as tuple `(boxes, ticks)`.
         """
-        data["from"] = int(data["from"])
-        data["steps"] = int(data["steps"])
-        ticks, to = check_ticks(data["rank"], data["from"], data['steps'])
+        from_ticks = int(data["from"])
+        steps = int(data["steps"])
+        ticks, to_ticks = check_ticks(data["rank"], from_ticks, steps)
+        from_progress = ticks_to_progress(from_ticks)
+        to_progress = ticks_to_progress(to_ticks)
 
-        return data | {"ticks": ticks, "to": to}
+        return {
+            "name": data["name"],
+            "rank": data["rank"],
+            "steps": steps,
+            "from": from_progress,
+            "to": to_progress,
+            "from_ticks": from_ticks,
+            "to_ticks": to_ticks,
+            "ticks": ticks,
+        }
 
 
 class ProgressRollNodeParser(NodeParser):

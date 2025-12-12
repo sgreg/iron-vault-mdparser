@@ -1,12 +1,16 @@
 {#
 Progress node
 
-name    name of the track that has progress is marked on
-rank    rank of the track, e.g. "dangerous", "epic"
-from    previous progress value in number of ticks
-to      new progress value in number of ticks
-steps   number of times progress is marked on the track
-ticks   number of ticks the progress refers to based on steps and rank
+name        name of the track that has progress is marked on
+rank        rank of the track, e.g. "dangerous", "epic"
+steps       number of times progress is marked on the track
+from        previous progress amount as tuple (boxes, ticks)
+to          new progress amount as tuple (boxes, ticks)
+from_ticks  previous progress value in number of ticks
+to_ticks    new progress value in number of ticks
+ticks       total amount of progress in ticks
 
 #}
-<div class="ivm-progress">Progress <b>{{ name }}</b> ({{ rank }}): +{{ steps }} == {{ from }} &amp;rarr; {{ to }}</div>
+<div class="ivm-progress">
+    Progress <b>{{ name }}</b> ({{ rank }}): +{{ steps }} == {{ from[0] }}b/{{ from[1] }}t &amp;rarr; {{ to[0] }}b/{{ to[1] }}t
+</div>

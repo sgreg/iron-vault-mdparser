@@ -146,6 +146,22 @@ def check_ticks(rank: str, current: int, steps: int) -> tuple[int, int]:
     return ticks * steps, min(current + (ticks * steps), 40)
 
 
+def ticks_to_progress(total_ticks: int) -> tuple[int, int]:
+    """Convert a total number of ticks into full boxes and remaining ticks.
+
+    Args:
+        total_ticks: Number of ticks to convert, e.g., one of the return
+            values retrieved from `check_ticks()`.
+
+    Returns:
+        A tuple `(boxes, ticks)`
+    """
+    boxes = int(total_ticks / 4)
+    ticks = total_ticks - (boxes * 4)
+
+    return boxes, ticks
+
+
 def initiative_slugify(initiative: str) -> str | None:
     """Convert an initiative state to a CSS‑friendly slug.
 

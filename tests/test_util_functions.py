@@ -8,8 +8,9 @@ from ironvaultmd.util import (
     check_ticks,
     initiative_slugify,
     position_slugify,
+    ticks_to_progress,
 )
-from utils import StringCompareData, DiceData, ProgressTickData
+from utils import StringCompareData, DiceData, ProgressTickData, ProgressBoxTickData
 
 
 def test_util_split_match():
@@ -123,6 +124,23 @@ def test_util_ticks():
 
     for d in data:
         assert check_ticks(d.rank, d.current, d.steps) == d.expected
+
+def test_util_tick_to_progress():
+    data = [
+        ProgressBoxTickData(0, (0, 0)),
+        ProgressBoxTickData(1, (0, 1)),
+        ProgressBoxTickData(4, (1, 0)),
+        ProgressBoxTickData(5, (1, 1)),
+        ProgressBoxTickData(23, (5, 3)),
+        ProgressBoxTickData(40, (10, 0)),
+        # No range limitation is put in place, so these should still work
+        ProgressBoxTickData(41, (10, 1)),
+        ProgressBoxTickData(-1, (0, -1)),
+    ]
+
+    for d in data:
+        assert ticks_to_progress(d.ticks) == d.expected
+
 
 def test_util_initiative_slugify():
     data = [

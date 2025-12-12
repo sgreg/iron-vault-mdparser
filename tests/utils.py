@@ -56,3 +56,7 @@ class ProgressTickData(NamedTuple):
     current: int
     steps: int
     expected: tuple[int, int]
+
+class ProgressBoxTickData(NamedTuple):
+    ticks: int
+    expected: tuple[int, int]
