@@ -310,13 +310,13 @@ class RerollNodeParser(NodeParser):
             ctx: Current parsing context used to access the `RollContext`.
 
         Returns:
-            The original groups merged with the serialized `RollResult` after
-            applying the reroll.
+            The original groups merged with the replaced die's initial value,
+            and serialized `RollResult` after applying the reroll.
         """
-        # TODO get the current value to add it to the template data
         data["value"] = int(data["value"])
+        current = ctx.roll.value(data["die"])
         result = ctx.roll.reroll(data["die"], data["value"])
-        return data | asdict(result)
+        return data | {"old_value": current} | asdict(result)
 
 
 class RollNodeParser(NodeParser):

@@ -186,6 +186,20 @@ class RollContext:
         hitmiss, match = check_dice(score, self.vs1, self.vs2)
         return RollResult(score, self.vs1, self.vs2, hitmiss, match)
 
+    def value(self, attribute: str) -> int | bool | None:
+        """Retrieves the value of the specified attribute if it exists.
+
+        Args:
+            attribute: The name of the attribute to retrieve.
+
+        Returns:
+            The value of the requested attribute, if it exists, `None` otherwise.
+        """
+        try:
+            return self.__getattribute__(attribute)
+        except AttributeError:
+            return None
+
 
 class BlockContext:
     """Container for a named mechanics block and its roll context.

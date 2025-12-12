@@ -102,3 +102,19 @@ def test_rollcontext_burn():
     res = rctx.progress_roll(6, 8, 9)
     assert res == RollResult(6, 8, 9, "miss", False)
     assert rctx.burn(8) == RollResult(6, 8, 9, "miss", False) # verify progress roll ignores momentum burning
+
+def test_rollcontext_value():
+    rctx = RollContext()
+
+    assert rctx.value("rolled") == False
+    assert rctx.value("action") == 0
+    assert rctx.value("stat") == 0
+
+    rctx.roll(5, 2, 0, 1, 9)
+
+    assert rctx.value("rolled") == True
+    assert rctx.value("action") == 5
+    assert rctx.value("stat") == 2
+
+    assert rctx.value("") is None
+    assert rctx.value("invalid") is None
