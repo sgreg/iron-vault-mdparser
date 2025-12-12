@@ -115,7 +115,7 @@ class MeterNodeParser(NodeParser):
         super().__init__("Meter", regex)
 
     def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
-        """Normalize the meter name by removing link decorations.
+        """Normalize the meter name by removing link decorations and convert values to int.
 
         Args:
             data: Regex groups including `meter_name`, `from`, and `to`.
@@ -123,10 +123,15 @@ class MeterNodeParser(NodeParser):
 
         Returns:
             The original groups with `meter_name` converted to a plain display
-            string (wikilink markup stripped).
+            string and numeric values converted to integers.
         """
         data["meter_name"] = convert_link_name(data["meter_name"])
-        return data
+
+        data["from"] = int(data["from"])
+        data["to"] = int(data["to"])
+        diff: int = data["to"] - data["from"]
+
+        return data | {"diff": diff}
 
 
 class MoveNodeParser(NodeParser):
@@ -220,6 +225,7 @@ class ProgressNodeParser(NodeParser):
     def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
         """Compute and add the new progress state based on rank and progress.
 
+        Converts numeric values `from` and `steps` to integers.
         Adds the number of ticks the track is progressed based on `steps` and
         `rank`, and the resulting total number of ticks to the dictionary.
 
@@ -229,9 +235,13 @@ class ProgressNodeParser(NodeParser):
 
         Returns:
             The original groups merged with computed `ticks` and `to`
-            (total ticks progressed) based on the rank and number of steps.
+            (total ticks progressed) based on the rank and number of steps,
+            and its numeric values converted to integers.
         """
-        ticks, to = check_ticks(data["rank"], int(data["from"]), int(data['steps']))
+        data["from"] = int(data["from"])
+        data["steps"] = int(data["steps"])
+        ticks, to = check_ticks(data["rank"], data["from"], data['steps'])
+
         return data | {"ticks": ticks, "to": to}
 
 
@@ -294,6 +304,8 @@ class RerollNodeParser(NodeParser):
             The original groups merged with the serialized `RollResult` after
             applying the reroll.
         """
+        # TODO get the current value to add it to the template data
+        data["value"] = int(data["value"])
         result = ctx.roll.reroll(data["die"], data["value"])
         return data | asdict(result)
 
@@ -345,7 +357,10 @@ class XpNodeParser(NodeParser):
             _: Current parsing context (unused).
 
         Returns:
-            The original groups merged with its `diff` value.
+            The original groups converted to integer values and with its `diff` value.
         """
-        diff: int = int(data["to"]) - int(data["from"])
+        data["from"] = int(data["from"])
+        data["to"] = int(data["to"])
+        diff: int = data["to"] - data["from"]
+
         return data | {"diff": diff}

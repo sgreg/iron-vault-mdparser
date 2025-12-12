@@ -4,6 +4,7 @@ Meter node
 meter_name  name of the meter to adjust
 from        previous value on the meter
 to          new value on the meter
+diff        difference in change, positive or negative
 
 #}
-<div class="ivm-meter{{ " ivm-meter-increase" if to > from }}{{ " ivm-meter-decrease" if from > to }}">{{ meter_name }}: {{ from }} &amp;rarr; {{ to }}</div>
+<div class="ivm-meter{{ " ivm-meter-increase" if to > from }}{{ " ivm-meter-decrease" if from > to }}">{{ meter_name }}: {{ '+' if diff > 0 }}{{  diff }} ({{ from }} &amp;rarr; {{ to }})</div>

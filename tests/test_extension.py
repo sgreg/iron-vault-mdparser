@@ -16,6 +16,7 @@ def test_extension_random_mechblock(md):
 move "[React Under Fire](datasworn:move:starforged\\/combat\\/react_under_fire)" {
     roll "Edge" action=6 adds=0 stat=2 vs1=6 vs2=1
     meter "Momentum" from=2 to=3
+    meter "Spirit" from=4 to=2
 }
 - "in control"
 ```"""
@@ -26,7 +27,8 @@ move "[React Under Fire](datasworn:move:starforged\\/combat\\/react_under_fire)"
 <div class="ivm-roll ivm-roll-strong">
     Roll with Edge: 6 + 2 + 0 = 8 vs 6 | 1 strong
 </div>
-<div class="ivm-meter ivm-meter-increase">Momentum: 2 &rarr; 3</div>
+<div class="ivm-meter ivm-meter-increase">Momentum: +1 (2 &rarr; 3)</div>
+<div class="ivm-meter ivm-meter-decrease">Spirit: -2 (4 &rarr; 2)</div>
 <div class="ivm-roll-result ivm-roll-strong">
     8 vs 6 | 1 strong
 </div>
@@ -134,6 +136,7 @@ Regular text with [[a link]], [[link|link with label]], [[link#anchor|link with 
 move "[React Under Fire](datasworn:move:starforged\\/combat\\/react_under_fire)" {
     roll "Edge" action=6 adds=0 stat=2 vs1=6 vs2=1
     meter "Momentum" from=2 to=3
+    meter "Health" from=5 to=4
 }
 - "in control"
 ```
@@ -159,7 +162,8 @@ More text
 <div class="ivm-roll ivm-roll-strong">
     Roll with Edge: 6 + 2 + 0 = 8 vs 6 | 1 strong
 </div>
-<div class="ivm-meter ivm-meter-increase">Momentum: 2 &rarr; 3</div>
+<div class="ivm-meter ivm-meter-increase">Momentum: +1 (2 &rarr; 3)</div>
+<div class="ivm-meter ivm-meter-decrease">Health: -1 (5 &rarr; 4)</div>
 <div class="ivm-roll-result ivm-roll-strong">
     8 vs 6 | 1 strong
 </div>

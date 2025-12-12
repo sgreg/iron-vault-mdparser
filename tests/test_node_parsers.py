@@ -336,7 +336,11 @@ def test_parser_progress(ctx):
     ]
 
     nodes = assert_parser_data(parser, ctx, rolls, classes)
-    assert "Track Name" in nodes[0].text
+
+    # track name is enclosed in <b></b> now, extract that and verify content
+    bolds = nodes[0].findall("b")
+    assert len(bolds) > 0
+    assert "Track Name" in bolds[0].text
 
 
 def test_parser_progressroll(block_ctx):
