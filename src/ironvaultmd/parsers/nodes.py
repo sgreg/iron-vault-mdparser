@@ -191,6 +191,8 @@ class OracleNodeParser(NodeParser):
         elif data["oracle_text"] is not None:
             oracle = convert_link_name(data["oracle_text"])
 
+        data["result"] = convert_link_name(data["result"])
+
         return data | {"oracle": oracle}
 
 
