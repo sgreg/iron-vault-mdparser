@@ -40,7 +40,6 @@ class UserTemplates:
         track: Template for the `track` node.
         xp: Template for the `xp` node.
         link: Template for wiki links rendered by the links processor.
-        roll_result: Template for a summarized roll result appended to a move.
     """
     # Nodes
     add: str | None = None
@@ -60,7 +59,6 @@ class UserTemplates:
     xp: str | None = None
     # Other elements
     link: str | None = None
-    roll_result: str | None = None
 
 
 class Templater:
@@ -99,11 +97,11 @@ class Templater:
         """Return a Jinja template by element name or `None`.
 
         The `name` is normalized to match a template file named
-        `<name>.html` where name is lowercased and spaces replaced with
+        `<name>.html` where `name` is lowercased and spaces replaced with
         underscores. User overrides take precedence.
 
         Args:
-            name: Element name, e.g., `Roll Result` or `oracle`.
+            name: Element name, e.g., `Progress Roll` or `oracle`.
 
         Returns:
             A compiled Jinja `Template` or `None` when explicitly disabled.

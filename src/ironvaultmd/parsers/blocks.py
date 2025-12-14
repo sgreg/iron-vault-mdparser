@@ -59,9 +59,8 @@ class ActorBlockParser(MechanicsBlockParser):
 class MoveBlockParser(MechanicsBlockParser):
     """Block parser for mechanics move sections.
 
-    Creates a move container and, upon finalization, appends the roll result
-    using the `roll_result` template and updates CSS classes based on hit/miss
-    and match status.
+    Creates a move container and, upon finalization, updates CSS classes
+    based on the move roll outcome's hit/miss and match status.
     """
     def __init__(self):
         """Initialize the parser with its regex pattern."""
@@ -83,7 +82,10 @@ class MoveBlockParser(MechanicsBlockParser):
         return element
 
     def finalize(self, ctx):
-        """Append roll result and style the move block if a roll occurred.
+        """Style the move block based on its roll outcome if a roll occurred.
+
+        The outcome is based on the `RollResult` within the `Context` and
+        takes possible dice rerolls and momentum burning into account.
 
         Args:
             ctx: Current parsing context.
@@ -93,12 +95,6 @@ class MoveBlockParser(MechanicsBlockParser):
             return
 
         result = ctx.roll.get()
-
-        # Add the final roll result as an own <div>
-        template = templater.get_template("roll_result")
-        if template is not None:
-            element = etree.fromstring(template.render(asdict(result)))
-            ctx.parent.append(element)
 
         # Style the main move block <div> with classes based on the roll result
         class_hitmiss = f"ivm-move-result-{result.hitmiss}"

@@ -99,40 +99,11 @@ def test_parser_move_with_roll(ctx):
     assert element.get("class") == "ivm-move ivm-move-result-weak"
 
     children = element.findall("div")
-    # Expect 2 divs, one being the move name, the other the added total result
+    # Expect 1 div with the move name
     # In a real scenario there'd also be the actual roll, but we're not parsing nodes here, only invoke roll context
-    assert len(children) == 2
-    assert children[0].get("class") == "ivm-move-name"
-    assert children[0].text == "Move Name"
-
-    assert children[1].get("class") == "ivm-roll-result ivm-roll-weak"
-    for sub in ["7", "3", "8"]:
-        assert sub in element_text(children[1])
-
-def test_parser_move_no_template(ctx):
-    # Disable roll result template
-    templater.user_templates.roll_result = ''
-
-    parser = MoveBlockParser()
-
-    data = '"[Move Name](Move Link)"'
-    root = parser.begin(ctx, data)
-    ctx.push("move", root)
-
-    ctx.roll.roll(5, 2, 0, 3, 8) # total 7 vs 3 | 8, expect weak hit
-    parser.finalize(ctx)
-    element = ctx.parent
-
-    # Verify move result CSS classes are still added to the parent move block div
-    assert element is not None
-    assert element.get("class") == "ivm-move ivm-move-result-weak"
-
-    children = element.findall("div")
-    # Expect only 1 div for the move name but none for the move result
     assert len(children) == 1
     assert children[0].get("class") == "ivm-move-name"
     assert children[0].text == "Move Name"
-
 
 def test_parser_oracle_group(ctx):
     parser = OracleGroupBlockParser()

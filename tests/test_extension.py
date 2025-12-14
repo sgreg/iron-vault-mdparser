@@ -45,13 +45,6 @@ move "[React Under Fire](datasworn:move:starforged\\/combat\\/react_under_fire)"
     <span class="ivm-meter-diff">-2</span>
     <span class="ivm-meter-value">(4 &rarr; 2)</span>
 </div>
-<div class="ivm-roll-result ivm-roll-strong">
-    Roll result:
-    <span class="ivm-roll-score">8</span> vs
-    <span class="ivm-roll-vs">6</span> |
-    <span class="ivm-roll-vs">1</span>
-    <span class="ivm-roll-outcome">strong</span>
-</div>
 </div>
 <div class="ivm-ooc">// in control</div>
 </div>"""
@@ -199,13 +192,6 @@ More text
     <span class="ivm-meter-name">Health</span>:
     <span class="ivm-meter-diff">-1</span>
     <span class="ivm-meter-value">(5 &rarr; 4)</span>
-</div>
-<div class="ivm-roll-result ivm-roll-strong">
-    Roll result:
-    <span class="ivm-roll-score">8</span> vs
-    <span class="ivm-roll-vs">6</span> |
-    <span class="ivm-roll-vs">1</span>
-    <span class="ivm-roll-outcome">strong</span>
 </div>
 </div>
 <div class="my-ooc-class">(ooc: "in control")</div>

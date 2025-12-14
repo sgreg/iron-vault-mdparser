@@ -25,7 +25,9 @@ Example:
     links: list = []
     frontmatter: dict = {}
     templates = IronVaultTemplates(  # override or disable templates if desired
-        # roll_result="<div class=\"ivm-roll-result\">...</div>"
+        clock='<div class="ivm-clock">Clock {{ name }} activity happened</div>',  # skip the details
+        ooc='<div class="my-own-ooc-class">{{ comment }}</div>',  # change to custom CSS class
+        xp=''.  # don't render xp changes
     )
 
     md = Markdown(extensions=[

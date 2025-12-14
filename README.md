@@ -43,8 +43,8 @@ By default, links are packed in a `<span class="ivm-link">` element, but a `link
 can be defined to adjust that behavior - see the sections about templates for more information.
 
 #### Roll results
-Roll results of a move are collected, including dice rerolls and burning momentum.
-The outcome is added as CSS classes to the enclosing move block, along with a dedicated roll result node.
+Roll results of a move are collected, including dice rerolls and burning momentum, and
+the outcome is added as CSS classes to the enclosing move block.
 
 #### User-defined templates
 Nodes are parsed using the [Jinja](https://jinja.palletsprojects.com/en/stable/) templating engine.
