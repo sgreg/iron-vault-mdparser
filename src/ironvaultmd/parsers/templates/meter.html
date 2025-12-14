@@ -7,4 +7,8 @@ to          new value on the meter
 diff        difference in change, positive or negative
 
 #}
-<div class="ivm-meter{{ " ivm-meter-increase" if to > from }}{{ " ivm-meter-decrease" if from > to }}">{{ meter_name }}: {{ '+' if diff > 0 }}{{  diff }} ({{ from }} &amp;rarr; {{ to }})</div>
+<div class="ivm-meter ivm-meter-{{ "increase" if diff >= 0 else "decrease" }}">
+    <span class="ivm-meter-name">{{ meter_name }}</span>:
+    <span class="ivm-meter-diff">{{ "{:+}".format(diff) }}</span>
+    <span class="ivm-meter-value">({{ from }} &amp;rarr; {{ to }})</span>
+</div>

@@ -7,4 +7,7 @@ from_slug   shortened name of the old position, one of "nocombat", "control", or
 to_slug     shortened name of the new position, same as from_slug values
 
 #}
-<div class="ivm-position{{ " ivm-position-" ~ to_slug if to_slug }}">Position {{ from }} &amp;rarr; {{ to }}</div>
+<div class="ivm-position ivm-position-{{ to_slug }}">
+    <span class="ivm-position-{{ from_slug }}">{{ from|capitalize }}</span> &amp;rarr;
+    <span class="ivm-position-{{ to_slug }}">{{ to|capitalize }}</span>
+</div>

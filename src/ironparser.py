@@ -13,6 +13,7 @@ logger = logging.getLogger("ironparser")
 template_top = """<!-- Created by ironparser.py -->
 <html>
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="ironvault.css"
 </head>
 <body>

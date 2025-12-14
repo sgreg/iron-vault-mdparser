@@ -5,4 +5,8 @@ impact  name of the impact that was (un)marked
 marked  true if the impact was marked, false if it was unmarked
 
 #}
-<div class="ivm-impact ivm-impact-{{ "marked" if marked else "unmarked" }}">Impact <b>{{ impact }}</b> {{ "marked" if marked else "unmarked" }}</div>
+<div class="ivm-impact ivm-impact-{{ "marked" if marked else "cleared" }}">
+    Impact
+    <span class="ivm-impact-name">{{ impact }}</span>
+    <span class="ivm-impact-state">{{ "marked" if marked else "cleared" }}</span>
+</div>

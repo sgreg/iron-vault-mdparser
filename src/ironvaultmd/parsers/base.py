@@ -89,9 +89,12 @@ class NodeParser:
         """
         matches = self._match(data)
         if matches is None:
-            return
+            # Use generic node template as fallback, showing data as-is
+            self.template = templater.get_template("node")
+            args = {"node_name": self.node_name, "content": data}
 
-        args = self.create_args(matches, ctx)
+        else:
+            args = self.create_args(matches, ctx)
 
         if self.template is not None:
             out = self.template.render(args)

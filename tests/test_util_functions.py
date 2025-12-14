@@ -147,21 +147,19 @@ def test_util_initiative_slugify():
         StringCompareData("out of combat", "nocombat"),
         StringCompareData("has initiative", "initiative"),
         StringCompareData("no initiative", "noinitiative"),
+        StringCompareData("invalid initiative", "unknown"),
     ]
 
     for d in data:
         assert initiative_slugify(d.content) == d.expected
-
-    assert initiative_slugify("something else") is None
 
 def test_util_position_slugify():
     data = [
         StringCompareData("out of combat", "nocombat"),
         StringCompareData("in control", "control"),
         StringCompareData("in a bad spot", "badspot"),
+        StringCompareData("invalid position", "unknown"),
     ]
 
     for d in data:
         assert position_slugify(d.content) == d.expected
-
-    assert position_slugify("something else") is None

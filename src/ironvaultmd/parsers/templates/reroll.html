@@ -11,4 +11,13 @@ hitmiss     new outcome of the roll, "strong", "weak", or "miss"
 match       true if challenge dice are a match
 
 #}
-<div class="ivm-reroll">Reroll {{ die }} {{ old_value }} &amp;rarr; {{ value }} = {{ score }} vs {{ vs1 }} | {{ vs2 }} {{ hitmiss }}{{ " WITH MATCH!" if match }}</div>
+<div class="ivm-reroll ivm-roll-{{ hitmiss }}{{ " ivm-roll-match" if match }}">
+    Reroll
+    <span class="ivm-reroll-name">{{ die }}</span>
+    <span class="ivm-reroll-value-old">{{ old_value }}</span> &amp;rarr;
+    <span class="ivm-reroll-value-new">{{ value }}</span> =
+    <span class="ivm-roll-score">{{ score }}</span> vs
+    <span class="ivm-roll-vs">{{ vs1 }}</span> |
+    <span class="ivm-roll-vs">{{ vs2 }}</span>
+    <span class="ivm-roll-outcome">{{ hitmiss }}{{ " WITH MATCH!" if match }}</span>
+</div>

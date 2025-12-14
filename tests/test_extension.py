@@ -25,12 +25,32 @@ move "[React Under Fire](datasworn:move:starforged\\/combat\\/react_under_fire)"
 <div class="ivm-move ivm-move-result-strong">
 <div class="ivm-move-name">React Under Fire</div>
 <div class="ivm-roll ivm-roll-strong">
-    Roll with Edge: 6 + 2 + 0 = 8 vs 6 | 1 strong
+    Roll with
+    <span class="ivm-roll-stat-name">Edge</span>:
+    <span class="ivm-roll-action">6</span> +
+    <span class="ivm-roll-stat">2</span> +
+    <span class="ivm-roll-adds">0</span> =
+    <span class="ivm-roll-score">8</span> vs
+    <span class="ivm-roll-vs">6</span> |
+    <span class="ivm-roll-vs">1</span>
+    <span class="ivm-roll-outcome">strong</span>
 </div>
-<div class="ivm-meter ivm-meter-increase">Momentum: +1 (2 &rarr; 3)</div>
-<div class="ivm-meter ivm-meter-decrease">Spirit: -2 (4 &rarr; 2)</div>
+<div class="ivm-meter ivm-meter-increase">
+    <span class="ivm-meter-name">Momentum</span>:
+    <span class="ivm-meter-diff">+1</span>
+    <span class="ivm-meter-value">(2 &rarr; 3)</span>
+</div>
+<div class="ivm-meter ivm-meter-decrease">
+    <span class="ivm-meter-name">Spirit</span>:
+    <span class="ivm-meter-diff">-2</span>
+    <span class="ivm-meter-value">(4 &rarr; 2)</span>
+</div>
 <div class="ivm-roll-result ivm-roll-strong">
-    8 vs 6 | 1 strong
+    Roll result:
+    <span class="ivm-roll-score">8</span> vs
+    <span class="ivm-roll-vs">6</span> |
+    <span class="ivm-roll-vs">1</span>
+    <span class="ivm-roll-outcome">strong</span>
 </div>
 </div>
 <div class="ivm-ooc">// in control</div>
@@ -160,12 +180,32 @@ More text
 <div class="ivm-move ivm-move-result-strong">
 <div class="ivm-move-name">React Under Fire</div>
 <div class="ivm-roll ivm-roll-strong">
-    Roll with Edge: 6 + 2 + 0 = 8 vs 6 | 1 strong
+    Roll with
+    <span class="ivm-roll-stat-name">Edge</span>:
+    <span class="ivm-roll-action">6</span> +
+    <span class="ivm-roll-stat">2</span> +
+    <span class="ivm-roll-adds">0</span> =
+    <span class="ivm-roll-score">8</span> vs
+    <span class="ivm-roll-vs">6</span> |
+    <span class="ivm-roll-vs">1</span>
+    <span class="ivm-roll-outcome">strong</span>
 </div>
-<div class="ivm-meter ivm-meter-increase">Momentum: +1 (2 &rarr; 3)</div>
-<div class="ivm-meter ivm-meter-decrease">Health: -1 (5 &rarr; 4)</div>
+<div class="ivm-meter ivm-meter-increase">
+    <span class="ivm-meter-name">Momentum</span>:
+    <span class="ivm-meter-diff">+1</span>
+    <span class="ivm-meter-value">(2 &rarr; 3)</span>
+</div>
+<div class="ivm-meter ivm-meter-decrease">
+    <span class="ivm-meter-name">Health</span>:
+    <span class="ivm-meter-diff">-1</span>
+    <span class="ivm-meter-value">(5 &rarr; 4)</span>
+</div>
 <div class="ivm-roll-result ivm-roll-strong">
-    8 vs 6 | 1 strong
+    Roll result:
+    <span class="ivm-roll-score">8</span> vs
+    <span class="ivm-roll-vs">6</span> |
+    <span class="ivm-roll-vs">1</span>
+    <span class="ivm-roll-outcome">strong</span>
 </div>
 </div>
 <div class="my-ooc-class">(ooc: "in control")</div>

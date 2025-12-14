@@ -162,7 +162,7 @@ def ticks_to_progress(total_ticks: int) -> tuple[int, int]:
     return boxes, ticks
 
 
-def initiative_slugify(initiative: str) -> str | None:
+def initiative_slugify(initiative: str) -> str:
     """Convert an initiative state to a CSS‑friendly slug.
 
     Args:
@@ -181,10 +181,10 @@ def initiative_slugify(initiative: str) -> str | None:
             return "noinitiative"
 
     logger.warning(f"Unhandled initiative '{initiative}'")
-    return None
+    return "unknown"
 
 
-def position_slugify(position: str) -> str | None:
+def position_slugify(position: str) -> str:
     """Convert a position state to a CSS‑friendly slug.
 
     Args:
@@ -203,4 +203,4 @@ def position_slugify(position: str) -> str | None:
             return "badspot"
 
     logger.warning(f"Unhandled position '{position}'")
-    return None
+    return "unknown"

@@ -6,4 +6,9 @@ roll        die value of the rolled oracle result
 result      text of the rolled oracle result
 
 #}
-<div class="ivm-oracle">Oracle {{ oracle }} rolled a {{ roll }} == {{ result }}</div>
+<div class="ivm-oracle">
+    Oracle
+    <span class="ivm-oracle-name">{{ oracle }}</span> rolled a
+    <span class="ivm-oracle-roll">{{ roll }}</span> &amp;rarr;
+    <span class="ivm-oracle-result">{{ result }}</span>
+</div>

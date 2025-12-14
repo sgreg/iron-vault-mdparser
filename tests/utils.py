@@ -18,22 +18,30 @@ def assert_parser_data(parser: NodeParser, ctx: Context, rolls: list[ParserData]
     for roll in rolls:
         parser.parse(ctx, roll.content)
 
-    expected_rolls = [roll for roll in rolls if roll.expected_success]
     nodes = ctx.parent.findall("div")
 
-    assert len(nodes) == len(expected_rolls)
+    # NodeParser creates fallback nodes if regex fails to match,
+    # so all items in `rolls` should have an item in `nodes`
+    assert len(nodes) == len(rolls)
 
+    success_idx = 0
     for idx, node in enumerate(nodes):
-        roll = expected_rolls[idx]
-        classes = node.get("class")
+        if rolls[idx].expected_success:
+            # Verify the successfully parsed items have the expected index and CSS classes
+            roll = rolls[idx]
+            classes = node.get("class")
 
-        assert idx == roll.expected_index
+            assert success_idx == roll.expected_index
+            success_idx += 1
 
-        for c in all_classes:
-            if c in roll.expected_classes:
-                assert c in classes
-            else:
-                assert c not in classes
+            for c in all_classes:
+                if c in roll.expected_classes:
+                    assert c in classes
+                else:
+                    assert c not in classes
+        else:
+            # Verify the unsuccessfully parsed items have their text in the fallback node
+            assert rolls[idx].content in element_text(node)
 
     return nodes
 
@@ -60,3 +68,23 @@ class ProgressTickData(NamedTuple):
 class ProgressBoxTickData(NamedTuple):
     ticks: int
     expected: tuple[int, int]
+
+
+def element_text(element: etree.Element) -> str:
+    """Extracts and concatenates all text content from an etree element.
+
+    This essentially strips away all inner tags from the HTML string
+    and returns the plain text content from it.
+
+    Example:
+        `The <b>bold</b> <i>italic</i> frog jumps <sup>over</sup> <span class="something">you know what</span>`
+     -> `The bold italic frog jumps over you know what`
+
+    Args:
+        element: The HTML element from which to extract the text.
+
+    Returns:
+        str: A string containing concatenated text from the `element` and its
+        descendants, preserving the order.
+    """
+    return "".join(text for text in element.itertext())

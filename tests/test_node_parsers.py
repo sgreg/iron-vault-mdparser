@@ -1,4 +1,4 @@
-from utils import ParserData, assert_parser_data
+from utils import ParserData, assert_parser_data, element_text
 
 from ironvaultmd.parsers.nodes import (
     AddNodeParser,
@@ -39,7 +39,7 @@ def test_parser_add(ctx):
 
     # FIXME this tests the classes and with that somewhat the parsers, but should compare HTML output as well
     nodes = assert_parser_data(parser, ctx, rolls, classes)
-    assert "comment" in nodes[1].text
+    assert "comment" in element_text(nodes[1])
 
 
 def test_parser_burn(block_ctx):
@@ -98,12 +98,12 @@ def test_parser_clock(ctx):
     ]
 
     nodes = assert_parser_data(parser, ctx, rolls, classes)
-    assert "Clock Name" in nodes[0].text
+    assert "Clock Name" in element_text(nodes[0])
 
 
 
 def test_parser_impact(ctx):
-    parser = ImpactNodeParser();
+    parser = ImpactNodeParser()
 
     assert parser.node_name == "Impact"
     assert parser.regex
@@ -116,9 +116,9 @@ def test_parser_impact(ctx):
 
     data = [
         ParserData('"Wounded" true', True, 0, ["impact", "impact-marked"]),
-        ParserData('"Wounded" false', True, 1, ["impact", "impact-unmarked"]),
+        ParserData('"Wounded" false', True, 1, ["impact", "impact-cleared"]),
         ParserData('"Permanently Harmed" true', True, 2, ["impact", "impact-marked"]),
-        ParserData('"Permanently Harmed" false', True, 3, ["impact", "impact-unmarked"]),
+        ParserData('"Permanently Harmed" false', True, 3, ["impact", "impact-cleared"]),
         ParserData('"some random something" true', True, 4, ["impact", "impact-marked"]),
         ParserData('"Wounded" unknown', False),
         ParserData('"Wounded"', False),
@@ -178,7 +178,7 @@ def test_parser_meter(ctx):
     rolls = [
         ParserData('"Momentum" from=5 to=6', True, 0, ["meter-increase"]),
         ParserData('"Momentum" from=6 to=5', True, 1, ["meter-decrease"]),
-        ParserData('"Momentum" from=6 to=6', True, 2, []),
+        ParserData('"Momentum" from=6 to=6', True, 2, ["meter-increase"]),
         ParserData('"!@#$%^&*()" from=5 to=6', True, 3, ["meter-increase"]),
         ParserData('"Multi-word meter \\/ name" from=6 to=5', True, 4, ["meter-decrease"]),
         ParserData('"[[Linked meter|Meter with Link]]" from=5 to=6', True, 5, ["meter-increase"]),
@@ -196,10 +196,10 @@ def test_parser_meter(ctx):
     ]
 
     nodes = assert_parser_data(parser, ctx, rolls, classes)
-    assert "Momentum" in nodes[0].text
-    assert "!@#$%^&*()" in nodes[3].text
-    assert "Multi-word meter / name" in nodes[4].text
-    assert "Meter with Link" in nodes[5].text
+    assert "Momentum" in element_text(nodes[0])
+    assert "!@#$%^&*()" in element_text(nodes[3])
+    assert "Multi-word meter / name" in element_text(nodes[4])
+    assert "Meter with Link" in element_text(nodes[5])
 
 
 def test_parser_move(ctx):
@@ -270,8 +270,8 @@ def test_parser_oracle(ctx):
     ]
 
     nodes = assert_parser_data(parser, ctx, rolls, classes)
-    assert "Oracle Name" in nodes[0].text
-    assert "Something" in nodes[0].text
+    assert "Oracle Name" in element_text(nodes[0])
+    assert "Something" in element_text(nodes[0])
 
 
 def test_parser_position(ctx):
@@ -337,10 +337,7 @@ def test_parser_progress(ctx):
 
     nodes = assert_parser_data(parser, ctx, rolls, classes)
 
-    # track name is enclosed in <b></b> now, extract that and verify content
-    bolds = nodes[0].findall("b")
-    assert len(bolds) > 0
-    assert "Track Name" in bolds[0].text
+    assert "Track Name" in element_text(nodes[0])
 
 
 def test_parser_progressroll(block_ctx):
@@ -382,9 +379,9 @@ def test_parser_progressroll(block_ctx):
 
     nodes = assert_parser_data(parser, block_ctx, rolls, classes)
 
-    assert "Track Name" in nodes[0].text
-    assert "undefined" in nodes[6].text
-    assert "Name in the back" in nodes[7].text
+    assert "Track Name" in element_text(nodes[0])
+    assert "undefined" in element_text(nodes[6])
+    assert "Name in the back" in element_text(nodes[7])
 
 
 def test_parser_reroll(block_ctx):
@@ -490,7 +487,7 @@ def test_parser_track(ctx):
     ]
 
     nodes = assert_parser_data(parser, ctx, rolls, classes)
-    assert "Track Name" in nodes[0].text
+    assert "Track Name" in element_text(nodes[0])
 
 
 def test_parser_xp(ctx):

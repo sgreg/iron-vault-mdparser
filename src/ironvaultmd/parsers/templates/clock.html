@@ -1,20 +1,24 @@
 {#
 Clock node
 
-name    name of the clock
-
 either
+    name        name of the clock
     status      status change
 or
+    name        name of the clock
     from        old value of filled clock segments
     to          new value of filled clock segments
     segments    number of total clock segments
 
 #}
 <div class="ivm-clock">
+    Clock
 {%- if status %}
-    Clock {{ status }}: {{ name }}
+    <span class="ivm-clock-status">{{ status }}</span>:
+    <span class="ivm-clock-name">{{ name }}</span>
 {%- else %}
-    Clock for {{ name }} &amp;rarr; {{ to }} / {{ segments }}
+    <span class="ivm-clock-name">{{ name }}</span>:
+    <span class="ivm-clock-value">{{ from }}/{{ segments }}</span> &amp;rarr;
+    <span class="ivm-clock-value">{{ to }}/{{ segments }}</span>
 {%-  endif %}
 </div>

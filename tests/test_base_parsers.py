@@ -28,15 +28,23 @@ def test_node_node_render(ctx):
     data = 'test data "123"'
 
     parser = NodeParser("Test", regex)
-
-    parser.parse(ctx, "no match")
-    assert ctx.parent.find("div") is None
-
     parser.parse(ctx, data)
 
     node = ctx.parent.find("div")
     assert node is not None
     assert node.text == "data: 123"
+
+def test_node_fallback_render(ctx):
+    regex = r'^test data "(?P<test_data>.+)"$'
+    # This won't match, should fall back to a generic node element
+    data = 'no match'
+
+    parser = NodeParser("Test", regex)
+    parser.parse(ctx, data)
+
+    node = ctx.parent.find("div")
+    assert node is not None
+    assert node.text == f"Test: {data}"
 
 def test_node_args_override(ctx):
     regex = r'^test data "(?P<test_data>.+)"$'
@@ -47,15 +55,28 @@ def test_node_args_override(ctx):
             return {"test_data": "overridden"}
 
     parser = TestParser("Test", regex)
-
-    parser.parse(ctx, "no match")
-    assert ctx.parent.find("div") is None
-
     parser.parse(ctx, data)
 
     node = ctx.parent.find("div")
     assert node is not None
     assert node.text == "data: overridden"
+
+def test_node_fallback_args_override(ctx):
+    regex = r'^test data "(?P<test_data>.+)"$'
+    data = 'no match'
+
+    class TestParser(NodeParser):
+        def create_args(self, match, context):
+            # Verify create_args isn't called when there's no match
+            raise Exception("shouldn't have called create_args")
+
+    parser = TestParser("Test", regex)
+    parser.parse(ctx, data)
+
+    node = ctx.parent.find("div")
+    assert node is not None
+    # Verify a generic node element with original data was created, no args override happened
+    assert node.text == f"Test: {data}"
 
 def test_node_template_disable(block_ctx):
     # Disable template for this parser

@@ -6,6 +6,7 @@ from ironvaultmd.parsers.blocks import (
     OraclePromptBlockParser,
 )
 from ironvaultmd.parsers.templater import templater
+from utils import element_text
 
 
 def test_parser_actor(ctx):
@@ -106,7 +107,7 @@ def test_parser_move_with_roll(ctx):
 
     assert children[1].get("class") == "ivm-roll-result ivm-roll-weak"
     for sub in ["7", "3", "8"]:
-        assert sub in children[1].text
+        assert sub in element_text(children[1])
 
 def test_parser_move_no_template(ctx):
     # Disable roll result template

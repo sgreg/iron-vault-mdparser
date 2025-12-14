@@ -159,8 +159,9 @@ class OracleBlockParser(MechanicsBlockParser):
         elif data["oracle_text"] is not None:
             oracle = convert_link_name(data["oracle_text"])
 
+        # FIXME this should really use templates
         element = create_div(ctx.parent, ["oracle-block"])
-        create_div(element, ["oracle-name"]).text = f"Oracle {oracle} rolled a {data['roll']} == {data['result']}"
+        create_div(element, ["oracle-name"]).text = f"Oracle {oracle} rolled a {data['roll']} &rarr; {data['result']}"
         return element
 
 

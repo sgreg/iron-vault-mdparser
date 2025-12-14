@@ -6,4 +6,9 @@ to      new xp value
 diff    difference in total xp, positive or negative
 
 #}
-<div class="ivm-xp ivm-xp-{{ "inc" if diff >= 0 else "dec" }}">XP: {{ "{:+}".format(diff) }} ({{ from }} &amp;rarr; {{ to }})</div>
+<div class="ivm-xp ivm-xp-{{ "increase" if diff >= 0 else "decrease" }}">
+    <span class="ivm-meter-name">XP</span>:
+    <span class="ivm-meter-diff">{{ "{:+}".format(diff) }}</span>
+    (<span class="ivm-xp-value">{{ from }}</span> &amp;rarr;
+    <span class="ivm-xp-value">{{ to }}</span>)
+</div>

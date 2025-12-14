@@ -13,5 +13,13 @@ match       true if challenge dice are a match
 
 #}
 <div class="ivm-roll ivm-roll-{{ hitmiss }}{{ " ivm-roll-match" if match }}">
-    Roll with {{ stat_name }}: {{ action }} + {{ stat }} + {{ adds }} = {{ score }} vs {{ vs1 }} | {{ vs2 }} {{ hitmiss }}{{ " WITH MATCH!" if match }}
+    Roll with
+    <span class="ivm-roll-stat-name">{{ stat_name }}</span>:
+    <span class="ivm-roll-action">{{ action }}</span> +
+    <span class="ivm-roll-stat">{{ stat }}</span> +
+    <span class="ivm-roll-adds">{{ adds }}</span> =
+    <span class="ivm-roll-score">{{ score }}</span> vs
+    <span class="ivm-roll-vs">{{ vs1 }}</span> |
+    <span class="ivm-roll-vs">{{ vs2 }}</span>
+    <span class="ivm-roll-outcome">{{ hitmiss }}{{ " WITH MATCH!" if match }}</span>
 </div>

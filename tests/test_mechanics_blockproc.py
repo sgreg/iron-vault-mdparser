@@ -1,6 +1,7 @@
 import pytest
 
 from ironvaultmd.processors.mechanics import MechanicsBlockException
+from utils import element_text
 
 
 def test_mechblock_test_success(parent, mechblock):
@@ -202,8 +203,8 @@ def test_mechblock_parse_multiple_with_unknown(ctx, mechblock):
     assert len(nodes) == 2
 
     assert "ivm-add" in nodes[0].get("class")
-    assert "Add +2" in nodes[0].text
+    assert "Add +2" in element_text(nodes[0])
 
     assert "ivm-add" in nodes[1].get("class")
-    assert "Add +1" in nodes[1].text
+    assert "Add +1" in element_text(nodes[1])
 

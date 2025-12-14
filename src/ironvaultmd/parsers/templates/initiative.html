@@ -7,4 +7,7 @@ from_slug   shortened name of the old initiative status, one of "nocombat", "ini
 to_slug     shortened name of the new initiative value, same as from_slug values
 
 #}
-<div class="ivm-initiative{{ " ivm-initiative-" ~ to_slug if to_slug }}">{{ from|capitalize }} &amp;rarr; {{ to|capitalize }}</div>
+<div class="ivm-initiative ivm-initiative-{{ to_slug }}">
+    <span class="ivm-initiative-{{ from_slug }}">{{ from|capitalize }}</span> &amp;rarr;
+    <span class="ivm-initiative-{{ to_slug }}">{{ to|capitalize }}</span>
+</div>

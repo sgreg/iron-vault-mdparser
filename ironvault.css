@@ -1,188 +1,492 @@
+/*
+  Iron Vault Markdown Parser CSS
+*/
+
+/* ---------- Theme and other variables ---------- */
+:root {
+    --ivm-bg: #0f1115;
+    --ivm-surface: #141821;
+    --ivm-surface-2: #19202b;
+    --ivm-border: #263142;
+    --ivm-text: #e6e9ef;
+    --ivm-text-muted: #a9b2c3;
+    --ivm-code: #e3e7ef;
+
+    --ivm-accent: #6ea8fe;
+    --ivm-accent-2: #9bafff;
+
+    /* Roll results, reused for all other good (--ivm-strong) and bad (--ivm-miss) states */
+    --ivm-strong: #2bb673;
+    --ivm-weak: #f5a524;
+    --ivm-miss: #e03e3e;
+
+    --ivm-strong-bg: color-mix(in oklab, var(--ivm-strong) 15%, transparent);
+    --ivm-weak-bg: color-mix(in oklab, var(--ivm-weak) 15%, transparent);
+    --ivm-miss-bg: color-mix(in oklab, var(--ivm-miss) 15%, transparent);
+    --ivm-accent-bg: color-mix(in oklab, var(--ivm-accent) 15%, transparent);
+
+    --ivm-panel-gradient: linear-gradient(180deg, var(--ivm-surface), var(--ivm-surface-2));
+
+    --ivm-font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans";
+    --ivm-font-mono: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "DejaVu Sans Mono", "Courier New";
+
+    --ivm-name-weight: 600;
+
+    --ivm-pad-sm: 4px 8px;
+    --ivm-pad-md: 10px 12px;
+    --ivm-pad-lg: 14px 16px;
+
+    --ivm-radius-sm: 8px;
+    --ivm-radius-md: 10px;
+    --ivm-radius-lg: 12px;
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --ivm-bg: #f5f7fb;
+        --ivm-surface: #ffffff;
+        --ivm-surface-2: #f7f9fd;
+        --ivm-border: #dfe7f1;
+        --ivm-text: #0d1220;
+        --ivm-text-muted: #5a657a;
+        --ivm-code: #0d1220;
+    }
+}
+
+/* ---------- Base ---------- */
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+}
+
 body {
-    margin: 0px;
-    background-color: #333;
+    margin: 0;
+    background: var(--ivm-bg);
+    color: var(--ivm-text);
+    font-family: var(--ivm-font-sans), sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-.ivm-content {
-    display: block;
-    width: 60%;
-    margin: 10px auto;
-    padding: 10px 40px;
-    background-color: #ccc;
+.ivm-link, a.ivm-link, a {
+    color: var(--ivm-accent);
+    text-decoration: none;
 }
 
-.ivm-link {
+.ivm-link:hover, a:hover {
     text-decoration: underline;
 }
 
+.ivm-link:focus-visible, a:focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--ivm-accent) 55%, transparent);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
 
-.ivm-mechanics {
-    padding: 10px;
-    margin: 20px auto;
-    width: 50%;
+/* ---------- Content container ---------- */
+.ivm-content {
     display: block;
-    border: 1px solid black;
-    background-color: #999;
+    width: min(80ch, 92%);
+    margin: 24px auto 56px;
+    padding: 28px clamp(20px, 4vw, 40px);
+    background: var(--ivm-surface);
+    border: 1px solid var(--ivm-border);
+    border-radius: 14px;
+}
+
+.ivm-content p {
+    color: var(--ivm-text);
+    margin: 1rem 0;
+}
+
+.ivm-content pre, .ivm-content code {
+    font-family: var(--ivm-font-mono), monospace;
+    color: var(--ivm-code);
+}
+
+.ivm-content pre {
+    background: var(--ivm-surface-2);
+    border: 1px solid var(--ivm-border);
+    padding: var(--ivm-pad-lg);
+    border-radius: var(--ivm-radius-lg);
+    overflow: auto;
+}
+
+/* ---------- Mechanics block ---------- */
+.ivm-mechanics {
+    display: block;
+    width: min(60ch, 100%);
+    margin: 18px auto 26px;
+    padding: var(--ivm-pad-lg);
+    background: var(--ivm-surface-2);
+    border: 1px solid var(--ivm-border);
+    border-radius: var(--ivm-radius-lg);
 }
 
 .ivm-mechanics > :not(:first-child) {
-    margin-top: 10px;
+    margin-top: 12px;
 }
 
-
+/* ---------- Generic block ---------- */
 .ivm-block {
-    border: 1px dashed black;
-    padding: 10px;
-    background-color: #999900;
+    padding: var(--ivm-pad-lg);
+    border-radius: var(--ivm-radius-lg);
+    background: var(--ivm-accent-bg);
+    border: 1px solid var(--ivm-border);
+}
+
+/* ---------- Generic node ---------- */
+.ivm-node {
+    /* placeholder for generic node */
 }
 
 
-.ivm-move {
-    border: 1px dashed black;
-    padding: 10px;
-}
-
-.ivm-move:not(:first-child) {
-    margin-top: 10px;
-}
-
-.ivm-move-result-miss {
-    background-color: #c00;
-}
-
-.ivm-move-result-weak {
-    background-color: orange;
-}
-
-.ivm-move-result-strong {
-    background-color: #0c0;
-}
-
-.ivm-move-result-match {
-    font-weight: bold;
-    content: "MATCH";
-}
-
-.ivm-move-result-match > .ivm-move-name::after {
-    content: "  (MATCH!)";
-}
-
-.ivm-move-name {
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-
+/* ---------- Actor block ---------- */
 .ivm-actor {
-    border: 1px solid black;
-    padding: 10px;
+    padding: var(--ivm-pad-lg);
+    border: 1px solid var(--ivm-border);
+    border-radius: var(--ivm-radius-lg);
+    background: var(--ivm-surface);
 }
 
 .ivm-actor-name {
-    font-weight: bold;
+    font-weight: 700;
     font-style: italic;
-    padding-bottom: 10px;
+    padding-bottom: 8px;
+    color: var(--ivm-text);
 }
 
-
-.ivm-oracle-block {
-    border: 1px dashed black;
-    padding: 10px;
-}
-
-.ivm-oracle-name {
-    font-weight: bold;
-}
-
-
-.ivm-node {
-}
-
-
-/*
- * Nodes
- */
-
+/* ---------- Add ---------- */
 .ivm-add {
+    padding: var(--ivm-pad-sm);
+    background: transparent;
 }
 
+.ivm-add-value {
+    font-weight: 600;
+}
 
+.ivm-add-reason {
+    /* placeholder */
+}
+
+/* ---------- Clock ---------- */
 .ivm-clock {
+    padding: var(--ivm-pad-md);
+    border: 1px solid var(--ivm-border);
+    border-radius: var(--ivm-radius-md);
+    background: var(--ivm-panel-gradient);
 }
 
+.ivm-clock-name {
+    font-weight: var(--ivm-name-weight);
+}
 
+.ivm-clock-status {
+    font-style: italic;
+}
+
+.ivm-clock-value {
+    /* placeholder */
+}
+
+/* ---------- Impact ---------- */
+.ivm-impact {
+    padding: var(--ivm-pad-md);
+    border-radius: var(--ivm-radius-md);
+    background: var(--ivm-surface);
+}
+
+.ivm-impact-marked,
+.ivm-impact-cleared {
+    border: 2px solid var(--ivm-impact-accent);
+    background: var(--ivm-impact-bg);
+}
+
+.ivm-impact-marked {
+    --ivm-impact-accent: var(--ivm-miss);
+    --ivm-impact-bg: var(--ivm-miss-bg);
+}
+
+.ivm-impact-cleared {
+    --ivm-impact-accent: var(--ivm-strong);
+    --ivm-impact-bg: var(--ivm-strong-bg);
+}
+
+.ivm-impact-name {
+    font-weight: var(--ivm-name-weight);
+}
+
+.ivm-impact-state {
+    /* placeholder */
+}
+
+/* ---------- Initiative / Position ---------- */
+.ivm-initiative,
+.ivm-position {
+    border-radius: var(--ivm-radius-sm);
+    padding: var(--ivm-pad-sm);
+    border: 1px dotted var(--ivm-border);
+    font-weight: 600;
+    background: var(--ivm-accent-bg);
+}
+
+div.ivm-initiative-nocombat,
+div.ivm-position-nocombat {
+    /* placeholder */
+}
+
+span.ivm-initiative-nocombat,
+span.ivm-position-nocombat {
+    color: var(--ivm-text-muted);
+}
+
+div.ivm-initiative-initiative,
+div.ivm-position-control {
+    /* placeholder */
+}
+
+span.ivm-initiative-initiative,
+span.ivm-position-control {
+    color: var(--ivm-strong)
+}
+
+div.ivm-initiative-noinitiative,
+div.ivm-position-badspot {
+    /* placeholder */
+}
+
+span.ivm-initiative-noinitiative,
+span.ivm-position-badspot {
+    color: var(--ivm-miss)
+}
+
+/* ---------- Meter / Momentum ---------- */
 .ivm-meter {
+    padding: var(--ivm-pad-sm);
+    background: transparent;
 }
 
-.ivm-meter-increase {
-    background-color: #0c0;
+.ivm-meter-name,
+.ivm-meter-diff,
+.ivm-meter-burn-from,
+.ivm-meter-burn-to {
+    font-weight: var(--ivm-name-weight);
 }
-.ivm-meter-decrease {
-    background-color: #c00;
+
+.ivm-meter-increase > .ivm-meter-diff {
+    color: var(--ivm-strong);
+}
+
+.ivm-meter-decrease > .ivm-meter-diff {
+    color: var(--ivm-miss);
 }
 
 .ivm-meter-burn {
+    border-radius: var(--ivm-radius-sm);
 }
 
+/* ---------- Move ---------- */
+.ivm-move {
+    padding: var(--ivm-pad-lg);
+    border-radius: var(--ivm-radius-lg);
+    border: 1px solid var(--ivm-border);
+    background: var(--ivm-surface);
+    position: relative;
+}
 
+.ivm-move:not(:first-child) {
+    margin-top: 12px;
+}
+
+.ivm-move-name {
+    font-weight: 900;
+    letter-spacing: 1pt;
+    margin-bottom: 8px;
+    font-size: 1.0rem;
+}
+
+.ivm-move-result-miss,
+.ivm-move-result-weak,
+.ivm-move-result-strong {
+    border-left: 6px solid var(--ivm-move-accent);
+    background: linear-gradient(90deg, var(--ivm-move-bg), transparent 40%);
+}
+
+.ivm-move-result-miss {
+    --ivm-move-accent: var(--ivm-miss);
+    --ivm-move-bg: var(--ivm-miss-bg);
+}
+
+.ivm-move-result-weak {
+    --ivm-move-accent: var(--ivm-weak);
+    --ivm-move-bg: var(--ivm-weak-bg);
+}
+
+.ivm-move-result-strong {
+    --ivm-move-accent: var(--ivm-strong);
+    --ivm-move-bg: var(--ivm-strong-bg);
+}
+
+.ivm-move-result-miss.ivm-move-result-match,
+.ivm-move-result-strong.ivm-move-result-match {
+    border: 2px solid var(--ivm-move-accent);
+    border-left: 6px solid var(--ivm-move-accent);
+}
+
+.ivm-move-result-match .ivm-move-name::after {
+    content: "  (MATCH!)";
+}
+
+/* ---------- Oracle ---------- */
+.ivm-oracle-block, .ivm-oracle {
+    padding: var(--ivm-pad-md);
+    border: 1px dashed var(--ivm-border);
+    border-radius: var(--ivm-radius-md);
+    background: var(--ivm-panel-gradient);
+}
+
+.ivm-oracle-block {
+    background: var(--ivm-accent-bg);
+}
+
+.ivm-oracle-name,
+.ivm-oracle-roll {
+    font-weight: var(--ivm-name-weight);
+}
+
+.ivm-oracle-result {
+    font-style: italic;
+}
+
+/* ---------- Out-of-character comments ---------- */
 .ivm-ooc {
+    padding: var(--ivm-pad-sm);
+    color: var(--ivm-text-muted);
+    font-style: italic;
 }
 
+/* ---------- Position -> see Initiative ---------- */
 
-.ivm-oracle {
-}
-
-
-.ivm-position {
-    
-}
-
-.ivm-position-nocombat {
-    background-color: #999;
-}
-.ivm-position-control {
-    background-color: #c09;
-}
-.ivm-position-badspot {
-    background-color: #0c9;
-}
-
-
+/* ---------- Progress (see also Track) ---------- */
 .ivm-progress {
-    background-color: #ccc;
+    padding: var(--ivm-pad-md);
+    border: 1px solid var(--ivm-border);
+    border-radius: var(--ivm-radius-md);
+    background: var(--ivm-panel-gradient);
 }
 
-
+/* ---------- Reroll ---------- */
 .ivm-reroll {
-
+    padding: var(--ivm-pad-sm);
+    border: 1px solid var(--ivm-border);
+    border-radius: var(--ivm-radius-sm);
 }
 
+.ivm-reroll-name,
+.ivm-reroll-value-old,
+.ivm-reroll-value-new {
+    font-weight: var(--ivm-name-weight);
+}
 
+/* ---------- Roll ---------- */
 .ivm-roll {
-    color: #000
+    border-radius: var(--ivm-radius-sm);
+    padding: var(--ivm-pad-sm);
+    letter-spacing: 0.5pt;
 }
 
-.ivm-roll-result {
-    font-weight: bold;
+.ivm-roll .ivm-track-name {
+    font-weight: var(--ivm-name-weight)
+}
+
+.ivm-roll-miss,
+.ivm-roll-weak,
+.ivm-roll-strong {
+    color: var(--ivm-roll-accent);
+    background: var(--ivm-roll-bg);
 }
 
 .ivm-roll-miss {
-    background-color: #c00;
+    --ivm-roll-accent: var(--ivm-miss);
+    --ivm-roll-bg: var(--ivm-miss-bg);
 }
 
 .ivm-roll-weak {
-    background-color: orange;
+    --ivm-roll-accent: var(--ivm-weak);
+    --ivm-roll-bg: var(--ivm-weak-bg);
 }
 
 .ivm-roll-strong {
-    background-color: #0c0;
+    --ivm-roll-accent: var(--ivm-strong);
+    --ivm-roll-bg: var(--ivm-strong-bg);
 }
 
 .ivm-roll-match {
-    font-weight: bold;
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+.ivm-roll-stat-name,
+.ivm-roll-action,
+.ivm-roll-stat,
+.ivm-roll-adds,
+.ivm-roll-score,
+.ivm-roll-vs,
+.ivm-roll-outcome {
+    font-weight: var(--ivm-name-weight)
 }
 
 
+.ivm-roll-result {
+    display: none;
+    border-radius: var(--ivm-radius-sm);
+    padding: var(--ivm-pad-sm);
+}
+
+/* ---------- Tracks ---------- */
 .ivm-track {
+    padding: var(--ivm-pad-md);
+    border: 1px dashed var(--ivm-border);
+    border-radius: var(--ivm-radius-md);
+    background: var(--ivm-surface);
 }
 
+.ivm-track-name,
+.ivm-track-steps {
+    font-weight: var(--ivm-name-weight);
+}
+
+.ivm-track-steps {
+    color: var(--ivm-strong);
+}
+
+.ivm-track-status {
+    font-style: italic;
+}
+
+.ivm-track-progress {
+    /* placeholder */
+}
+
+/* ---------- XP ---------- */
+.ivm-xp {
+    padding: var(--ivm-pad-sm);
+    background: transparent;
+}
+
+.ivm-xp-increase .ivm-meter-diff {
+    color: var(--ivm-strong);
+}
+
+.ivm-xp-decrease .ivm-meter-diff {
+    color: var(--ivm-miss);
+}
+
+.ivm-xp-value {
+    /* placeholder */
+}

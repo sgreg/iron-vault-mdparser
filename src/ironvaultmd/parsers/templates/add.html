@@ -5,4 +5,9 @@ add     value to add to upcoming roll
 reason  text with the reason for the add
 
 #}
-<div class="ivm-add">Add +{{ add }}{{ " " ~ reason if reason }}</div>
+<div class="ivm-add">
+    Add <span class="ivm-add-value">+{{ add }}</span>
+{%- if reason %}
+    <span class="ivm-add-reason">({{ reason }})</span>
+{%- endif %}
+</div>
