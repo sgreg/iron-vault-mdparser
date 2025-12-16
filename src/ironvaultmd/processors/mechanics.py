@@ -233,9 +233,9 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
             # If the preprocessor works as intended, there shouldn't be
             # anything else around block, as it was supposed to rearrange
             # all that accordingly. So if there is other content, there's
-            # need for some logic improvements. Fail hard with prejudice.
+            # need for some logic improvements. Fail hard.
             if before_mechanics or after_mechanics:
-                raise MechanicsBlockException(f"garbage all around! {repr(block)}")
+                raise MechanicsBlockException(f"Unexpected content around match block: {repr(block)}")
 
             content = match.group("mechanics")
 
@@ -245,7 +245,7 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
             # The preprocessor should have arranged everything to find
             # the entire section's content in there, yet the regex didn't
             # match that here. Something is wrong. Fail hard.
-            raise MechanicsBlockException(f"your logic sucks, {repr(block)}")
+            raise MechanicsBlockException(f"Mechanics block matching failed: {repr(block)}")
 
         logger.debug(f"mechanics block content: {repr(content)}")
         element = create_div(parent, ["mechanics"])
