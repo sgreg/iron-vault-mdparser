@@ -56,7 +56,7 @@ class NodeParser:
         """
         self.node_name = name
         self.regex = re.compile(regex)
-        self.template = templater.get_template(name)
+        self.template = templater.get_template(name, "nodes")
 
     def _match(self, data: str) -> dict[str, str | Any] | None:
         """Try to match input text and return a group dictionary.
@@ -93,7 +93,7 @@ class NodeParser:
         matches = self._match(data)
         if matches is None:
             # Use generic node template as fallback, showing data as-is
-            self.template = templater.get_template("node")
+            self.template = templater.get_template("node", "nodes")
             args = {"node_name": self.node_name, "content": data}
 
         else:

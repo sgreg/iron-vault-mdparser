@@ -19,7 +19,7 @@ def test_templater_success():
     ]
 
     for name in valid_names:
-        template = templater.get_template(name)
+        template = templater.get_template(name, "nodes")
         assert template is not None
         assert isinstance(template, Template)
 
@@ -36,7 +36,7 @@ def test_templater_error():
 
     for name in invalid_names:
         with pytest.raises(TemplateNotFound):
-            templater.get_template(name)
+            templater.get_template(name, "nodes")
 
 
 def test_user_template_load():
@@ -48,9 +48,9 @@ def test_user_template_load():
 
     templater.load_user_templates(user_templates)
 
-    add_template = templater.get_template("add")
-    meter_template = templater.get_template("meter")
-    roll_template = templater.get_template("roll")
+    add_template = templater.get_template("add", "nodes")
+    meter_template = templater.get_template("meter", "nodes")
+    roll_template = templater.get_template("roll", "nodes")
 
     assert add_template.filename == "<template>"
     assert meter_template.filename == "<template>"

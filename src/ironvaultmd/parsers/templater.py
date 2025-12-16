@@ -33,6 +33,7 @@ class UserTemplates:
         impact: Template for the `impact` node.
         initiative: Template for the `initiative` node.
         meter: Template for the `meter` node.
+        move: Template for the `move` node.
         ooc: Template for the out-of-character node.
         oracle: Template for the `oracle` node.
         position: Template for the `position` node.
@@ -55,6 +56,7 @@ class UserTemplates:
     impact: str | None = None
     initiative: str | None = None
     meter: str | None = None
+    move: str | None = None
     ooc: str | None = None
     oracle: str | None = None
     position: str | None = None
@@ -109,7 +111,7 @@ class Templater:
 
         Args:
             name: Element name, e.g., `Progress Roll` or `oracle`.
-            template_type: "block" or default ""
+            template_type: "block", "node", or default ""
 
         Returns:
             A compiled Jinja `Template` or `None` when explicitly disabled.
@@ -130,8 +132,8 @@ class Templater:
             logger.debug("  -> found user template")
             return Template(user_template)
 
-        if template_type == "blocks":
-            filename = f"blocks/{key}.html"
+        if template_type in ["nodes", "blocks"]:
+            filename = f"{template_type}/{key}.html"
         else:
             filename = f"{key}.html"
 
