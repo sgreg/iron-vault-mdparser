@@ -102,23 +102,24 @@ class Templater:
                 self.user_templates.__dict__[name] = None
 
 
-    def get_template(self, name: str, template_type: str = "") -> Template | None:
+    def get_template(self, name: str, template_type: str = "", fallback: str | None = None) -> Template | None:
         """Return a Jinja template by element name or `None`.
 
         The `name` is normalized to match a template file named
         `<name>.html` where `name` is lowercased and spaces replaced with
         underscores. User overrides take precedence.
 
+        If neither a user-defined nor a file-based template could be found,
+        a new `Template` is created from the `fallback` string.
+        If `fallback` is `None`, `None` will be returned.
+
         Args:
             name: Element name, e.g., `Progress Roll` or `oracle`.
             template_type: "block", "node", or default ""
+            fallback: Optional fallback template string if no template could be found
 
         Returns:
             A compiled Jinja `Template` or `None` when explicitly disabled.
-
-        Raises:
-            TemplateNotFound: If no default template exists for `name` and no
-                override is provided.
         """
         logger.debug(f"Getting template for '{name}'")
         key = name.lower().replace(' ', '_')
@@ -145,9 +146,14 @@ class Templater:
         try:
             logger.debug("  -> using default template")
             return self.template_env.get_template(filename)
-        except TemplateNotFound as err:
-            logger.warning(f"Template {filename} not found") # TODO just make this return None?
-            raise err
+        except TemplateNotFound:
+            logger.warning(f"Failed to look up template for {name}")
+
+        if fallback is not None:
+            logger.info(f"Using fallback template for {name}")
+            return Template(fallback)
+
+        return None
 
 templater = Templater()
 """Shared templater instance used by parsers to render output."""

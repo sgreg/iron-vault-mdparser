@@ -1,7 +1,4 @@
-import logging
-
-import pytest
-from jinja2 import Template, TemplateNotFound
+from jinja2 import Template
 
 from ironvaultmd.parsers.blocks import ActorBlockParser
 from ironvaultmd.parsers.nodes import AddNodeParser, MeterNodeParser
@@ -24,7 +21,7 @@ def test_templater_success():
         assert template is not None
         assert isinstance(template, Template)
 
-def test_templater_error():
+def test_templater_not_found():
     templater = Templater()
 
     invalid_names = [
@@ -36,9 +33,16 @@ def test_templater_error():
     ]
 
     for name in invalid_names:
-        with pytest.raises(TemplateNotFound):
-            templater.get_template(name, "nodes")
+        assert templater.get_template(name, "nodes") is None
 
+def test_templater_fallback():
+    templater = Templater()
+    fallback = '<div class="test">I am a fallback element</div>'
+
+    for template_type in ["nodes", "blocks", ""]:
+        template = templater.get_template("invalid name", template_type, fallback)
+        assert template is not None
+        assert template.render() == fallback
 
 def test_user_template_load():
     templater = Templater()
