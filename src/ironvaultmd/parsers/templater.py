@@ -25,6 +25,7 @@ class UserTemplates:
 
     Attributes:
         actor_block: Template for the `actor` block.
+        mechanics_block: Template for the main iron-vault-mechanics content block.
         move_block: Template for the `move` block.
         oracle_block: Template for the `oracle` block.
         add: Template for the `add` node.
@@ -47,6 +48,7 @@ class UserTemplates:
     """
     # Blocks
     actor_block: str | None = None
+    mechanics_block: str | None = None
     move_block: str | None = None
     oracle_block: str | None = None
     # Nodes

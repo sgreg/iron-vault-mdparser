@@ -2,7 +2,6 @@ import re
 
 from ironvaultmd.util import (
     split_match,
-    create_div,
     convert_link_name,
     check_dice,
     check_ticks,
@@ -29,23 +28,6 @@ def test_util_split_match():
     before, after = split_match(raw, match)
     assert before == ""
     assert after == ""
-
-
-def test_util_create_dive(parent):
-    div_no_classes = create_div(parent)
-    div_one_class = create_div(parent, ["class-one"])
-    div_multi_classes = create_div(parent, ["class-one", "class-two", "test"])
-
-    assert div_no_classes is not None
-    assert div_no_classes.get("class") is None
-
-    assert div_one_class is not None
-    assert (classes := div_one_class.get("class")) is not None
-    assert classes == "ivm-class-one"
-
-    assert div_multi_classes is not None
-    assert (classes := div_multi_classes.get("class")) is not None
-    assert classes == "ivm-class-one ivm-class-two ivm-test"
 
 
 def test_util_convert_link_name():

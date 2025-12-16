@@ -17,6 +17,7 @@ import xml.etree.ElementTree as etree
 from dataclasses import dataclass
 
 from ironvaultmd import logger_name
+from ironvaultmd.parsers.templater import templater
 from ironvaultmd.util import check_dice
 
 logger = logging.getLogger(logger_name)
@@ -216,17 +217,35 @@ class BlockContext:
 
 
 class Context:
-    """Stack-based parsing context for mechanics content.
+    """Stack-based parsing context for mechanics block content.
 
     Manages an element stack via `push`/`pop` and exposes convenience
     properties for the current parent, block name, and roll context.
 
     Attributes:
-        root: The outermost root HTML element that contains mechanics output.
-        blocks: Internal stack of `BlockContext` instances.
+        root: The outermost iron-vault-mechanics block `<div>`.
+        blocks: Internal stack of `BlockContext` instances, handling all
+            nodes and blocks contained within the main mechanics block.
     """
     def __init__(self, root: etree.Element):
-        self.root = root
+        """Initialize a new Context.
+
+        Creates the main mechanics block `<div>` for the currently parsed
+        iron-vault-mechanics Markdown block and appends it as a child to
+        the given `root` element.
+
+        Every `IronVaultMechanicsBlockProcessor.run()` call creates its
+        own `Context` to hold and process all the data within the parsed
+        iron-vault-mechanics block.
+
+        Args:
+            root: Root HTML element the mechanics block `<div>` is appended to
+        """
+        template = templater.get_template("mechanics", "blocks", '<div class="ivm-mechanics"></div>')
+        mechanics_block = etree.fromstring(template.render())
+        root.append(mechanics_block)
+
+        self.root = mechanics_block
         self.blocks: list[BlockContext] = []
 
     @property

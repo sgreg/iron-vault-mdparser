@@ -1,17 +1,19 @@
+import xml.etree.ElementTree as etree
+
 from ironvaultmd.parsers.context import Context, RollContext, RollResult
-from ironvaultmd.util import create_div
 
 
 def test_context_stack(parent):
     ctx = Context(parent)
 
     assert len(ctx.blocks) == 0
-    assert ctx.parent == parent
     assert ctx.name == "root"
     assert ctx.roll is None
 
+    root_element = ctx.parent # main mechanics block <div> created within Context() initialization
+
     # Create and push a new element
-    element = create_div(ctx.parent)
+    element = e = etree.SubElement(ctx.parent, "div")
     ctx.push("test", element)
     # Verify there are 2 elements in the stack and 'parent' points to the new one
     assert len(ctx.blocks) == 1
@@ -19,17 +21,17 @@ def test_context_stack(parent):
     assert ctx.name == "test"
     assert ctx.roll is not None
 
-    # Pop the stack and verify 'parent' is the initial element again
+    # Pop the stack and verify 'parent' is the mechanics block element again
     ctx.pop()
     assert len(ctx.blocks) == 0
-    assert ctx.parent == parent
+    assert ctx.parent == root_element
     assert ctx.name == "root"
     assert ctx.roll is None
 
     # Make sure pop() won't remove the last element
     ctx.pop()
     assert len(ctx.blocks) == 0
-    assert ctx.parent == parent
+    assert ctx.parent == root_element
     assert ctx.name == "root"
     assert ctx.roll is None
 

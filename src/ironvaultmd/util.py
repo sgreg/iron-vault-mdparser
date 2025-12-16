@@ -12,7 +12,6 @@ Provided utilities:
 
 import logging
 import re
-import xml.etree.ElementTree as etree
 
 from ironvaultmd import logger_name
 
@@ -33,29 +32,6 @@ def split_match(text: str, match: re.Match[str]) -> tuple[str, str]:
     before = text[:match.start()]
     after = text[match.end():]
     return before, after
-
-
-def create_div(parent: etree.Element, classes: list[str] | None = None) -> etree.Element:
-    """Create a `<div>` element under `parent` with optional CSS classes.
-
-    Each provided class name is automatically prefixed with `ivm-` to keep
-    CSS naming consistent across the project.
-
-    Args:
-        parent: The parent HTML element to which the new div will be appended.
-        classes: Optional list of CSS class identifiers without the `ivm-`
-            prefix. Falsy values in the list are ignored.
-
-    Returns:
-        The created `etree.Element` representing the `<div>`.
-    """
-    e = etree.SubElement(parent, "div")
-
-    if classes is not None:
-        ivm_classes = ["ivm-" + c for c in classes if c]
-        e.set("class", " ".join(ivm_classes))
-
-    return e
 
 
 RE_LINK_TEXT_MARKDOWN = re.compile(r"\[(?P<link_name>[^]]+)]\([^)]*\)")

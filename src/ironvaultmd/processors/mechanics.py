@@ -47,7 +47,7 @@ from ironvaultmd.parsers.nodes import (
     TrackNodeParser,
     XpNodeParser,
 )
-from ironvaultmd.util import create_div, split_match
+from ironvaultmd.util import split_match
 
 logger = logging.getLogger(logger_name)
 
@@ -248,8 +248,7 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
             raise MechanicsBlockException(f"Mechanics block matching failed: {repr(block)}")
 
         logger.debug(f"mechanics block content: {repr(content)}")
-        element = create_div(parent, ["mechanics"])
-        ctx = Context(element)
+        ctx = Context(parent)
         self.parse_content(ctx, content)
 
     def parse_content(self, ctx: Context, content: str) -> None:

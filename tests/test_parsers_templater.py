@@ -51,6 +51,7 @@ def test_user_template_load():
     user_templates.add = '<div class="test-class">test add</div>'
     user_templates.meter = '<div class="test-class">test meter</div>'
     user_templates.actor_block = '<div class="test-class"></div>'
+    user_templates.mechanics_block = '<div class="test-class"></div>'
 
     templater.load_user_templates(user_templates)
 
@@ -58,11 +59,13 @@ def test_user_template_load():
     meter_template = templater.get_template("meter", "nodes")
     roll_template = templater.get_template("roll", "nodes")
     actor_template = templater.get_template("actor", "blocks")
+    mechanics_template = templater.get_template("mechanics", "blocks")
 
     assert add_template.filename == "<template>"
     assert meter_template.filename == "<template>"
     assert roll_template.filename.endswith("/roll.html")
     assert actor_template.filename == "<template>"
+    assert mechanics_template.filename == "<template>"
 
 
 def test_user_template_render_node(md_gen, ctx):
