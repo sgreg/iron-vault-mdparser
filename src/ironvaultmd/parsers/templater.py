@@ -123,7 +123,12 @@ class Templater:
         logger.debug(f"Getting template for '{name}'")
         key = name.lower().replace(' ', '_')
 
-        user_template = self.user_templates.__dict__.get(key, None)
+        # eh.. could make this better at some point
+        user_template_key = key
+        if template_type == "blocks":
+            user_template_key = f"{key}_block"
+
+        user_template = self.user_templates.__dict__.get(user_template_key, None)
         if isinstance(user_template, str):
             if str(user_template) == '':
                 logger.debug("  -> found empty user template")

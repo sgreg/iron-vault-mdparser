@@ -3,6 +3,7 @@ import logging
 import pytest
 from jinja2 import Template, TemplateNotFound
 
+from ironvaultmd.parsers.blocks import ActorBlockParser
 from ironvaultmd.parsers.nodes import AddNodeParser, MeterNodeParser
 from ironvaultmd.parsers.templater import Templater, UserTemplates
 
@@ -45,21 +46,25 @@ def test_user_template_load():
     user_templates = UserTemplates()
     user_templates.add = '<div class="test-class">test add</div>'
     user_templates.meter = '<div class="test-class">test meter</div>'
+    user_templates.actor_block = '<div class="test-class"></div>'
 
     templater.load_user_templates(user_templates)
 
     add_template = templater.get_template("add", "nodes")
     meter_template = templater.get_template("meter", "nodes")
     roll_template = templater.get_template("roll", "nodes")
+    actor_template = templater.get_template("actor", "blocks")
 
     assert add_template.filename == "<template>"
     assert meter_template.filename == "<template>"
     assert roll_template.filename.endswith("/roll.html")
+    assert actor_template.filename == "<template>"
 
 
-def test_user_template_render(md_gen, ctx):
+def test_user_template_render_node(md_gen, ctx):
     user_templates = UserTemplates()
     user_templates.add = '<div class="test-class">test add with value {{ add }}</div>'
+    user_templates.actor_block = '<div class="test-class"><div class="actor">Actor {{ name }}</div></div>'
 
     md_gen(templates=user_templates)
 
@@ -72,6 +77,25 @@ def test_user_template_render(md_gen, ctx):
     assert node is not None
     assert node.get("class") == "test-class"
     assert node.text == "test add with value 2"
+
+def test_user_template_render_block(md_gen, ctx):
+    user_templates = UserTemplates()
+    user_templates.actor_block = '<div class="test-class"><div class="actor">Actor "{{ name }}"</div></div>'
+
+    md_gen(templates=user_templates)
+
+    add_parser = ActorBlockParser()
+    assert add_parser.template.filename == "<template>"
+
+    element = add_parser.begin(ctx, 'name="[[link|The Actor]]"')
+    outer_node = ctx.parent.find("div")
+
+    assert outer_node is not None
+    assert outer_node.get("class") == "test-class"
+
+    inner_node = outer_node.find("div")
+    assert inner_node is not None
+    assert inner_node.text == 'Actor "The Actor"'
 
 def test_user_template_disable(md_gen, ctx):
     user_templates = UserTemplates()
