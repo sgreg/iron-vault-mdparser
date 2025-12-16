@@ -20,9 +20,12 @@ from jinja2 import Template
 from ironvaultmd import logger_name
 from ironvaultmd.parsers.context import Context
 from ironvaultmd.parsers.templater import templater
-from ironvaultmd.util import create_div
 
 logger = logging.getLogger(logger_name)
+
+
+class ParserError(Exception):
+    """Raised when a parser issue occurred"""
 
 
 class NodeParser:
@@ -127,16 +130,22 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
         block_name: Human-readable name of the block.
         regex: Compiled pattern used to match and extract parameters from the
             block's opening line.
+        template: Jinja `Template` resolved for `block_name`, or `None` if no
+            template is available.
     """
-    def __init__(self, name:str, regex: str):
+    def __init__(self, name:str, regex: str, template_name:str | None = None):
         """Create the block parser.
 
         Args:
             name: Display name for the block
             regex: Regular expression string for the opening line.
+            template_name: Optional template name, falls back to the block name
         """
         self.block_name = name
         self.regex = re.compile(regex)
+        if template_name is None:
+            template_name = name
+        self.template = templater.get_template(template_name, "blocks")
 
     def _match(self, data: str) -> dict[str, str | Any] | None:
         """Try to match the block opening line and return a group dictionary.
@@ -172,28 +181,34 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
         """
         matches = self._match(data)
         if matches is None:
-            element = create_div(ctx.parent, ["block"])
-            element.text = f"{self.block_name}: {data}"
-            return element
+            self.template = templater.get_template("block", "blocks")
+            args = {"block_name": self.block_name, "content": data}
+        else:
+            args = self.create_args(matches)
 
-        return self.create_root(matches, ctx)
+        if self.template is None:
+            # Unlike nodes, blocks are (at this point) not optional,
+            # so there has to be a template for it. Fail hard.
+            raise ParserError(f"Cannot find a template for {self.block_name} block")
 
-    def create_root(self, data: dict[str, str | Any], ctx: Context) -> etree.Element:
-        """Create the block's root element from matched groups.
+        element = etree.fromstring(self.template.render(args))
+        ctx.parent.append(element)
+        return element
 
-        Must be implemented by subclasses.
+    def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
+        """Build template arguments from regex groups.
+
+        Subclasses override this to post-process captured values or to add
+        context-derived information.
 
         Args:
-            data: Named regex groups for the opening line.
-            ctx: Current parsing `Context`.
+            data: Named regex groups captured from the input line.
+            _: The current parsing `Context` (unused by the base implementation).
 
         Returns:
-            The root element appended to the current parent.
-
-        Raises:
-            NotImplementedError: In the base class.
+            A dictionary that will be passed to the Jinja template as context.
         """
-        raise NotImplementedError
+        return data
 
     def finalize(self, ctx):
         """Finalize the block after all nested nodes have been parsed.

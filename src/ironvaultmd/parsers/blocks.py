@@ -14,20 +14,13 @@ provided via `ironvaultmd.parsers.templater`.
 """
 
 import logging
-import xml.etree.ElementTree as etree
-from dataclasses import asdict
 from typing import Any
 
 from ironvaultmd import logger_name
 from ironvaultmd.parsers.base import MechanicsBlockParser
-from ironvaultmd.parsers.context import Context
-from ironvaultmd.parsers.templater import templater
-from ironvaultmd.util import create_div, convert_link_name
+from ironvaultmd.util import convert_link_name
 
 logger = logging.getLogger(logger_name)
-
-
-# These should probably all use some templates as well
 
 
 class ActorBlockParser(MechanicsBlockParser):
@@ -41,20 +34,6 @@ class ActorBlockParser(MechanicsBlockParser):
         regex = r'^name="\[\[.*\|(?P<name>.*)\]\]"$'
         super().__init__("Actor", regex)
 
-    def create_root(self, data: dict[str, str | Any], ctx: Context) -> etree.Element:
-        """Create the root element for an actor.
-
-        Args:
-            data: Regex group dictionary containing at least `name`.
-            ctx: Current parsing context.
-
-        Returns:
-            The created actor `<div>` element.
-        """
-        element = create_div(ctx.parent, ["actor"])
-        create_div(element, ["actor-name"]).text = f"{data['name']}"
-        return element
-
 
 class MoveBlockParser(MechanicsBlockParser):
     """Block parser for mechanics move sections.
@@ -64,22 +43,8 @@ class MoveBlockParser(MechanicsBlockParser):
     """
     def __init__(self):
         """Initialize the parser with its regex pattern."""
-        regex = r'"\[(?P<move_name>[^]]+)]\((?P<move_link>[^)]+)\)"'
+        regex = r'"\[(?P<name>[^]]+)]\((?P<link>[^)]+)\)"'
         super().__init__("Move", regex)
-
-    def create_root(self, data: dict[str, str | Any], ctx: Context) -> etree.Element:
-        """Create the root element for a move block.
-
-        Args:
-            data: Regex group dictionary containing `move_name`.
-            ctx: Current parsing context.
-
-        Returns:
-            The created move `<div>` element.
-        """
-        element = create_div(ctx.parent, ["move"])
-        create_div(element, ["move-name"]).text = f"{data['move_name']}"
-        return element
 
     def finalize(self, ctx):
         """Style the move block based on its roll outcome if a roll occurred.
@@ -109,22 +74,8 @@ class OracleGroupBlockParser(MechanicsBlockParser):
     """Block parser for an oracle group header."""
     def __init__(self):
         """Initialize the parser with its regex pattern."""
-        regex = r'^name="(?P<name>[^"]*)"$'
-        super().__init__("Oracle Group", regex)
-
-    def create_root(self, data: dict[str, str | Any], ctx: Context) -> etree.Element:
-        """Create the root element for an oracle group.
-
-        Args:
-            data: Regex group dictionary containing `name`.
-            ctx: Current parsing context.
-
-        Returns:
-            The created oracle-block `<div>` element.
-        """
-        element = create_div(ctx.parent, ["oracle-block"])
-        create_div(element, ["oracle-name"]).text = f"Oracle: {data['name']}"
-        return element
+        regex = r'^name="(?P<oracle>[^"]*)"$'
+        super().__init__("Oracle Group", regex, "oracle")
 
 
 class OracleBlockParser(MechanicsBlockParser):
@@ -136,17 +87,7 @@ class OracleBlockParser(MechanicsBlockParser):
         regex = r'^name="(\[(?P<oracle_name>[^\]]+)\]\(datasworn:.+\)|(?P<oracle_text>[^"]+))" result="(?P<result>[^"]+)" roll=(?P<roll>\d+)$'
         super().__init__("Oracle", regex)
 
-    def create_root(self, data: dict[str, str | Any], ctx: Context) -> etree.Element:
-        """Create the root element for an oracle result line.
-
-        Args:
-            data: Regex group dictionary including either `oracle_name` or
-                `oracle_text`, plus `result` and `roll`.
-            ctx: Current parsing context.
-
-        Returns:
-            The created oracle-block `<div>` element.
-        """
+    def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
         # This is also taken straight from the oracle node parser.
         # Should probably combine those to some common place?
         oracle = "undefined"
@@ -157,29 +98,12 @@ class OracleBlockParser(MechanicsBlockParser):
 
         data["result"] = convert_link_name(data["result"])
 
-        # FIXME this should really use templates
-        element = create_div(ctx.parent, ["oracle-block"])
-        create_div(element, ["oracle-name"]).text = f"Oracle {oracle} rolled a {data['roll']} &rarr; {data['result']}"
-        return element
+        return data | {"oracle": oracle}
 
 
 class OraclePromptBlockParser(MechanicsBlockParser):
     """Block parser for oracle prompts (narrative lines)."""
     def __init__(self):
         """Initialize the parser with its regex pattern."""
-        regex = r'^"(?P<comment>[^"]*)"$'
-        super().__init__("Oracle Prompt", regex)
-
-    def create_root(self, data: dict[str, str | Any], ctx: Context) -> etree.Element:
-        """Create the root element for an oracle prompt.
-
-        Args:
-            data: Regex group dictionary containing `comment`.
-            ctx: Current parsing context.
-
-        Returns:
-            The created oracle-block `<div>` element.
-        """
-        element = create_div(ctx.parent, ["oracle-block"])
-        create_div(element, ["oracle-name"]).text = f"Oracle: {data['comment']}"
-        return element
+        regex = r'^"(?P<prompt>[^"]*)"$'
+        super().__init__("Oracle Prompt", regex, "oracle")

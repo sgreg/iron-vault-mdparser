@@ -1,7 +1,7 @@
 import pytest
 from jinja2 import Template
 
-from ironvaultmd.parsers.base import NodeParser, MechanicsBlockParser
+from ironvaultmd.parsers.base import NodeParser, MechanicsBlockParser, ParserError
 from ironvaultmd.parsers.nodes import RollNodeParser
 from ironvaultmd.parsers.templater import templater
 
@@ -106,22 +106,43 @@ def test_node_template_disable(block_ctx):
     assert result.hitmiss == "weak"
     assert not result.match
 
-
-def test_block_unimplemented(ctx):
-    parser = MechanicsBlockParser("name", f'.*')
-    with pytest.raises(NotImplementedError):
-        parser.begin(ctx, "data")
-
 def test_block_no_match(ctx):
     name = "test"
+    # Create a parser that only matches small letters
+    parser = MechanicsBlockParser(name, r'name="[a-z]*"')
+    # Define data that contains not only small letters
     data = "value123"
-    parser = MechanicsBlockParser(name, f'name="[a-z]*"')
     element = parser.begin(ctx, data)
 
-    # Data won't match, a fallback element is returned, no NotImplementedError should be raised
+    # Data won't match, a fallback "block" element should be returned
     assert element is not None
     assert element.get("class") == "ivm-block"
     assert element.text == f"{name}: {data}"
 
     # Can still call finalize() and nothing will happen
     parser.finalize(ctx)
+
+def test_block_template_name(ctx):
+    name = "oracle"
+    data = "value123"
+    parser = MechanicsBlockParser(name, r'(?P<test_data>.*)', "test")
+    assert parser.template.name == "blocks/test.html"
+    element = parser.begin(ctx, data)
+
+    # Verify the "test" template content was created, despite "oracle" would exist
+    assert element is not None
+    # assert element.get("class") == ""
+    assert element.text == f"data: {data}"
+
+    # Can still call finalize() and nothing will happen
+    parser.finalize(ctx)
+
+def test_block_no_template(ctx):
+    parser = MechanicsBlockParser("test", ".*")
+
+    assert parser.template is not None
+    parser.template = None
+
+    # Verify a block parser without template will raise an Exception
+    with pytest.raises(ParserError):
+        parser.begin(ctx, "test test test")

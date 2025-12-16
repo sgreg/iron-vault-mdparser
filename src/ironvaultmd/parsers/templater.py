@@ -24,6 +24,9 @@ class UserTemplates:
     to `None` to use the packaged default template.
 
     Attributes:
+        actor_block: Template for the `actor` block.
+        move_block: Template for the `move` block.
+        oracle_block: Template for the `oracle` block.
         add: Template for the `add` node.
         burn: Template for the `burn` node.
         clock: Template for the `clock` node.
@@ -41,6 +44,10 @@ class UserTemplates:
         xp: Template for the `xp` node.
         link: Template for wiki links rendered by the links processor.
     """
+    # Blocks
+    actor_block: str | None = None
+    move_block: str | None = None
+    oracle_block: str | None = None
     # Nodes
     add: str | None = None
     burn: str | None = None
@@ -93,7 +100,7 @@ class Templater:
                 self.user_templates.__dict__[name] = None
 
 
-    def get_template(self, name: str) -> Template | None:
+    def get_template(self, name: str, template_type: str = "") -> Template | None:
         """Return a Jinja template by element name or `None`.
 
         The `name` is normalized to match a template file named
@@ -102,6 +109,7 @@ class Templater:
 
         Args:
             name: Element name, e.g., `Progress Roll` or `oracle`.
+            template_type: "block" or default ""
 
         Returns:
             A compiled Jinja `Template` or `None` when explicitly disabled.
@@ -122,13 +130,16 @@ class Templater:
             logger.debug("  -> found user template")
             return Template(user_template)
 
-        filename = f"{key}.html"
+        if template_type == "blocks":
+            filename = f"blocks/{key}.html"
+        else:
+            filename = f"{key}.html"
 
         try:
             logger.debug("  -> using default template")
             return self.template_env.get_template(filename)
         except TemplateNotFound as err:
-            logger.warning(f"Template {filename} not found")
+            logger.warning(f"Template {filename} not found") # TODO just make this return None?
             raise err
 
 templater = Templater()

@@ -1,0 +1,25 @@
+{#
+Oracle block
+
+either
+    oracle      name of the oracle that was rolled on
+    roll        die value of the rolled oracle result
+    result      text of the rolled oracle result
+or
+    prompt      highlighted text prompt to roll oracle on
+or
+    oracle      name of the oracle that was rolled on
+
+#}
+<div class="ivm-oracle-block">
+    <div class="ivm-oracle-name">
+    {%- if roll -%}
+        Oracle {{ oracle }} rolled a {{ roll }} &amp;rarr; {{ result }}
+    {%- elif prompt -%}
+        Oracle: {{ prompt }}
+    {%- else -%}
+        Oracle: {{ oracle }}
+    {%- endif -%}
+    </div>
+    {#- Note: any child nodes are appended here #}
+</div>
