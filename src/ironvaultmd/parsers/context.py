@@ -226,7 +226,10 @@ class Context:
         root: The outermost iron-vault-mechanics block `<div>`.
         blocks: Internal stack of `BlockContext` instances, handling all
             nodes and blocks contained within the main mechanics block.
+        template: Cached template string for the mechanics block `Element`
     """
+    template: str | None = None
+
     def __init__(self, root: etree.Element):
         """Initialize a new Context.
 
@@ -241,12 +244,26 @@ class Context:
         Args:
             root: Root HTML element the mechanics block `<div>` is appended to
         """
-        template = templater.get_template("mechanics", "blocks", '<div class="ivm-mechanics"></div>')
-        mechanics_block = etree.fromstring(template.render())
+        mechanics_block = etree.fromstring(self._get_template())
         root.append(mechanics_block)
 
         self.root = mechanics_block
         self.blocks: list[BlockContext] = []
+
+    @classmethod
+    def _get_template(cls) -> str:
+        """Retrieve the pre-rendered mechanics block `<div>` template string.
+
+        Creates the template the first time it's called and caches it.
+        Later calls return the cached template then.
+
+        Returns:
+            str: A string representing the pre-rendered HTML template.
+        """
+        if cls.template is None:
+            template = templater.get_template("Mechanics", "blocks", '<div class="ivm-mechanics"></div>')
+            cls.template = template.render()
+        return cls.template
 
     @property
     def parent(self) -> etree.Element:
