@@ -44,6 +44,19 @@ def test_templater_fallback():
         assert template is not None
         assert template.render() == fallback
 
+def test_templater_invalid_type():
+    templater = Templater()
+
+    # Verify invalid template type value will return None
+    template = templater.get_template("move", "invalid")
+    assert template is None
+
+    # Verify invalid template type with fallback value will return the fallback
+    fallback = '<div class="invalid">I am a fallback element and I do not care for template types</div>'
+    template = templater.get_template("move", "invalid", fallback)
+    assert template is not None
+    assert template.render() == fallback
+
 def test_user_template_load():
     templater = Templater()
 

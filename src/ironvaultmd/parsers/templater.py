@@ -117,8 +117,8 @@ class Templater:
 
         Args:
             name: Element name, e.g., `Progress Roll` or `oracle`.
-            template_type: "block", "node", or default ""
-            fallback: Optional fallback template string if no template could be found
+            template_type: "blocks", "nodes", or default "".
+            fallback: Optional fallback template string if no template could be found.
 
         Returns:
             A compiled Jinja `Template` or `None` when explicitly disabled.
@@ -126,12 +126,7 @@ class Templater:
         logger.debug(f"Getting template for '{name}'")
         key = name.lower().replace(' ', '_')
 
-        # eh.. could make this better at some point
-        user_template_key = key
-        if template_type == "blocks":
-            user_template_key = f"{key}_block"
-
-        user_template = self.user_templates.__dict__.get(user_template_key, None)
+        user_template = self._lookup_user_template(key, template_type)
         if isinstance(user_template, str):
             if str(user_template) == '':
                 logger.debug("  -> found empty user template")
@@ -140,22 +135,60 @@ class Templater:
             logger.debug("  -> found user template")
             return Template(user_template)
 
-        if template_type in ["nodes", "blocks"]:
-            filename = f"{template_type}/{key}.html"
-        else:
-            filename = f"{key}.html"
+        logger.debug("  -> using file template")
+        template = self._lookup_file_template(key, template_type)
 
-        try:
-            logger.debug("  -> using default template")
-            return self.template_env.get_template(filename)
-        except TemplateNotFound:
-            logger.warning(f"Failed to look up template for {name}")
-
-        if fallback is not None:
+        if template is None and fallback is not None:
             logger.info(f"Using fallback template for {name}")
-            return Template(fallback)
+            template = Template(fallback)
 
-        return None
+        return template
+
+    def _lookup_user_template(self, key: str, template_type: str) -> str | None:
+        """Look up a user template for the given `key` and `template_type`.
+
+        If it's found from the `UserTemplates`, its value is returned.
+        If it isn't found, or its value is set to `None`, `None` is returned.
+
+        Args:
+            key: Template name normalized as the `UserTemplates` key.
+            template_type: Template type, "blocks", "nodes", or "".
+
+        Returns:
+            Template string if found and set, `None` otherwise.
+        """
+        if template_type == "blocks":
+            key += "_block"
+        return self.user_templates.__dict__.get(key, None)
+
+    def _lookup_file_template(self, key: str, template_type: str) -> Template | None:
+        """Look up a template file for the given `key` and `template_type`.
+
+        If a matching file is found, its compiled `Template` is returned.
+        If no file is found, loading it fails, or `template_type` is neither
+            `blocks`, `nodes`, or an empty string, `None` is returned
+
+        Args:
+            key: Template name normalized as the filename key.
+            template_type: Template type, "blocks", "nodes", or "".
+
+        Returns:
+            Compiled `Template` if found, `None` otherwise.
+        """
+        if template_type not in ["nodes", "blocks", ""]:
+            return None
+
+        dir_path = "" if template_type == "" else f"{template_type}/"
+        filename = f"{dir_path}{key}.html"
+
+        template: Template | None = None
+        try:
+            template = self.template_env.get_template(filename)
+        except TemplateNotFound:
+            logger.warning(f"Failed to look up template for {key}")
+
+        return template
+
 
 templater = Templater()
 """Shared templater instance used by parsers to render output."""
