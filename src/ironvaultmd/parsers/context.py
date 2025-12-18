@@ -261,7 +261,7 @@ class Context:
             str: A string representing the pre-rendered HTML template.
         """
         if cls.template is None:
-            template = templater.get_template("Mechanics", "blocks", '<div class="ivm-mechanics"></div>')
+            template = templater.get_template("Mechanics", "blocks")
             cls.template = template.render()
         return cls.template
 

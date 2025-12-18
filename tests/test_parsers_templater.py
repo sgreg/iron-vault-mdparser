@@ -35,15 +35,6 @@ def test_templater_not_found():
     for name in invalid_names:
         assert templater.get_template(name, "nodes") is None
 
-def test_templater_fallback():
-    templater = Templater()
-    fallback = '<div class="test">I am a fallback element</div>'
-
-    for template_type in ["nodes", "blocks", ""]:
-        template = templater.get_template("invalid name", template_type, fallback)
-        assert template is not None
-        assert template.render() == fallback
-
 def test_templater_invalid_type():
     templater = Templater()
 
@@ -51,11 +42,21 @@ def test_templater_invalid_type():
     template = templater.get_template("move", "invalid")
     assert template is None
 
-    # Verify invalid template type with fallback value will return the fallback
-    fallback = '<div class="invalid">I am a fallback element and I do not care for template types</div>'
-    template = templater.get_template("move", "invalid", fallback)
+def test_templater_unknown_names():
+    templater = Templater()
+
+    # Verify an unknown default type name will return None
+    template = templater.get_template("unknown")
+    assert template is None
+
+    # Verify an unknown node name will return None
+    template = templater.get_template("unknown", "nodes")
+    assert template is None
+
+    # Verify an unknown block type name will return a fallback template
+    template = templater.get_template("unknown", "blocks")
     assert template is not None
-    assert template.render() == fallback
+    assert template.render() == Templater.block_fallback_template
 
 def test_user_template_load():
     templater = Templater()
@@ -138,3 +139,15 @@ def test_user_template_disable(md_gen, ctx):
     assert len(nodes) == 1
     assert nodes[0].get("class") == "test-class"
     assert nodes[0].text == "test meter 5 to 3"
+
+def test_user_template_disable_block(md_gen, ctx):
+    user_templates = UserTemplates()
+    user_templates.actor_block = ''
+
+    md_gen(templates=user_templates)
+
+    actor_parser = ActorBlockParser()
+
+    # Verify fallback template was created for block parser
+    assert actor_parser.template is not None
+    assert actor_parser.template.render() == Templater.block_fallback_template

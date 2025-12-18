@@ -78,7 +78,14 @@ class Templater:
     It first checks for an override provided via `UserTemplates` and, if not
     present, falls back to loading the default template file from the
     `templates` package directory.
+
+    Attributes:
+        block_fallback_template: Fallback template string for block elements
+            that don't have a template defined.
     """
+
+    block_fallback_template: str = "<div></div>"
+
     def __init__(self):
         """Initialize the templating environment."""
         self.template_loader = PackageLoader('ironvaultmd.parsers', 'templates')
@@ -104,45 +111,65 @@ class Templater:
                 self.user_templates.__dict__[name] = None
 
 
-    def get_template(self, name: str, template_type: str = "", fallback: str | None = None) -> Template | None:
-        """Return a Jinja template by element name or `None`.
+    def get_template(self, name: str, template_type: str = "") -> Template | None:
+        """Return a Jinja template for a node or block `name`, or `None`.
 
-        The `name` is normalized to match a template file named
-        `<name>.html` where `name` is lowercased and spaces replaced with
-        underscores. User overrides take precedence.
+        Looks up the `name` and `block_type` to a matching key in the
+        `UserTemplates` and creates a `Template` from it. If none is set,
+        looks up a matching file in the templates/ directory and creates
+        a `Template` from it.
 
-        If neither a user-defined nor a file-based template could be found,
-        a new `Template` is created from the `fallback` string.
-        If `fallback` is `None`, `None` will be returned.
+        In case the user-defined template override is an empty string,
+        or the template file doesn't exist, the return value depends on
+        the `template_type`.:
+         - For "nodes" and default "" types, `None` is returned, and
+           that specific template will not be rendered at all.
+         - For "blocks" types, a fallback `Template` created from
+           `block_fallback_template` is returned as block elements
+           always need a container.
 
         Args:
             name: Element name, e.g., `Progress Roll` or `oracle`.
             template_type: "blocks", "nodes", or default "".
-            fallback: Optional fallback template string if no template could be found.
 
         Returns:
             A compiled Jinja `Template` or `None` when explicitly disabled.
         """
-        logger.debug(f"Getting template for '{name}'")
+        logger.debug(f"Getting {template_type} template for '{name}'")
         key = name.lower().replace(' ', '_')
 
         user_template = self._lookup_user_template(key, template_type)
+
         if isinstance(user_template, str):
+            # User override template string found
             if str(user_template) == '':
                 logger.debug("  -> found empty user template")
+
+                if template_type == "blocks":
+                    # Block template with empty-string user override.
+                    # Blocks need a container, though, so return fallback.
+                    return Template(self.block_fallback_template)
+
+                # For other types, return None to disable rendering it
                 return None
 
+            # Return a Template from the non-empty user override string
             logger.debug("  -> found user template")
             return Template(user_template)
 
-        logger.debug("  -> using file template")
-        template = self._lookup_file_template(key, template_type)
+        file_template = self._lookup_file_template(key, template_type)
 
-        if template is None and fallback is not None:
-            logger.info(f"Using fallback template for {name}")
-            template = Template(fallback)
+        if file_template is not None:
+            logger.debug("  -> using file template")
+            return file_template
 
-        return template
+        logger.debug("  -> no template found")
+
+        if template_type == "blocks":
+            # Again, blocks need a container, return fallback
+            return Template(self.block_fallback_template)
+
+        return None
 
     def _lookup_user_template(self, key: str, template_type: str) -> str | None:
         """Look up a user template for the given `key` and `template_type`.
