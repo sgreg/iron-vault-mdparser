@@ -46,18 +46,9 @@ def test_templater_invalid_type():
 def test_templater_unknown_names():
     templater = Templater()
 
-    # Verify an unknown default type name will return None
-    template = templater.get_template("unknown")
-    assert template is None
-
-    # Verify an unknown node name will return None
-    template = templater.get_template("unknown", "nodes")
-    assert template is None
-
-    # Verify an unknown block type name will return a fallback template
-    template = templater.get_template("unknown", "blocks")
-    assert template is not None
-    assert template.render() == Templater.block_fallback_template
+    types = ["blocks", "nodes", ""]
+    for template_type in types:
+        assert templater.get_template("unknown", template_type) is None
 
 def test_user_template_load():
     templater = Templater()
@@ -157,6 +148,15 @@ def test_user_template_disable_block(md_gen, ctx):
 
     actor_parser = ActorBlockParser()
 
-    # Verify fallback template was created for block parser
-    assert actor_parser.template is not None
-    assert actor_parser.template.render() == Templater.block_fallback_template
+    # Verify template is None
+    assert actor_parser.template is None
+
+    element, args = actor_parser.begin(ctx, 'name="[[link|The Actor]]"')
+    verify_is_dummy_block_element(element)
+
+    ctx.push(actor_parser.block_name, element, args)
+    actor_parser.finalize(ctx)
+
+    # Verify that with a disabled template, ctx.parent is still the dummy <div>
+    verify_is_dummy_block_element(ctx.parent)
+

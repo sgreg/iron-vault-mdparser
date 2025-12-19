@@ -24,10 +24,6 @@ from ironvaultmd.parsers.templater import templater
 logger = logging.getLogger(logger_name)
 
 
-class ParserError(Exception):
-    """Raised when a parser issue occurred"""
-
-
 class NodeParser:
     """Base class for single-line mechanics node parsers.
 
@@ -168,7 +164,7 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
     def begin(self, ctx: Context, data: str) -> tuple[etree.Element, dict[str, Any]]:
         """Create and return the block's root element and its arguments.
 
-        Matches the block's opening line with the parser's `regex`, and
+        Matches the block's opening line with the parser's `regex` and
         builds an argument dictionary from its match groups.
 
         If the opening line cannot be matched, a generic block element is
@@ -189,11 +185,6 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
             args = {"block_name": self.block_name, "content": data}
         else:
             args = self.create_args(matches)
-
-        if self.template is None:
-            # Unlike nodes, blocks are (at this point) not optional,
-            # so there has to be a template for it. Fail hard.
-            raise ParserError(f"Cannot find a template for {self.block_name} block")
 
         # Don't bother with templates yet, finalize() will handle that,
         # we just need a container at this point
@@ -219,20 +210,37 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
     def finalize(self, ctx):
         """Finalize the block after all nested nodes have been parsed.
 
-        Renders the template with the arguments parsed in `begin()`
-        (found in `ctx.args`) and replaces the block's temporary
-        `<div>` container parent with it.
+        Renders the template with its parsed arguments (found in `ctx.args`)
+        and replaces the block's temporary `<div>` container parent with it.
 
-        Subclasses may override this to pass additional arguments
-        to the template. Make sure to call `ctx.replace_root()`
-        passing the rendered template to it then.
+        Calls `finalize_args()` which subclasses may override to add more
+        args data to their templates.
 
         Args:
             ctx: Current parsing `Context`.
         """
-        ctx.replace_root(etree.fromstring(self.template.render(ctx.args)))
+        if self.template is None:
+            # Do nothing, the block is already in a dummy <div>,
+            # just keep it that way.
+            return
 
-        # hmm... actually, this could check the template situation, and if there isn't any, i.e. fallback div,
-        # just ignore the whole thing. It already is a dummy div at this point.
-        # in that case maybe split it into finalize() and finalize_args() or something,
-        # finalize() don't need override, finalize_args() can in e.g. move
+        args = self.finalize_args(ctx)
+        new_root = etree.fromstring(self.template.render(args))
+        ctx.replace_root(new_root)
+
+    def finalize_args(self, ctx: Context) -> dict[str, Any]:
+        """Extend template arguments during finalization.
+
+        Called right before rendering the template to optionally extend
+        the initial args parsed in `begin()` with additional data.
+
+        Subclasses may override this method, otherwise the initial args
+        are returned as-is.
+
+        Args:
+            ctx: Current parsing `Context`.
+
+        Returns:
+            A dictionary that will be passed to the Jinja template as context.
+        """
+        return ctx.args

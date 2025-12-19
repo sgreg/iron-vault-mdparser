@@ -78,13 +78,7 @@ class Templater:
     It first checks for an override provided via `UserTemplates` and, if not
     present, falls back to loading the default template file from the
     `templates` package directory.
-
-    Attributes:
-        block_fallback_template: Fallback template string for block elements
-            that don't have a template defined.
     """
-
-    block_fallback_template: str = "<div></div>"
 
     def __init__(self):
         """Initialize the templating environment."""
@@ -117,23 +111,16 @@ class Templater:
         Looks up the `name` and `block_type` to a matching key in the
         `UserTemplates` and creates a `Template` from it. If none is set,
         looks up a matching file in the templates/ directory and creates
-        a `Template` from it.
-
-        In case the user-defined template override is an empty string,
-        or the template file doesn't exist, the return value depends on
-        the `template_type`.:
-         - For "nodes" and default "" types, `None` is returned, and
-           that specific template will not be rendered at all.
-         - For "blocks" types, a fallback `Template` created from
-           `block_fallback_template` is returned as block elements
-           always need a container.
+        a `Template` from it. If that doesn't exist or can't be read,
+        `None` is returned.
 
         Args:
             name: Element name, e.g., `Progress Roll` or `oracle`.
             template_type: "blocks", "nodes", or default "".
 
         Returns:
-            A compiled Jinja `Template` or `None` when explicitly disabled.
+            A compiled Jinja `Template` or `None` when explicitly disabled
+                or reading the template file fails or doesn't exist.
         """
         logger.debug(f"Getting {template_type} template for '{name}'")
         key = name.lower().replace(' ', '_')
@@ -143,14 +130,8 @@ class Templater:
         if isinstance(user_template, str):
             # User override template string found
             if str(user_template) == '':
+                # Empty string, template is explicitly disabled
                 logger.debug("  -> found empty user template")
-
-                if template_type == "blocks":
-                    # Block template with empty-string user override.
-                    # Blocks need a container, though, so return fallback.
-                    return Template(self.block_fallback_template)
-
-                # For other types, return None to disable rendering it
                 return None
 
             # Return a Template from the non-empty user override string
@@ -164,11 +145,6 @@ class Templater:
             return file_template
 
         logger.debug("  -> no template found")
-
-        if template_type == "blocks":
-            # Again, blocks need a container, return fallback
-            return Template(self.block_fallback_template)
-
         return None
 
     def _lookup_user_template(self, key: str, template_type: str) -> str | None:

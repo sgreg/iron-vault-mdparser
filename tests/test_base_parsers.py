@@ -1,7 +1,6 @@
-import pytest
 from jinja2 import Template
 
-from ironvaultmd.parsers.base import NodeParser, MechanicsBlockParser, ParserError
+from ironvaultmd.parsers.base import NodeParser, MechanicsBlockParser
 from ironvaultmd.parsers.nodes import RollNodeParser
 from ironvaultmd.parsers.templater import templater
 from utils import verify_is_dummy_block_element
@@ -131,6 +130,9 @@ def test_block_no_template(ctx):
     assert parser.template is not None
     parser.template = None
 
-    # Verify a block parser without template will raise an Exception
-    with pytest.raises(ParserError):
-        parser.begin(ctx, "test test test")
+    element, args = parser.begin(ctx, "test test test")
+    verify_is_dummy_block_element(element)
+
+    ctx.push(parser.block_name, element, args)
+    parser.finalize(ctx)
+    verify_is_dummy_block_element(ctx.parent)

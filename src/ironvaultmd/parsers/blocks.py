@@ -14,12 +14,12 @@ provided via `ironvaultmd.parsers.templater`.
 """
 
 import logging
-import xml.etree.ElementTree as etree
 from dataclasses import asdict
 from typing import Any
 
 from ironvaultmd import logger_name
 from ironvaultmd.parsers.base import MechanicsBlockParser
+from ironvaultmd.parsers.context import Context
 from ironvaultmd.util import convert_link_name
 
 logger = logging.getLogger(logger_name)
@@ -48,17 +48,19 @@ class MoveBlockParser(MechanicsBlockParser):
         regex = r'"\[(?P<name>[^]]+)]\((?P<link>[^)]+)\)"'
         super().__init__("Move", regex)
 
-    def finalize(self, ctx):
-        """Style the move block based on its roll outcome if a roll occurred.
+    def finalize_args(self, ctx: Context) -> dict[str, Any]:
+        """Add the move's roll outcome to the args.
 
         The outcome is based on the `RollResult` within the `Context` and
         takes possible dice rerolls and momentum burning into account.
 
         Args:
-            ctx: Current parsing context.
+            ctx: Current parsing `Context`.
+
+        Returns:
+            Args dictionary with the roll outcome information added.
         """
-        args = ctx.args | {"rolled": ctx.roll.rolled} | asdict(ctx.roll.get())
-        ctx.replace_root(etree.fromstring(self.template.render(args)))
+        return ctx.args | {"rolled": ctx.roll.rolled} | asdict(ctx.roll.get())
 
 
 class OracleGroupBlockParser(MechanicsBlockParser):
