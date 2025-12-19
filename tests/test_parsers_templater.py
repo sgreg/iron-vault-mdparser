@@ -3,6 +3,7 @@ from jinja2 import Template
 from ironvaultmd.parsers.blocks import ActorBlockParser
 from ironvaultmd.parsers.nodes import AddNodeParser, MeterNodeParser
 from ironvaultmd.parsers.templater import Templater, UserTemplates
+from utils import verify_is_dummy_block_element
 
 
 def test_templater_success():
@@ -105,11 +106,19 @@ def test_user_template_render_block(md_gen, ctx):
 
     md_gen(templates=user_templates)
 
-    add_parser = ActorBlockParser()
-    assert add_parser.template.filename == "<template>"
+    actor_parser = ActorBlockParser()
+    assert actor_parser.template.filename == "<template>"
 
-    element = add_parser.begin(ctx, 'name="[[link|The Actor]]"')
-    outer_node = ctx.parent.find("div")
+    element, args = actor_parser.begin(ctx, 'name="[[link|The Actor]]"')
+    verify_is_dummy_block_element(element)
+
+    assert "name" in args.keys()
+    assert args["name"] == "The Actor"
+
+    ctx.push(actor_parser.block_name, element, args)
+    actor_parser.finalize(ctx)
+
+    outer_node = ctx.parent
 
     assert outer_node is not None
     assert outer_node.get("class") == "test-class"

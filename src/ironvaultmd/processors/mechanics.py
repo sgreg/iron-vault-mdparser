@@ -269,8 +269,8 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
                 data = block_match.group("params")
 
                 parser = self.block_parsers.get(name)
-                element = parser.begin(ctx, data)
-                ctx.push(name, element)
+                element, args = parser.begin(ctx, data)
+                ctx.push(name, element, args)
 
             elif (node_match := self.RE_NODE_LINE.search(line)) is not None:
                 name = node_match.group("name")

@@ -14,6 +14,8 @@ provided via `ironvaultmd.parsers.templater`.
 """
 
 import logging
+import xml.etree.ElementTree as etree
+from dataclasses import asdict
 from typing import Any
 
 from ironvaultmd import logger_name
@@ -55,19 +57,8 @@ class MoveBlockParser(MechanicsBlockParser):
         Args:
             ctx: Current parsing context.
         """
-        if not ctx.roll.rolled:
-            logger.debug("No roll context, skipping")
-            return
-
-        result = ctx.roll.get()
-
-        # Style the main move block <div> with classes based on the roll result
-        class_hitmiss = f"ivm-move-result-{result.hitmiss}"
-        class_match = "ivm-move-result-match" if result.match else ""
-        current_classes = ctx.parent.get("class", "")
-
-        new_classes = " ".join(c for c in [current_classes, class_hitmiss, class_match] if c)
-        ctx.parent.set("class", new_classes)
+        args = ctx.args | {"rolled": ctx.roll.rolled} | asdict(ctx.roll.get())
+        ctx.replace_root(etree.fromstring(self.template.render(args)))
 
 
 class OracleGroupBlockParser(MechanicsBlockParser):

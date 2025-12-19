@@ -13,8 +13,8 @@ def test_context_stack(parent):
     root_element = ctx.parent # main mechanics block <div> created within Context() initialization
 
     # Create and push a new element
-    element = e = etree.SubElement(ctx.parent, "div")
-    ctx.push("test", element)
+    element = etree.SubElement(ctx.parent, "div")
+    ctx.push("test", element, {})
     # Verify there are 2 elements in the stack and 'parent' points to the new one
     assert len(ctx.blocks) == 1
     assert ctx.parent == element
@@ -34,6 +34,55 @@ def test_context_stack(parent):
     assert ctx.parent == root_element
     assert ctx.name == "root"
     assert ctx.roll is None
+
+def test_context_properties(parent):
+    ctx = Context(parent)
+
+    assert ctx.parent == ctx.root
+    assert ctx.name == "root"
+    assert ctx.args is None
+    assert ctx.roll is None
+
+    element = etree.SubElement(ctx.parent, "div")
+    ctx.push("test", element, {"key": "value"})
+
+    assert ctx.parent == element
+    assert ctx.name == "test"
+    assert ctx.args is not None
+    assert "key" in ctx.args.keys()
+    assert ctx.args["key"] == "value"
+    assert ctx.roll is not None
+
+def test_context_replace_root(parent):
+    ctx = Context(parent)
+
+    original_root = ctx.root
+
+    element_one = etree.SubElement(ctx.parent, "div")
+
+    # Try to replace ctx root without a block in it, verify nothing will happen
+    ctx.replace_root(element_one)
+    assert ctx.parent == original_root
+
+    # Push element, verify now it's the parent (but not the root)
+    ctx.push("test", element_one, {})
+    assert ctx.parent == element_one
+    assert ctx.root == original_root
+
+    # Create a second element and set a class attribute
+    element_two = etree.SubElement(parent, "div")
+    element_two.set("class", "test-class")
+
+    # Verify ctx.parent is still the old, and it has no class attribute
+    assert ctx.parent == element_one
+    assert ctx.parent.get("class") is None
+
+    # Do the root replacement
+    ctx.replace_root(element_two)
+
+    # Verify ctx.parent is now the new element with the set class attribute
+    assert ctx.parent == element_two
+    assert ctx.parent.get("class") == "test-class"
 
 
 def test_rollcontext_roll():

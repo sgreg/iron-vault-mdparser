@@ -4,6 +4,7 @@ from jinja2 import Template
 from ironvaultmd.parsers.base import NodeParser, MechanicsBlockParser, ParserError
 from ironvaultmd.parsers.nodes import RollNodeParser
 from ironvaultmd.parsers.templater import templater
+from utils import verify_is_dummy_block_element
 
 
 def test_node_get_template():
@@ -112,30 +113,17 @@ def test_block_no_match(ctx):
     parser = MechanicsBlockParser(name, r'name="[a-z]*"')
     # Define data that contains not only small letters
     data = "value123"
-    element = parser.begin(ctx, data)
+    element, args = parser.begin(ctx, data)
 
-    # Data won't match, a fallback "block" element should be returned
-    assert element is not None
-    assert element.get("class") == "ivm-block"
-    assert element.text == f"{name}: {data}"
+    # Data won't match, verify it still returns a regular <div> container
+    verify_is_dummy_block_element(element)
 
-    # Can still call finalize() and nothing will happen
-    parser.finalize(ctx)
+    # Verify fallback args were created
+    assert "block_name" in args.keys()
+    assert args["block_name"] == name
 
-def test_block_template_name(ctx):
-    name = "oracle"
-    data = "value123"
-    parser = MechanicsBlockParser(name, r'(?P<test_data>.*)', "test")
-    assert parser.template.name == "blocks/test.html"
-    element = parser.begin(ctx, data)
-
-    # Verify the "test" template content was created, despite "oracle" would exist
-    assert element is not None
-    # assert element.get("class") == ""
-    assert element.text == f"data: {data}"
-
-    # Can still call finalize() and nothing will happen
-    parser.finalize(ctx)
+    assert "content" in args.keys()
+    assert args["content"] == data
 
 def test_block_no_template(ctx):
     parser = MechanicsBlockParser("test", ".*")

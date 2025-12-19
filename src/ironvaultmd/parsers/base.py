@@ -165,8 +165,11 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
         logger.debug(match)
         return match.groupdict()
 
-    def begin(self, ctx: Context, data: str) -> etree.Element:
-        """Create and return the block's root element.
+    def begin(self, ctx: Context, data: str) -> tuple[etree.Element, dict[str, Any]]:
+        """Create and return the block's root element and its arguments.
+
+        Matches the block's opening line with the parser's `regex`, and
+        builds an argument dictionary from its match groups.
 
         If the opening line cannot be matched, a generic block element is
         created containing a textual representation of the original input.
@@ -176,8 +179,9 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
             data: Block parameter string from the opening line.
 
         Returns:
-            The newly created HTML element which becomes the current parent in
-            the context stack.
+            A tuple (`element`, `args`) containing the newly created HTML
+            element which becomes the current parent in the context stack,
+            and a dictionary of its parsed arguments.
         """
         matches = self._match(data)
         if matches is None:
@@ -191,9 +195,11 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
             # so there has to be a template for it. Fail hard.
             raise ParserError(f"Cannot find a template for {self.block_name} block")
 
-        element = etree.fromstring(self.template.render(args))
-        ctx.parent.append(element)
-        return element
+        # Don't bother with templates yet, finalize() will handle that,
+        # we just need a container at this point
+        element = etree.SubElement(ctx.parent, "div")
+
+        return element, args
 
     def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
         """Build template arguments from regex groups.
@@ -213,10 +219,20 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
     def finalize(self, ctx):
         """Finalize the block after all nested nodes have been parsed.
 
-        Subclasses may override this to add computed results or to update the
-        block's styling. The default implementation does nothing.
+        Renders the template with the arguments parsed in `begin()`
+        (found in `ctx.args`) and replaces the block's temporary
+        `<div>` container parent with it.
+
+        Subclasses may override this to pass additional arguments
+        to the template. Make sure to call `ctx.replace_root()`
+        passing the rendered template to it then.
 
         Args:
             ctx: Current parsing `Context`.
         """
-        pass
+        ctx.replace_root(etree.fromstring(self.template.render(ctx.args)))
+
+        # hmm... actually, this could check the template situation, and if there isn't any, i.e. fallback div,
+        # just ignore the whole thing. It already is a dummy div at this point.
+        # in that case maybe split it into finalize() and finalize_args() or something,
+        # finalize() don't need override, finalize_args() can in e.g. move

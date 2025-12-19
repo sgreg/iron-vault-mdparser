@@ -88,3 +88,15 @@ def element_text(element: etree.Element) -> str:
         descendants, preserving the order.
     """
     return "".join(text for text in element.itertext())
+
+
+def verify_is_dummy_block_element(element: etree.Element):
+    """Verifies the given `element` is a block parser placeholder container.
+
+    Calls `assert` to check the given `element` is a valid `<div>` without
+    a class attribute and without any children `<div>`s.
+    """
+    assert element is not None
+    assert element.tag == "div"
+    assert element.get("class") is None
+    assert len(element.findall("div")) == 0

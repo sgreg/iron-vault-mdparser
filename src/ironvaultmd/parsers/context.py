@@ -15,6 +15,7 @@ This module defines small helper classes that carry state while parsing
 import logging
 import xml.etree.ElementTree as etree
 from dataclasses import dataclass
+from typing import Any
 
 from ironvaultmd import logger_name
 from ironvaultmd.parsers.templater import templater
@@ -208,13 +209,14 @@ class BlockContext:
     Attributes:
         name: Name of the current mechanics block (e.g., `move`).
         root: Root HTML element of the block in the output tree.
+        args: Dictionary of parsed arguments.
         roll: `RollContext` attached to the block to accumulate roll data.
     """
-    def __init__(self, name: str, root: etree.Element):
+    def __init__(self, name: str, root: etree.Element, args: dict[str, Any]):
         self.name = name
         self.root = root
+        self.args = args
         self.roll = RollContext()
-
 
 class Context:
     """Stack-based parsing context for mechanics block content.
@@ -280,20 +282,28 @@ class Context:
         return self.blocks[-1].name
 
     @property
+    def args(self) -> dict[str, Any] | None:
+        """Return the args dictionary of the current block, if any."""
+        if len(self.blocks) == 0:
+            return None
+        return self.blocks[-1].args
+
+    @property
     def roll(self) -> RollContext | None:
         """Return the roll context for the current block, if any."""
         if len(self.blocks) == 0:
             return None
         return self.blocks[-1].roll
 
-    def push(self, name: str, element: etree.Element) -> None:
+    def push(self, name: str, element: etree.Element, args: dict[str, Any]) -> None:
         """Push a new block onto the context stack.
 
         Args:
             name: Name of the mechanics block being entered.
             element: Root HTML element for the block.
+            args: Dictionary of the element's parsed arguments
         """
-        block = BlockContext(name, element)
+        block = BlockContext(name, element, args)
         self.blocks.append(block)
         logger.debug(f"CONTEXT: pushing #{len(self.blocks)} {repr(block)}  str {str(block)}")
 
@@ -308,3 +318,45 @@ class Context:
             return
         logger.debug(f"CONTEXT: popping #{len(self.blocks)} -> #{len(self.blocks) - 1}")
         self.blocks.pop()
+
+    def replace_root(self, new_root: etree.Element):
+        """Replace the current block's root element with a new one.
+
+        Block parsers use a temporary placeholder `<div>` during parsing
+        and only render the actual template in the `finalize()` step.
+        This way, the `MoveBlockParser` can style its container element
+        based on roll results nodes within the block.
+
+        The placeholder `<div>` is held in the block's `root` attribute.
+        This method copies all child elements from there into the given
+        `new_root` element and replaces the placeholder with it in both
+        the stack hierarchy (i.e., the block's parent) and within the
+        block itself.
+
+        Args:
+            new_root: A `<div>` container that will become the currently
+                active's block new root element
+
+        Returns:
+            Nothing.
+        """
+        if len(self.blocks) == 0:
+            logger.warning("Attempting to replace mechanics block root, ignoring")
+            return
+
+        block = self.blocks[-1]
+        parent = self.blocks[-2].root if len(self.blocks) > 1 else self.root
+
+        # Get all child elements within the block's root element
+        elements = block.root.findall("*")
+        # Copy them into the new_root element
+        for element in elements:
+            new_root.append(element)
+
+        # Replace the root element in the stack hierarchy
+        # by adjusting the block's parent's list of children
+        parent.remove(block.root)
+        parent.append(new_root)
+
+        # Set the block's own root element to the new one
+        block.root = new_root

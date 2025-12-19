@@ -74,5 +74,5 @@ def parser_context(parent) -> Generator[Context]:
 @pytest.fixture(name="block_ctx")
 def parser_content(ctx) -> Generator[Context]:
     block_parent = etree.SubElement(ctx.parent, "div")
-    ctx.push("block", block_parent)
+    ctx.push("block", block_parent, {})
     yield ctx
