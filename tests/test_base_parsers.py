@@ -1,4 +1,6 @@
 from jinja2 import Template
+import xml.etree.ElementTree as etree
+
 
 from ironvaultmd.parsers.base import NodeParser, MechanicsBlockParser
 from ironvaultmd.parsers.nodes import RollNodeParser
@@ -43,8 +45,23 @@ def test_node_fallback_render(ctx):
     parser.parse(ctx, data)
 
     node = ctx.parent.find("div")
+    print(etree.tostring(ctx.parent))
     assert node is not None
     assert node.text == f"Test: {data}"
+
+    # Verify later calls don't use the fallback template
+    valid_data = 'test data "yes match"'
+    parser.parse(ctx, valid_data)
+    nodes = ctx.parent.findall("div")
+    print(etree.tostring(ctx.parent))
+
+    # Should contain both the old and new div
+    assert len(nodes) == 2
+    # Verify the first is the initial, not-matched div
+    assert nodes[0].text == f"Test: {data}"
+    # Verify the second is the matched div and it uses the test template
+    assert nodes[1].text == f"data: yes match"
+
 
 def test_node_args_override(ctx):
     regex = r'^test data "(?P<test_data>.+)"$'
@@ -123,6 +140,7 @@ def test_block_no_match(ctx):
 
     assert "content" in args.keys()
     assert args["content"] == data
+
 
 def test_block_no_template(ctx):
     parser = MechanicsBlockParser("test", ".*")

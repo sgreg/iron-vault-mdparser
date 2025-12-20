@@ -86,17 +86,18 @@ class NodeParser:
             ctx: Current parsing `Context`.
             data: Node parameters string.
         """
+        template = self.template
         matches = self._match(data)
         if matches is None:
             # Use generic node template as fallback, showing data as-is
-            self.template = templater.get_template("node", "nodes")
+            template = templater.get_template("node", "nodes")
             args = {"node_name": self.node_name, "content": data}
 
         else:
             args = self.create_args(matches, ctx)
 
-        if self.template is not None:
-            out = self.template.render(args)
+        if template is not None:
+            out = template.render(args)
             ctx.parent.append(etree.fromstring(out))
 
     def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
