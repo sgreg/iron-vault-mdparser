@@ -3,6 +3,7 @@ import xml.etree.ElementTree as etree
 
 
 from ironvaultmd.parsers.base import NodeParser, MechanicsBlockParser
+from ironvaultmd.parsers.context import BlockContext
 from ironvaultmd.parsers.nodes import RollNodeParser
 from ironvaultmd.parsers.templater import templater
 from utils import verify_is_dummy_block_element
@@ -124,33 +125,70 @@ def test_node_template_disable(block_ctx):
     assert not result.match
 
 def test_block_no_match(ctx):
-    name = "test"
+    name = BlockContext.Names("Test", "test", "actor")
     # Create a parser that only matches small letters
-    parser = MechanicsBlockParser(name, r'name="[a-z]*"')
+    parser = MechanicsBlockParser(name, r'name="(?P<name>[a-z]*)"')
+    assert parser.template is not None
+
     # Define data that contains not only small letters
     data = "value123"
-    element, args = parser.begin(ctx, data)
+    parser.begin(ctx, data)
 
     # Data won't match, verify it still returns a regular <div> container
-    verify_is_dummy_block_element(element)
+    verify_is_dummy_block_element(ctx.parent)
 
     # Verify fallback args were created
-    assert "block_name" in args.keys()
-    assert args["block_name"] == name
+    assert "block_name" in ctx.args.keys()
+    assert ctx.args["block_name"] == name.block
 
-    assert "content" in args.keys()
-    assert args["content"] == data
+    assert "content" in ctx.args.keys()
+    assert ctx.args["content"] == data
 
+    # Verify the match group name wasn't added to the args
+    assert "name" not in ctx.args.keys()
+
+    # Verify this is rendered to a fallback block template
+    parser.finalize(ctx)
+    nodes = ctx.root.findall("div")
+    assert len(nodes) == 1
+    assert nodes[0].get("class") == "ivm-block"
+    assert nodes[0].text == "Test: value123"
+
+    # Verify later calls don't use the fallback template
+    data = 'name="valid"'
+    parser.begin(ctx, data)
+
+    verify_is_dummy_block_element(ctx.parent)
+
+    assert "name" in ctx.args.keys()
+    assert ctx.args["name"] == "valid"
+
+    assert "block_name" not in ctx.args.keys()
+    assert "content" not in ctx.args.keys()
+
+    # Verify this is rendered now to a valid actor template
+    parser.finalize(ctx)
+    nodes = ctx.root.findall("div")
+    assert len(nodes) == 2
+
+    assert nodes[1].get("class") == "ivm-actor"
+    name_node = nodes[1].find("div")
+    assert name_node is not None
+    assert name_node.text == "valid"
 
 def test_block_no_template(ctx):
-    parser = MechanicsBlockParser("test", ".*")
+    name = BlockContext.Names("test", "test", "unknown-template")
+    parser = MechanicsBlockParser(name, ".*")
 
-    assert parser.template is not None
-    parser.template = None
+    # Verify the defined template isn't found
+    assert parser.template is None
 
-    element, args = parser.begin(ctx, "test test test")
-    verify_is_dummy_block_element(element)
-
-    ctx.push(parser.block_name, element, args)
-    parser.finalize(ctx)
+    parser.begin(ctx, "test test test")
     verify_is_dummy_block_element(ctx.parent)
+
+    parser.finalize(ctx)
+
+    # Verify there's one parsed div, and it's still just a dummy block
+    nodes = ctx.root.findall("div")
+    assert len(nodes) == 1
+    verify_is_dummy_block_element(nodes[0])

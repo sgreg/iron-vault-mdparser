@@ -10,118 +10,129 @@ from utils import verify_is_dummy_block_element
 
 def test_parser_actor(ctx):
     parser = ActorBlockParser()
-    assert parser.block_name == "Actor"
+    assert parser.name.block == "Actor"
+    assert parser.name.parser == "actor"
+    assert parser.name.template == "actor"
 
     data = 'name="[[link|Character Name]]"'
-    element, args = parser.begin(ctx, data)
-    verify_is_dummy_block_element(element)
+    parser.begin(ctx, data)
+    verify_is_dummy_block_element(ctx.parent)
 
     # Verify arguments were parsed as expected
-    assert "name" in args.keys()
-    assert args["name"] == "Character Name"
+    assert "name" in ctx.args.keys()
+    assert ctx.args["name"] == "Character Name"
 
-    ctx.push(parser.block_name, element, args)
-    assert ctx.name == "Actor"
-    assert ctx.parent == element
+    assert ctx.name == parser.name
     verify_is_dummy_block_element(ctx.parent)
 
     parser.finalize(ctx)
 
     # Verify ctx.parent was turned into div with ivm-actor class
-    assert ctx.parent is not None
-    assert ctx.parent.get("class") == "ivm-actor"
+    blocks = ctx.parent.findall("div")
+    assert len(blocks) == 1
+    assert blocks[0].get("class") == "ivm-actor"
 
     # Verify ivm-actor-name class div was added
-    children = ctx.parent.findall("div")
+    children = blocks[0].findall("div")
     assert len(children) == 1
     assert children[0].get("class") == "ivm-actor-name"
     assert children[0].text == "Character Name"
 
 def test_parser_move_no_roll(ctx):
     parser = MoveBlockParser()
-    assert parser.block_name == "Move"
+    assert parser.name.block == "Move"
+    assert parser.name.parser == "move"
+    assert parser.name.template == "move"
 
     data = '"[Move Name](Move Link)"'
-    element, args = parser.begin(ctx, data)
-    verify_is_dummy_block_element(element)
+    parser.begin(ctx, data)
+    verify_is_dummy_block_element(ctx.parent)
 
     # Verify arguments were parsed as expected
-    assert "name" in args.keys()
-    assert args["name"] == "Move Name"
+    assert "name" in ctx.args.keys()
+    assert ctx.args["name"] == "Move Name"
 
-    ctx.push(parser.block_name, element, args)
     parser.finalize(ctx)
 
-    assert ctx.parent.get("class") == "ivm-move"
+    blocks = ctx.parent.findall("div")
+    assert len(blocks) == 1
+    assert blocks[0].get("class") == "ivm-move"
 
-    children = ctx.parent.findall("div")
+    children = blocks[0].findall("div")
     assert len(children) == 1
     assert children[0].get("class") == "ivm-move-name"
     assert children[0].text == "Move Name"
 
 def test_parser_move_with_roll(ctx):
     parser = MoveBlockParser()
-    assert parser.block_name == "Move"
+    assert parser.name.block == "Move"
+    assert parser.name.parser == "move"
+    assert parser.name.template == "move"
 
     data = '"[Move Name](Move Link)"'
-    element, args = parser.begin(ctx, data)
-    verify_is_dummy_block_element(element)
+    parser.begin(ctx, data)
+    verify_is_dummy_block_element(ctx.parent)
 
     # Verify arguments were parsed as expected
-    assert "name" in args.keys()
-    assert args["name"] == "Move Name"
+    assert "name" in ctx.args.keys()
+    assert ctx.args["name"] == "Move Name"
 
-    ctx.push(parser.block_name, element, args)
     ctx.roll.roll(5, 2, 0, 3, 8) # total 7 vs 3 | 8, expect weak hit
     parser.finalize(ctx)
 
-    assert ctx.parent.get("class") == "ivm-move ivm-move-result-weak"
+    blocks = ctx.parent.findall("div")
+    assert len(blocks) == 1
+    assert blocks[0].get("class") == "ivm-move ivm-move-result-weak"
 
-    children = ctx.parent.findall("div")
+    children = blocks[0].findall("div")
     assert len(children) == 1
     assert children[0].get("class") == "ivm-move-name"
     assert children[0].text == "Move Name"
 
 def test_parser_oracle_group(ctx):
     parser = OracleGroupBlockParser()
-    assert parser.block_name == "Oracle Group"
+    assert parser.name.block == "Oracle Group"
+    assert parser.name.parser == "oracle-group"
+    assert parser.name.template == "oracle"
 
     data = 'name="Group Name"'
-    element, args = parser.begin(ctx, data)
-    verify_is_dummy_block_element(element)
+    parser.begin(ctx, data)
+    verify_is_dummy_block_element(ctx.parent)
 
-    assert "oracle" in args.keys()
-    assert args["oracle"] == "Group Name"
+    assert "oracle" in ctx.args.keys()
+    assert ctx.args["oracle"] == "Group Name"
 
-    ctx.push(parser.block_name, element, args)
     parser.finalize(ctx)
 
-    assert ctx.parent is not None
-    assert ctx.parent.get("class") == "ivm-oracle-block"
+    blocks = ctx.parent.findall("div")
+    assert len(blocks) == 1
+    assert blocks[0].get("class") == "ivm-oracle-block"
 
-    children = ctx.parent.findall("div")
+    children = blocks[0].findall("div")
     assert len(children) == 1
     assert children[0].get("class") == "ivm-oracle-name"
     assert children[0].text == "Oracle: Group Name"
 
 def test_parser_oracle_block_name(ctx):
     parser = OracleBlockParser()
-    assert parser.block_name == "Oracle"
+    assert parser.name.block == "Oracle"
+    assert parser.name.parser == "oracle"
+    assert parser.name.template == "oracle"
 
     data = 'name="[Oracle Name](datasworn:link)" result="Oracle Result" roll=55'
-    element, args = parser.begin(ctx, data)
-    verify_is_dummy_block_element(element)
+    parser.begin(ctx, data)
+    verify_is_dummy_block_element(ctx.parent)
 
-    assert "oracle" in args.keys()
-    assert args["oracle"] == "Oracle Name"
+    assert "oracle" in ctx.args.keys()
+    assert ctx.args["oracle"] == "Oracle Name"
 
-    ctx.push(parser.block_name, element, args)
     parser.finalize(ctx)
 
-    assert ctx.parent is not None
-    assert ctx.parent.get("class") == "ivm-oracle-block"
+    blocks = ctx.parent.findall("div")
+    assert len(blocks) == 1
+    assert blocks[0].get("class") == "ivm-oracle-block"
 
-    children = ctx.parent.findall("div")
+    children = blocks[0].findall("div")
     assert len(children) == 1
     assert children[0].get("class") == "ivm-oracle-name"
     for sub in ["Oracle Name", "Oracle Result", "55"]:
@@ -129,27 +140,29 @@ def test_parser_oracle_block_name(ctx):
 
 def test_parser_oracle_block_text(ctx):
     parser = OracleBlockParser()
-    assert parser.block_name == "Oracle"
+    assert parser.name.block == "Oracle"
+    assert parser.name.parser == "oracle"
+    assert parser.name.template == "oracle"
 
     data = 'name="Will [[ignore|some clock]] advance?" result="Clock Result" roll=23'
-    element, args = parser.begin(ctx, data)
-    verify_is_dummy_block_element(element)
+    parser.begin(ctx, data)
+    verify_is_dummy_block_element(ctx.parent)
 
-    assert "oracle" in args.keys()
+    assert "oracle" in ctx.args.keys()
     keys = ["oracle", "result", "roll"]
-    assert all(key in args.keys() for key in keys)
-    assert args["oracle"] == "Will some clock advance?"
+    assert all(key in ctx.args.keys() for key in keys)
+    assert ctx.args["oracle"] == "Will some clock advance?"
 
-    assert args["result"] == "Clock Result"
-    assert args["roll"] == "23"
+    assert ctx.args["result"] == "Clock Result"
+    assert ctx.args["roll"] == "23"
 
-    ctx.push(parser.block_name, element, args)
     parser.finalize(ctx)
 
-    assert ctx.parent is not None
-    assert ctx.parent.get("class") == "ivm-oracle-block"
+    blocks = ctx.parent.findall("div")
+    assert len(blocks) == 1
+    assert blocks[0].get("class") == "ivm-oracle-block"
 
-    children = ctx.parent.findall("div")
+    children = blocks[0].findall("div")
     assert len(children) == 1
     assert children[0].get("class") == "ivm-oracle-name"
     for sub in ["Will some clock advance", "Clock Result", "23"]:
@@ -157,19 +170,24 @@ def test_parser_oracle_block_text(ctx):
 
 def test_parser_oracle_prompt(ctx):
     parser = OraclePromptBlockParser()
-    assert parser.block_name == "Oracle Prompt"
+    assert parser.name.block == "Oracle Prompt"
+    assert parser.name.parser == "-"
+    assert parser.name.template == "oracle"
 
     data = '"My Oracle Prompt"'
-    element, args = parser.begin(ctx, data)
-    verify_is_dummy_block_element(element)
+    parser.begin(ctx, data)
+    verify_is_dummy_block_element(ctx.parent)
 
-    ctx.push(parser.block_name, element, args)
+    assert "prompt" in ctx.args.keys()
+    assert ctx.args["prompt"] == "My Oracle Prompt"
+
     parser.finalize(ctx)
 
-    assert ctx.parent is not None
-    assert ctx.parent.get("class") == "ivm-oracle-block"
+    blocks = ctx.parent.findall("div")
+    assert len(blocks) == 1
+    assert blocks[0].get("class") == "ivm-oracle-block"
 
-    children = ctx.parent.findall("div")
+    children = blocks[0].findall("div")
     assert len(children) == 1
     assert children[0].get("class") == "ivm-oracle-name"
     assert children[0].text == "Oracle: My Oracle Prompt"

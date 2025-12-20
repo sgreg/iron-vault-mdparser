@@ -1,56 +1,85 @@
 import xml.etree.ElementTree as etree
 
-from ironvaultmd.parsers.context import Context, RollContext, RollResult
+from ironvaultmd.parsers.context import Context, RollContext, RollResult, BlockContext
 
 
 def test_context_stack(parent):
     ctx = Context(parent)
 
     assert len(ctx.blocks) == 0
-    assert ctx.name == "root"
+    assert ctx.name.block == "root"
     assert ctx.roll is None
 
     root_element = ctx.parent # main mechanics block <div> created within Context() initialization
 
     # Create and push a new element
     element = etree.SubElement(ctx.parent, "div")
-    ctx.push("test", element, {})
+    block = BlockContext(BlockContext.Names("test", "", ""), element, {}, {})
+    ctx.push(block)
     # Verify there are 2 elements in the stack and 'parent' points to the new one
     assert len(ctx.blocks) == 1
     assert ctx.parent == element
-    assert ctx.name == "test"
+    assert ctx.name.block == "test"
     assert ctx.roll is not None
 
     # Pop the stack and verify 'parent' is the mechanics block element again
     ctx.pop()
     assert len(ctx.blocks) == 0
     assert ctx.parent == root_element
-    assert ctx.name == "root"
+    assert ctx.name.block == "root"
     assert ctx.roll is None
 
     # Make sure pop() won't remove the last element
     ctx.pop()
     assert len(ctx.blocks) == 0
     assert ctx.parent == root_element
-    assert ctx.name == "root"
+    assert ctx.name.block == "root"
     assert ctx.roll is None
 
 def test_context_properties(parent):
     ctx = Context(parent)
 
     assert ctx.parent == ctx.root
-    assert ctx.name == "root"
+    assert ctx.name.block == "root"
+    assert ctx.name.parser is None
+    assert ctx.name.template is None
+    assert ctx.matches is None
     assert ctx.args is None
     assert ctx.roll is None
 
     element = etree.SubElement(ctx.parent, "div")
-    ctx.push("test", element, {"key": "value"})
+
+    block = BlockContext(
+        BlockContext.Names("Test", "test-parser", "test_template"),
+        element,
+        {
+            "match-key": "match-value",
+        },
+        {
+            "match-key": "match-value",
+            "args-key": "args-value",
+        }
+    )
+    ctx.push(block)
 
     assert ctx.parent == element
-    assert ctx.name == "test"
+
+    assert ctx.name.block == "Test"
+    assert ctx.name.parser == "test-parser"
+    assert ctx.name.template == "test_template"
+
+    assert ctx.matches is not None
+    assert len(ctx.matches) == 1
+    assert "match-key" in ctx.matches.keys()
+    assert ctx.matches["match-key"] == "match-value"
+
     assert ctx.args is not None
-    assert "key" in ctx.args.keys()
-    assert ctx.args["key"] == "value"
+    assert len(ctx.args) == 2
+    assert "match-key" in ctx.args.keys()
+    assert ctx.args["match-key"] == "match-value"
+    assert "args-key" in ctx.args.keys()
+    assert ctx.args["args-key"] == "args-value"
+
     assert ctx.roll is not None
 
 def test_context_replace_root(parent):
@@ -65,7 +94,8 @@ def test_context_replace_root(parent):
     assert ctx.parent == original_root
 
     # Push element, verify now it's the parent (but not the root)
-    ctx.push("test", element_one, {})
+    block = BlockContext(BlockContext.Names("test", "", ""), element_one, {}, {})
+    ctx.push(block)
     assert ctx.parent == element_one
     assert ctx.root == original_root
 

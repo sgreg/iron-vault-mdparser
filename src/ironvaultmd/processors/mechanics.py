@@ -269,8 +269,7 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
                 data = block_match.group("params")
 
                 parser = self.block_parsers.get(name)
-                element, args = parser.begin(ctx, data)
-                ctx.push(name, element, args)
+                parser.begin(ctx, data)
 
             elif (node_match := self.RE_NODE_LINE.search(line)) is not None:
                 name = node_match.group("name")
@@ -280,6 +279,5 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
                 parser.parse(ctx, data)
 
             elif line == '}':
-                parser = self.block_parsers.get(ctx.name)
+                parser = self.block_parsers.get(ctx.name.parser)
                 parser.finalize(ctx)
-                ctx.pop()

@@ -207,16 +207,47 @@ class BlockContext:
     """Container for a named mechanics block and its roll context.
 
     Attributes:
-        name: Name of the current mechanics block (e.g., `move`).
+        name: Name of the current mechanics block parser (e.g., `move`).
         root: Root HTML element of the block in the output tree.
+        matches: Named regex groups the parser matched, or `None`.
         args: Dictionary of parsed arguments.
         roll: `RollContext` attached to the block to accumulate roll data.
     """
-    def __init__(self, name: str, root: etree.Element, args: dict[str, Any]):
+
+    @dataclass
+    class Names:
+        """
+        Represents the names used for block parsing context.
+
+        Different use cases require different versions of the block name,
+        such as displaying the name of the block itself (`block`),
+        the starting line matched by the block processor (`parser`),
+        and the parser's associated template name (`template`).
+
+        Attributes:
+            block: Display name, e.g., "Oracle Group", "Oracle Prompt".
+            parser: Parser lookup name, e.g., "oracle-group", "-".
+            template: Template lookup name, e.g., "oracle_group", "oracle".
+        """
+        block: str
+        parser: str | None
+        template: str | None
+
+    def __init__(self, name: Names, root: etree.Element, matches: dict[str, Any] | None, args: dict[str, Any]):
+        """Initialize a new BlockContext.
+
+        Args:
+            name: Name of the mechanics block parser.
+            root: Root HTML element of the block.
+            matches: Named regex groups the parser matched.
+            args: Dictionary of parsed arguments.
+        """
         self.name = name
         self.root = root
+        self.matches = matches
         self.args = args
         self.roll = RollContext()
+
 
 class Context:
     """Stack-based parsing context for mechanics block content.
@@ -229,8 +260,10 @@ class Context:
         blocks: Internal stack of `BlockContext` instances, handling all
             nodes and blocks contained within the main mechanics block.
         template: Cached template string for the mechanics block `Element`
+        root_name: `BlockContext.Names` values for the root element.
     """
     template: str | None = None
+    root_name = BlockContext.Names("root", None, None)
 
     def __init__(self, root: etree.Element):
         """Initialize a new Context.
@@ -275,11 +308,18 @@ class Context:
         return self.root
 
     @property
-    def name(self) -> str:
+    def name(self) -> BlockContext.Names:
         """Return the name of the current block or `root` if none is active."""
         if len(self.blocks) == 0:
-            return "root"
+            return self.root_name
         return self.blocks[-1].name
+
+    @property
+    def matches(self) -> dict[str, Any] | None:
+        """Return the matches dictionary of the current block, if nay"""
+        if len(self.blocks) == 0:
+            return None
+        return self.blocks[-1].matches
 
     @property
     def args(self) -> dict[str, Any] | None:
@@ -295,15 +335,15 @@ class Context:
             return None
         return self.blocks[-1].roll
 
-    def push(self, name: str, element: etree.Element, args: dict[str, Any]) -> None:
-        """Push a new block onto the context stack.
+    def push(self, block: BlockContext) -> None:
+        """Push a new `BlockContext` onto the context stack.
 
         Args:
-            name: Name of the mechanics block being entered.
-            element: Root HTML element for the block.
-            args: Dictionary of the element's parsed arguments
+            block: New `BlockContext`
+
+        Returns:
+            Nothing.
         """
-        block = BlockContext(name, element, args)
         self.blocks.append(block)
         logger.debug(f"CONTEXT: pushing #{len(self.blocks)} {repr(block)}  str {str(block)}")
 

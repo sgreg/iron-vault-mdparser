@@ -18,7 +18,7 @@ from typing import Any
 from jinja2 import Template
 
 from ironvaultmd import logger_name
-from ironvaultmd.parsers.context import Context
+from ironvaultmd.parsers.context import Context, BlockContext
 from ironvaultmd.parsers.templater import templater
 
 logger = logging.getLogger(logger_name)
@@ -124,25 +124,26 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
     nodes are parsed, and can perform finalization in `finalize`.
 
     Attributes:
-        block_name: Human-readable name of the block.
+        name: Block name collection (display, parser, and template name).
         regex: Compiled pattern used to match and extract parameters from the
             block's opening line.
         template: Jinja `Template` resolved for `block_name`, or `None` if no
-            template is available.
+            template is available or purposely disabled.
+        fallback_template: Fallback Jinja `Template` for non-matched regexes.
     """
-    def __init__(self, name:str, regex: str, template_name:str | None = None):
+
+    fallback_template = templater.get_template("block", "blocks")
+
+    def __init__(self, name: BlockContext.Names, regex: str):
         """Create the block parser.
 
         Args:
-            name: Display name for the block
+            name: Name collection for the block
             regex: Regular expression string for the opening line.
-            template_name: Optional template name, falls back to the block name
         """
-        self.block_name = name
+        self.name = name
         self.regex = re.compile(regex)
-        if template_name is None:
-            template_name = name
-        self.template = templater.get_template(template_name, "blocks")
+        self.template = templater.get_template(name.template, "blocks")
 
     def _match(self, data: str) -> dict[str, str | Any] | None:
         """Try to match the block opening line and return a group dictionary.
@@ -156,14 +157,15 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
         match = self.regex.search(data)
 
         if match is None:
-            logger.warning(f"Fail to match parameters for block {self.block_name}: {repr(data)}")
+            logger.warning(f"Fail to match parameters for block {self.name.block}: {repr(data)}")
             return None
 
         logger.debug(match)
         return match.groupdict()
 
-    def begin(self, ctx: Context, data: str) -> tuple[etree.Element, dict[str, Any]]:
-        """Create and return the block's root element and its arguments.
+    def begin(self, ctx: Context, data: str) -> None:
+        """Create the block's root element and its arguments and pushes
+        it to the `Context` stack.
 
         Matches the block's opening line with the parser's `regex` and
         builds an argument dictionary from its match groups.
@@ -174,16 +176,11 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
         Args:
             ctx: Current parsing `Context`.
             data: Block parameter string from the opening line.
-
-        Returns:
-            A tuple (`element`, `args`) containing the newly created HTML
-            element which becomes the current parent in the context stack,
-            and a dictionary of its parsed arguments.
         """
         matches = self._match(data)
         if matches is None:
-            self.template = templater.get_template("block", "blocks")
-            args = {"block_name": self.block_name, "content": data}
+            logger.warning(f"Failed to match {self.name.block}: '{data}'")
+            args = {"block_name": self.name.block, "content": data}
         else:
             args = self.create_args(matches)
 
@@ -191,7 +188,8 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
         # we just need a container at this point
         element = etree.SubElement(ctx.parent, "div")
 
-        return element, args
+        block = BlockContext(self.name, element, matches, args)
+        ctx.push(block)
 
     def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
         """Build template arguments from regex groups.
@@ -201,7 +199,6 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
 
         Args:
             data: Named regex groups captured from the input line.
-            _: The current parsing `Context` (unused by the base implementation).
 
         Returns:
             A dictionary that will be passed to the Jinja template as context.
@@ -220,14 +217,25 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
         Args:
             ctx: Current parsing `Context`.
         """
-        if self.template is None:
-            # Do nothing, the block is already in a dummy <div>,
-            # just keep it that way.
-            return
+        template = self.template
+        # Resolve the template based on matches.
+        # Check this first to ensure malformed data or missing parts in the parser
+        # will be detected by rendering a fallback div in case the template is disabled.
+        # Let's see later if this was a good idea.
+        if ctx.matches is None:
+            logger.debug(f"Using fallback template for {self.name.block}")
+            template = self.fallback_template
 
-        args = self.finalize_args(ctx)
-        new_root = etree.fromstring(self.template.render(args))
-        ctx.replace_root(new_root)
+        if template is None:
+            # Do nothing, the block is already in a dummy <div>,
+            # keep it as is and use that as fallback.
+            pass
+        else:
+            args = self.finalize_args(ctx)
+            new_root = etree.fromstring(template.render(args))
+            ctx.replace_root(new_root)
+
+        ctx.pop()
 
     def finalize_args(self, ctx: Context) -> dict[str, Any]:
         """Extend template arguments during finalization.

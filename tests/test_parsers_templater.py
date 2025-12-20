@@ -100,16 +100,15 @@ def test_user_template_render_block(md_gen, ctx):
     actor_parser = ActorBlockParser()
     assert actor_parser.template.filename == "<template>"
 
-    element, args = actor_parser.begin(ctx, 'name="[[link|The Actor]]"')
-    verify_is_dummy_block_element(element)
+    actor_parser.begin(ctx, 'name="[[link|The Actor]]"')
+    verify_is_dummy_block_element(ctx.parent)
 
-    assert "name" in args.keys()
-    assert args["name"] == "The Actor"
+    assert "name" in ctx.args.keys()
+    assert ctx.args["name"] == "The Actor"
 
-    ctx.push(actor_parser.block_name, element, args)
     actor_parser.finalize(ctx)
 
-    outer_node = ctx.parent
+    outer_node = ctx.parent.find("div")
 
     assert outer_node is not None
     assert outer_node.get("class") == "test-class"
@@ -151,12 +150,10 @@ def test_user_template_disable_block(md_gen, ctx):
     # Verify template is None
     assert actor_parser.template is None
 
-    element, args = actor_parser.begin(ctx, 'name="[[link|The Actor]]"')
-    verify_is_dummy_block_element(element)
+    actor_parser.begin(ctx, 'name="[[link|The Actor]]"')
+    verify_is_dummy_block_element(ctx.parent)
 
-    ctx.push(actor_parser.block_name, element, args)
     actor_parser.finalize(ctx)
 
     # Verify that with a disabled template, ctx.parent is still the dummy <div>
-    verify_is_dummy_block_element(ctx.parent)
-
+    verify_is_dummy_block_element(ctx.parent.find("div"))
