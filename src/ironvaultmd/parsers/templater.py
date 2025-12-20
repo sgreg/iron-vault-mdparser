@@ -80,13 +80,13 @@ class Templater:
     `templates` package directory.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the templating environment."""
         self.template_loader = PackageLoader('ironvaultmd.parsers', 'templates')
         self.template_env = Environment(loader=self.template_loader, autoescape=True)
         self.user_templates = UserTemplates()
 
-    def load_user_templates(self, user_templates: UserTemplates):
+    def load_user_templates(self, user_templates: UserTemplates) -> None:
         """Load or reset user template overrides.
 
         Args:
@@ -95,14 +95,14 @@ class Templater:
                 override to packaged defaults, an empty string disables output
                 for that template.
         """
-        for name, value in user_templates.__dict__.items():
+        for name, value in vars(user_templates).items():
             if value is not None:
                 logger.debug(f"Setting user template for '{name}': '{value}'")
-                self.user_templates.__dict__[name] = value
+                setattr(self.user_templates, name, value)
             else:
                 # In case there are multiple calls to this method, ensure that
                 # potentially previously set user templates are reset to None
-                self.user_templates.__dict__[name] = None
+                setattr(self.user_templates, name, None)
 
 
     def get_template(self, name: str, template_type: str = "") -> Template | None:
@@ -162,7 +162,7 @@ class Templater:
         """
         if template_type == "blocks":
             key += "_block"
-        return self.user_templates.__dict__.get(key, None)
+        return getattr(self.user_templates, key, None)
 
     def _lookup_file_template(self, key: str, template_type: str) -> Template | None:
         """Look up a template file for the given `key` and `template_type`.
@@ -181,8 +181,8 @@ class Templater:
         if template_type not in ["nodes", "blocks", ""]:
             return None
 
-        dir_path = "" if template_type == "" else f"{template_type}/"
-        filename = f"{dir_path}{key}.html"
+        dir_prefix = f"{template_type}/" if template_type else ""
+        filename = f"{dir_prefix}{key}.html"
 
         template: Template | None = None
         try:

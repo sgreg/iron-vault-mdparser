@@ -31,7 +31,7 @@ class ActorBlockParser(MechanicsBlockParser):
     Matches an opening line that references an Obsidian link with a piped
     label and renders the label as the actor name.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the parser with its regex pattern."""
         name = BlockContext.Names("Actor", "actor", "actor")
         regex = r'^name="\[\[.*\|(?P<name>.*)\]\]"$'
@@ -44,7 +44,7 @@ class MoveBlockParser(MechanicsBlockParser):
     Creates a move container and, upon finalization, updates CSS classes
     based on the move roll outcome's hit/miss and match status.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the parser with its regex pattern."""
         name = BlockContext.Names("Move", "move", "move")
         regex = r'"\[(?P<name>[^]]+)]\((?P<link>[^)]+)\)"'
@@ -67,7 +67,7 @@ class MoveBlockParser(MechanicsBlockParser):
 
 class OracleGroupBlockParser(MechanicsBlockParser):
     """Block parser for an oracle group header."""
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the parser with its regex pattern."""
         name = BlockContext.Names("Oracle Group", "oracle-group", "oracle")
         regex = r'^name="(?P<oracle>[^"]*)"$'
@@ -76,7 +76,7 @@ class OracleGroupBlockParser(MechanicsBlockParser):
 
 class OracleBlockParser(MechanicsBlockParser):
     """Block parser for a single oracle roll result."""
-    def __init__(self):
+    def __init__(self) -> None:
         name = BlockContext.Names("Oracle", "oracle", "oracle")
         # See the oracle node parser, there can be two types (that I know of so far):
         # oracle name="[Core Oracles \/ Theme](datasworn:oracle_rollable:starforged\/core\/theme)" result="Warning" roll=96
@@ -84,14 +84,11 @@ class OracleBlockParser(MechanicsBlockParser):
         regex = r'^name="(\[(?P<oracle_name>[^\]]+)\]\(datasworn:.+\)|(?P<oracle_text>[^"]+))" result="(?P<result>[^"]+)" roll=(?P<roll>\d+)$'
         super().__init__(name, regex)
 
-    def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, Any]) -> dict[str, Any]:
         # This is also taken straight from the oracle node parser.
         # Should probably combine those to some common place?
-        oracle = "undefined"
-        if data["oracle_name"] is not None:
-            oracle = convert_link_name(data["oracle_name"])
-        elif data["oracle_text"] is not None:
-            oracle = convert_link_name(data["oracle_text"])
+        oracle_raw = data.get("oracle_name") or data.get("oracle_text")
+        oracle = convert_link_name(oracle_raw) if oracle_raw else "undefined"
 
         data["result"] = convert_link_name(data["result"])
 
@@ -100,7 +97,7 @@ class OracleBlockParser(MechanicsBlockParser):
 
 class OraclePromptBlockParser(MechanicsBlockParser):
     """Block parser for oracle prompts (narrative lines)."""
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the parser with its regex pattern."""
         name = BlockContext.Names("Oracle Prompt", "-", "oracle")
         regex = r'^"(?P<prompt>[^"]*)"$'

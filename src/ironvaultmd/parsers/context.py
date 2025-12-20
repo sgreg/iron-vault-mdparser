@@ -14,7 +14,7 @@ This module defines small helper classes that carry state while parsing
 
 import logging
 import xml.etree.ElementTree as etree
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from ironvaultmd import logger_name
@@ -55,7 +55,16 @@ class RollContext:
     that later operations (e.g., `finalize()` in `MoveBlockParser`) can style
     output accordingly.
     """
-    def __init__(self):
+    action: int
+    stat: int
+    adds: int
+    vs1: int
+    vs2: int
+    momentum: int
+    progress: int
+    rolled: bool
+
+    def __init__(self) -> None:
         """Create a fresh roll context with zeroed values."""
         self.action = 0
         self.stat = 0
@@ -197,12 +206,10 @@ class RollContext:
         Returns:
             The value of the requested attribute, if it exists, `None` otherwise.
         """
-        try:
-            return self.__getattribute__(attribute)
-        except AttributeError:
-            return None
+        return getattr(self, attribute, None)
 
 
+@dataclass
 class BlockContext:
     """Container for a named mechanics block and its roll context.
 
@@ -233,20 +240,11 @@ class BlockContext:
         parser: str | None
         template: str | None
 
-    def __init__(self, name: Names, root: etree.Element, matches: dict[str, Any] | None, args: dict[str, Any]):
-        """Initialize a new BlockContext.
-
-        Args:
-            name: Name of the mechanics block parser.
-            root: Root HTML element of the block.
-            matches: Named regex groups the parser matched.
-            args: Dictionary of parsed arguments.
-        """
-        self.name = name
-        self.root = root
-        self.matches = matches
-        self.args = args
-        self.roll = RollContext()
+    name: Names
+    root: etree.Element
+    matches: dict[str, Any] | None
+    args: dict[str, Any]
+    roll: RollContext = field(default_factory=RollContext)
 
 
 class Context:
@@ -265,7 +263,7 @@ class Context:
     template: str | None = None
     root_name = BlockContext.Names("root", None, None)
 
-    def __init__(self, root: etree.Element):
+    def __init__(self, root: etree.Element) -> None:
         """Initialize a new Context.
 
         Creates the main mechanics block `<div>` for the currently parsed
@@ -303,37 +301,27 @@ class Context:
     @property
     def parent(self) -> etree.Element:
         """Return the current parent element for new output nodes."""
-        if len(self.blocks) > 0:
-            return self.blocks[-1].root
-        return self.root
+        return self.blocks[-1].root if self.blocks else self.root
 
     @property
     def name(self) -> BlockContext.Names:
         """Return the name of the current block or `root` if none is active."""
-        if len(self.blocks) == 0:
-            return self.root_name
-        return self.blocks[-1].name
+        return self.blocks[-1].name if self.blocks else self.root_name
 
     @property
     def matches(self) -> dict[str, Any] | None:
-        """Return the matches dictionary of the current block, if nay"""
-        if len(self.blocks) == 0:
-            return None
-        return self.blocks[-1].matches
+        """Return the matches dictionary of the current block, if any."""
+        return self.blocks[-1].matches if self.blocks else None
 
     @property
     def args(self) -> dict[str, Any] | None:
         """Return the args dictionary of the current block, if any."""
-        if len(self.blocks) == 0:
-            return None
-        return self.blocks[-1].args
+        return self.blocks[-1].args if self.blocks else None
 
     @property
     def roll(self) -> RollContext | None:
         """Return the roll context for the current block, if any."""
-        if len(self.blocks) == 0:
-            return None
-        return self.blocks[-1].roll
+        return self.blocks[-1].roll if self.blocks else None
 
     def push(self, block: BlockContext) -> None:
         """Push a new `BlockContext` onto the context stack.
@@ -353,13 +341,13 @@ class Context:
         Notes:
             Logs a warning when called on an empty stack and does nothing.
         """
-        if len(self.blocks) == 0:
+        if not self.blocks:
             logger.warning("pop() called on empty stack, ignoring")
             return
         logger.debug(f"CONTEXT: popping #{len(self.blocks)} -> #{len(self.blocks) - 1}")
         self.blocks.pop()
 
-    def replace_root(self, new_root: etree.Element):
+    def replace_root(self, new_root: etree.Element) -> None:
         """Replace the current block's root element with a new one.
 
         Block parsers use a temporary placeholder `<div>` during parsing
@@ -380,7 +368,7 @@ class Context:
         Returns:
             Nothing.
         """
-        if len(self.blocks) == 0:
+        if not self.blocks:
             logger.warning("Attempting to replace mechanics block root, ignoring")
             return
 

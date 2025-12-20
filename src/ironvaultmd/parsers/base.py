@@ -54,7 +54,7 @@ class NodeParser:
         self.regex = re.compile(regex)
         self.template = templater.get_template(name, "nodes")
 
-    def _match(self, data: str) -> dict[str, str | Any] | None:
+    def _match(self, data: str) -> dict[str, Any] | None:
         """Try to match input text and return a group dictionary.
 
         Args:
@@ -100,7 +100,7 @@ class NodeParser:
             out = template.render(args)
             ctx.parent.append(etree.fromstring(out))
 
-    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:
         """Build template arguments from regex groups.
 
         Subclasses override this to post-process captured values or to add
@@ -134,7 +134,7 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
 
     fallback_template = templater.get_template("block", "blocks")
 
-    def __init__(self, name: BlockContext.Names, regex: str):
+    def __init__(self, name: BlockContext.Names, regex: str) -> None:
         """Create the block parser.
 
         Args:
@@ -145,7 +145,7 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
         self.regex = re.compile(regex)
         self.template = templater.get_template(name.template, "blocks")
 
-    def _match(self, data: str) -> dict[str, str | Any] | None:
+    def _match(self, data: str) -> dict[str, Any] | None:
         """Try to match the block opening line and return a group dictionary.
 
         Args:
@@ -191,7 +191,7 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
         block = BlockContext(self.name, element, matches, args)
         ctx.push(block)
 
-    def create_args(self, data: dict[str, str | Any]) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, Any]) -> dict[str, Any]:
         """Build template arguments from regex groups.
 
         Subclasses override this to post-process captured values or to add
@@ -205,7 +205,7 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
         """
         return data
 
-    def finalize(self, ctx):
+    def finalize(self, ctx) -> None:
         """Finalize the block after all nested nodes have been parsed.
 
         Renders the template with its parsed arguments (found in `ctx.args`)

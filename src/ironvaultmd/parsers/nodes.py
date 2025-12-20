@@ -31,7 +31,7 @@ class BurnNodeParser(NodeParser):
         regex = r'^from=(?P<from>\d+) to=(?P<to>\d+)$'
         super().__init__("Burn", regex)
 
-    def create_args(self, data: dict[str, str | Any], ctx: Context) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, Any], ctx: Context) -> dict[str, Any]:
         """Apply a momentum burn to the current roll and return updated args.
 
         Args:
@@ -70,7 +70,7 @@ class ImpactNodeParser(NodeParser):
         regex = r'^"(?P<impact>[^\"]+)" (?P<marked>(true|false))$'
         super().__init__("Impact", regex)
 
-    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:
         """Normalize `marked` from a string to a boolean value.
 
         Args:
@@ -93,7 +93,7 @@ class InitiativeNodeParser(NodeParser):
         regex = r'^from="(?P<from>.+)" to="(?P<to>.+)"$'
         super().__init__("Initiative", regex)
 
-    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:
         """Add slugified forms of the initiative states.
 
         Args:
@@ -114,7 +114,7 @@ class MeterNodeParser(NodeParser):
         regex = r'^"(?P<meter_name>[^"]+)" from=(?P<from>\d+) to=(?P<to>\d+$)'
         super().__init__("Meter", regex)
 
-    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:
         """Normalize the meter name by removing link decorations and convert values to int.
 
         Args:
@@ -145,7 +145,7 @@ class MoveNodeParser(NodeParser):
         regex = r'^"\[(?P<move_name>[^]]+)]\((?P<move_link>[^)]+)\)"$'
         super().__init__("Move", regex)
 
-    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:
         """Return template args with the move name only.
 
         Args:
@@ -173,7 +173,7 @@ class OracleNodeParser(NodeParser):
         regex = r'^name="(\[(?P<oracle_name>[^\]]+)\]\(datasworn:.+\)|(?P<oracle_text>[^"]+))" result="(?P<result>[^"]+)" roll=(?P<roll>\d+)$'
         super().__init__("Oracle", regex)
 
-    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:
         """Derive a normalized oracle name and return extended arguments.
 
         Args:
@@ -185,11 +185,8 @@ class OracleNodeParser(NodeParser):
             The original groups merged with a normalized `oracle` display name
             derived from either `oracle_name` or `oracle_text`.
         """
-        oracle = "undefined"
-        if data["oracle_name"] is not None:
-            oracle = convert_link_name(data["oracle_name"])
-        elif data["oracle_text"] is not None:
-            oracle = convert_link_name(data["oracle_text"])
+        oracle_raw = data.get("oracle_name") or data.get("oracle_text")
+        oracle = convert_link_name(oracle_raw) if oracle_raw else "undefined"
 
         data["result"] = convert_link_name(data["result"])
 
@@ -203,7 +200,7 @@ class PositionNodeParser(NodeParser):
         regex = r'^from="(?P<from>.+)" to="(?P<to>.+)"$'
         super().__init__("Position", regex)
 
-    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:
         """Add slugified forms of the position states.
 
         Args:
@@ -224,7 +221,7 @@ class ProgressNodeParser(NodeParser):
         regex = r'^from=(?P<from>\d+) name="\[\[.*\|(?P<name>.*)\]\]" rank="(?P<rank>\w+)" steps=(?P<steps>\d+)$'
         super().__init__("Progress", regex)
 
-    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:
         """Compute and add the new progress state based on rank and progress.
 
         Rearranges the `data` groups dictionary to contain progress in both
@@ -265,7 +262,7 @@ class ProgressRollNodeParser(NodeParser):
         regex = r'^(?:name="\[\[.*\|(?P<name_front>.*)\]\]" )?score=(?P<score>\d+) vs1=(?P<vs1>\d+) vs2=(?P<vs2>\d+)(?: name="\[\[.*\|(?P<name_back>.*)\]\]")?$'
         super().__init__("Progress Roll", regex)
 
-    def create_args(self, data: dict[str, str | Any], ctx: Context) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, Any], ctx: Context) -> dict[str, Any]:
         """Perform the progress roll via context and set the track name.
 
         The track name might be either in the beginning or the end of the
@@ -282,12 +279,7 @@ class ProgressRollNodeParser(NodeParser):
             The original groups plus a normalized `name` and the serialized
             `RollResult` (score, dice, hit/miss, match flags).
         """
-        name = data["name_front"]
-        if name is None:
-            name = data["name_back"]
-        if name is None:
-            name = "undefined"
-
+        name = data.get("name_front") or data.get("name_back") or "undefined"
         data["name"] = name
 
         result = ctx.roll.progress_roll(data["score"], data["vs1"], data["vs2"])
@@ -303,7 +295,7 @@ class RerollNodeParser(NodeParser):
         regex = r'^(?P<die>action|vs1|vs2)="(?P<value>\d+)"$'
         super().__init__("Reroll", regex)
 
-    def create_args(self, data: dict[str, str | Any], ctx: Context) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, Any], ctx: Context) -> dict[str, Any]:
         """Apply a selective reroll using the context and return new values.
 
         Args:
@@ -327,7 +319,7 @@ class RollNodeParser(NodeParser):
         regex = r'^"(?P<stat_name>\w+)" action=(?P<action>\d+) adds=(?P<adds>\d+) stat=(?P<stat>\d+) vs1=(?P<vs1>\d+) vs2=(?P<vs2>\d+)$'
         super().__init__("Roll", regex)
 
-    def create_args(self, data: dict[str, str | Any], ctx: Context) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, Any], ctx: Context) -> dict[str, Any]:
         """Perform the roll and return extended arguments.
 
         Args:
@@ -360,7 +352,7 @@ class XpNodeParser(NodeParser):
         regex = r'^from=(?P<from>\d+) to=(?P<to>\d+)$'
         super().__init__("XP", regex)
 
-    def create_args(self, data: dict[str, str | Any], _: Context) -> dict[str, str | Any]:
+    def create_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:
         """Compute the difference between `to` and `from` for convenience.
 
         Args:
