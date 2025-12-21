@@ -138,6 +138,55 @@ add 2 "for a reason"
     assert '<div class="test-class">test add with value 2</div>' in html
 
 
+def test_extension_templates_invalid(md_gen):
+    markdown = """```iron-vault-mechanics
+add 2 "for a reason"
+```"""
+
+    # Set invalid content as user-override templates
+    md_instance = md_gen(templates={"ab": "cd"})
+    html = md_instance.convert(markdown)
+
+    # Verify the default nodes/add.html template is used
+    assert '<div class="ivm-add">' in html
+
+
+def test_extension_theme(md_gen):
+    markdown = """```iron-vault-mechanics
+add 2 "for a reason"
+```"""
+
+    # Generate md instance with an invalid theme directory
+    md_instance = md_gen(theme="tests/data/theme")
+    html = md_instance.convert(markdown)
+
+    # Verify theme template is used
+    assert '<div class="theme-test">Add +2 for a reason</div>' in html
+
+
+def test_extension_theme_fail(md_gen):
+    markdown = """```iron-vault-mechanics
+add 2 "for a reason"
+```"""
+
+    # Generate md instance with an invalid theme directory
+    md_instance = md_gen(theme="nonexisting/path")
+    html = md_instance.convert(markdown)
+
+    # Verify the default nodes/add.html template is used
+    assert '<div class="ivm-add">' in html
+
+    # Create user templates overrides to add alongside the invalid path
+    user_templates = UserTemplates()
+    user_templates.add = '<div class="test-class">test add with value {{ add }}</div>'
+
+    md_instance = md_gen(theme="nonexisting/path", templates=user_templates)
+    html = md_instance.convert(markdown)
+
+    # Verify the user template override is used this time
+    assert '<div class="test-class">test add with value 2</div>' in html
+
+
 def test_extension_full_features(md_gen):
     markdown = """---
 key1: value1

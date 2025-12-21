@@ -9,7 +9,7 @@ user-provided snippets at runtime. Parsers obtain templates via the shared
 import logging
 from dataclasses import dataclass
 
-from jinja2 import Template, PackageLoader, Environment, TemplateNotFound
+from jinja2 import Template, PackageLoader, Environment, TemplateNotFound, FileSystemLoader
 
 from ironvaultmd import logger_name
 
@@ -80,14 +80,56 @@ class Templater:
     `templates` package directory.
     """
 
+    template_env: Environment | None = None
+    template_loader: FileSystemLoader | PackageLoader | None = None
+    user_templates: UserTemplates | None = None
+    theme: str | None = None
+
     def __init__(self) -> None:
-        """Initialize the templating environment."""
+        """Initialize the templating environment.
+
+        Arranges template handling to use the Jinja `PackageLoader` pointing
+        to the package-provided templates as default. This can be overridden
+        by providing a `theme` a `templates` config to set a theme directory
+        or `UserTemplates` instance respectively.
+        """
         self.template_loader = PackageLoader('ironvaultmd.parsers', 'templates')
         self.template_env = Environment(loader=self.template_loader, autoescape=True)
         self.user_templates = UserTemplates()
 
-    def load_user_templates(self, user_templates: UserTemplates) -> None:
-        """Load or reset user template overrides.
+    def set_theme(self, theme: str) -> bool:
+        """Load theme template overrides
+
+        Args:
+            theme: Path to the theme directory
+
+        Returns:
+            `True` if a basic sanity check succeeded, `False` if it failed.
+        """
+
+        logger.info(f"Loading theme from {theme}")
+        loader = FileSystemLoader(theme)
+        env = Environment(loader=loader, autoescape=True)
+
+        # Basic sanity check, try to load the node and block fallback files
+        try:
+            logger.debug("Theme sanity check: loading nodes/node.html")
+            env.get_template("nodes/node.html")
+            logger.debug("Theme sanity check: loading blocks/block.html")
+            env.get_template("blocks/block.html")
+        except TemplateNotFound:
+            logger.error("Loading theme failed sanity check")
+            return False
+
+        logger.debug(f"Theme sanity check success, using theme {theme}")
+        self.template_loader = loader
+        self.template_env = env
+        self.user_templates = None
+
+        return True
+
+    def load_user_templates(self, user_templates: UserTemplates | None) -> None:
+        """Load user template overrides.
 
         Args:
             user_templates: A `UserTemplates` instance whose non-`None` values
@@ -95,6 +137,10 @@ class Templater:
                 override to packaged defaults, an empty string disables output
                 for that template.
         """
+        if not user_templates:
+            logger.warning("Trying to load user templates, but no user templates are set")
+            return
+
         for name, value in vars(user_templates).items():
             if value is not None:
                 logger.debug(f"Setting user template for '{name}': '{value}'")
@@ -160,6 +206,9 @@ class Templater:
         Returns:
             Template string if found and set, `None` otherwise.
         """
+        if self.user_templates is None:
+            return None
+
         if template_type == "blocks":
             key += "_block"
         return getattr(self.user_templates, key, None)

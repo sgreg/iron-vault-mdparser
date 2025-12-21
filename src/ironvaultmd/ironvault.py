@@ -78,7 +78,8 @@ class IronVaultExtension(Extension):
         self.config = {
             'links': [[], 'List of collected links'],
             'frontmatter': [{}, "YAML Frontmatter parsed into dictionary"],
-            'templates': [UserTemplates(), "Node parser templates"],
+            'templates': [{}, "UserTemplate instance of user-defined templates"],
+            'theme': ["", "Path to a theme directory with templates"],
         }
 
         super().__init__(**kwargs)
@@ -93,10 +94,30 @@ class IronVaultExtension(Extension):
         if self.frontmatter is not None and not isinstance(self.frontmatter, dict):
             raise TypeError("Parameter 'frontmatter' must be a dict")
 
-        templates = self.getConfig('templates', UserTemplates())
-        logger.debug(f"User templates given: {templates}")
-        templater.load_user_templates(templates)
+        self.set_template_overrides()
 
+    def set_template_overrides(self) -> None:
+        """Set up theme and user-defined template overrides
+
+        Tries to set an optional theme path as the template source.
+        If none is provided, or setting it failed, tries a "template"
+        configuration holding a `UserTemplate` instance next to override
+        the templates. If that isn't set either, or isn't a valid
+        `UserTemplates` instance, the default templates remain in use.
+        """
+        if theme := self.getConfig("theme", None):
+            logger.debug(f"Setting theme: {theme}")
+            if templater.set_theme(theme):
+                return
+
+        if templates := self.getConfig('templates', None):
+            if isinstance(templates, UserTemplates):
+                logger.debug(f"Setting user templates: {templates}")
+                templater.load_user_templates(templates)
+            else:
+                logger.error("Provided template config is not a UserTemplates instance")
+
+        logger.debug("Using default templates")
 
     def extendMarkdown(self, md) -> None:
         """Register processors on a `markdown.Markdown` instance.

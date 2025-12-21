@@ -8,12 +8,19 @@ from ironvaultmd.ironvault import (
     IronVaultExtension,
 )
 from ironvaultmd.parsers.context import Context, BlockContext
+from ironvaultmd.parsers.templater import templater
 from ironvaultmd.processors.frontmatter import IronVaultFrontmatterPreprocessor
+from ironvaultmd.processors.links import WikiLinkProcessor
 from ironvaultmd.processors.mechanics import (
     IronVaultMechanicsBlockProcessor,
     IronVaultMechanicsPreprocessor,
 )
-from ironvaultmd.processors.links import WikiLinkProcessor
+
+
+@pytest.fixture(autouse=True)
+def reset_templater():
+    # Workaround to reset user template states between tests.
+    templater.__init__()
 
 
 @pytest.fixture(name="md")

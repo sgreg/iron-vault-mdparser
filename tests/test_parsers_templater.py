@@ -73,6 +73,16 @@ def test_user_template_load():
     assert actor_template.filename == "<template>"
     assert mechanics_template.filename == "<template>"
 
+def test_user_template_load_invalid():
+    templater = Templater()
+
+    templater.load_user_templates(None)
+
+    add_template = templater.get_template("add", "nodes")
+    meter_template = templater.get_template("meter", "nodes")
+
+    assert add_template.filename.endswith("/add.html")
+    assert meter_template.filename.endswith("/meter.html")
 
 def test_user_template_render_node(md_gen, ctx):
     user_templates = UserTemplates()
