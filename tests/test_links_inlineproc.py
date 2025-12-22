@@ -2,7 +2,7 @@ import xml.etree.ElementTree as etree
 
 import pytest
 
-from ironvaultmd.parsers.templater import UserTemplates, Templater, set_templater
+from ironvaultmd.parsers.templater import TemplateOverrides, Templater, set_templater
 from ironvaultmd.processors.links import Link
 from utils import StringCompareData
 
@@ -172,13 +172,13 @@ def test_linkproc_collect_invalid_list(linkproc_gen):
         linkproc_gen(links)
 
 
-def test_linkproc_user_template(linkproc_gen, md_gen):
-    user_templates = UserTemplates()
-    user_templates.link = '<div class="test-class">test link "{{ ref }}" with label "{{ label }}"</div>'
+def test_linkproc_template_override(linkproc_gen, md_gen):
+    overrides = TemplateOverrides()
+    overrides.link = '<div class="test-class">test link "{{ ref }}" with label "{{ label }}"</div>'
 
     links = []
 
-    md_gen(links=links, templates=user_templates)
+    md_gen(links=links, template_overrides=overrides)
 
     processor = linkproc_gen(links)
 
@@ -204,13 +204,13 @@ def test_linkproc_user_template(linkproc_gen, md_gen):
     assert element.text == 'test link "embedded link" with label "embedded link"'
 
 
-def test_linkproc_user_template_anchor(linkproc_gen, md_gen):
-    user_templates = UserTemplates()
-    user_templates.link = '<div class="test-class">test link "{{ ref }}{{ "#" ~ anchor if anchor }}" with label "{{ label }}"</div>'
+def test_linkproc_template_override_anchor(linkproc_gen, md_gen):
+    overrides = TemplateOverrides()
+    overrides.link = '<div class="test-class">test link "{{ ref }}{{ "#" ~ anchor if anchor }}" with label "{{ label }}"</div>'
 
     links = []
 
-    md_gen(links=links, templates=user_templates)
+    md_gen(links=links, template_overrides=overrides)
 
     processor = linkproc_gen(links)
 
@@ -236,12 +236,12 @@ def test_linkproc_user_template_anchor(linkproc_gen, md_gen):
     assert element.text == 'test link "link#anchor" with label "label"'
 
 def test_linkproc_no_template(linkproc_gen, md_gen):
-    user_templates = UserTemplates()
-    user_templates.link = ''
+    overrides = TemplateOverrides()
+    overrides.link = ''
 
     links = []
 
-    md_gen(links=links, templates=user_templates)
+    md_gen(links=links, template_overrides=overrides)
 
     processor = linkproc_gen(links)
 
@@ -256,12 +256,12 @@ def test_linkproc_no_template(linkproc_gen, md_gen):
     assert links[0].label == "link"
 
 def test_linkproc_template_swap(linkproc_gen, md_gen):
-    user_templates = UserTemplates()
-    user_templates.link = '<div class="test-class">test link "{{ ref }}" with label "{{ label }}"</div>'
+    overrides = TemplateOverrides()
+    overrides.link = '<div class="test-class">test link "{{ ref }}" with label "{{ label }}"</div>'
 
     links = []
 
-    md_gen(links=links, templates=user_templates)
+    md_gen(links=links, template_overrides=overrides)
 
     processor = linkproc_gen(links)
 
@@ -272,14 +272,14 @@ def test_linkproc_template_swap(linkproc_gen, md_gen):
     assert element.get("class") == "test-class"
     assert element.text == 'test link "link" with label "link"'
 
-    user_templates.link = '<div class="another-class">{{ label }}</div>'
+    overrides.link = '<div class="another-class">{{ label }}</div>'
 
     # Verify that tweaking just the value doesn't affect anything yet
     element, _, _ = processor.handleMatch(match, data)
     assert element.get("class") == "test-class"
     assert element.text == 'test link "link" with label "link"'
 
-    templater = Templater(user_templates=user_templates)
+    templater = Templater(overrides=overrides)
     set_templater(templater)
 
     element, _, _ = processor.handleMatch(match, data)

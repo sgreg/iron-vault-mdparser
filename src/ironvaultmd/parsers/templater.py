@@ -6,7 +6,7 @@ defaults or custom directories, with optional user-defined overrides.
 
 The main components are:
 
-- `UserTemplates`: A dataclass holding optional template string overrides for
+- `TemplateOverrides`: A dataclass holding optional template string overrides for
   blocks, nodes, and other mechanics elements.
 - `Templater`: The core template loader and renderer that checks user overrides
   first, then falls back to file-based templates.
@@ -17,13 +17,13 @@ Typical usage through the `IronVaultExtension`:
 
 ```python
 from ironvaultmd.ironvault import IronVaultExtension
-from ironvaultmd.parsers.templater import UserTemplates
+from ironvaultmd.parsers.templater import TemplateOverrides
 
-user_templates = UserTemplates(
+overrides = TemplateOverrides(
     roll='<div class="custom-roll">{{ action }}+{{ stat }}</div>'
 )
 
-md = Markdown(extensions=[IronVaultExtension(templates=user_templates)])
+md = Markdown(extensions=[IronVaultExtension(template_overrides=overrides)])
 html = md.convert(your_markdown_text)
 ```
 """
@@ -39,7 +39,7 @@ from ironvaultmd import logger_name
 logger = logging.getLogger(logger_name)
 
 @dataclass
-class UserTemplates:
+class TemplateOverrides:
     """Container for optional user-provided template overrides.
 
     Set any field to a non-empty string to override the corresponding default
@@ -99,7 +99,7 @@ class Templater:
     """Resolves Jinja templates for mechanics elements.
 
     Provides a two-tier template lookup: first checks for a user-provided
-    template override in `UserTemplates`, then falls back to loading a
+    template override in `TemplateOverrides`, then falls back to loading a
     template file from either a user-provided directory or the package's
     default `templates` folder.
 
@@ -110,8 +110,7 @@ class Templater:
         template_loader: Jinja2 loader (`FileSystemLoader` for user-provided,
             directory, `PackageLoader` for package defaults).
         template_env: Jinja2 `Environment` instance for template rendering.
-        user_templates: `UserTemplates` instance holding optional overrides.
-        theme: Optional path to a user-provided templates directory.
+        overrides: Optional `TemplateOverrides` instance.
         default_templates: Dictionary of fallback `Template` instances for
             nodes, blocks, and mechanics.
         templates_cache: Cache of compiled templates keyed by
@@ -120,63 +119,63 @@ class Templater:
 
     template_loader: FileSystemLoader | PackageLoader | None = None
     template_env: Environment | None = None
-    user_templates: UserTemplates | None = None
-    theme: str | None = None
+    overrides: TemplateOverrides | None = None
     default_templates: dict[str, Template]
     templates_cache: dict[str, Template]
 
-    def __init__(self, theme: str | None = None, user_templates: UserTemplates | None = None) -> None:
+    def __init__(self, path: str | None = None, overrides: TemplateOverrides | None = None) -> None:
         """Initialize the templating environment.
 
         Sets up Jinja template handling with either a user-provided directory
-        or package-provided templates as the source. User templates can be
-        provided to override defaults.
+        or package-provided templates as the source. `TemplateOverrides` can
+        be provided to additionally override template behavior.
 
         Args:
-            theme: Optional path to a directory containing custom templates.
-            user_templates: Optional `UserTemplates` instance containing
-                template overrides.
+            path: Optional path to a directory containing custom templates.
+                If `None`, package-provided default templates are used.
+            overrides: Optional `TemplateOverrides` instance to override
+                the file-based template behavior.
         """
-        if theme:
-            logger.debug(f"Using theme templates {theme}")
-            self.template_loader = FileSystemLoader(theme)
+        if path:
+            logger.debug(f"Using user-provided templates from {path}")
+            self.template_loader = FileSystemLoader(path)
         else:
             logger.debug("Using package-provided templates")
             self.template_loader = PackageLoader('ironvaultmd.parsers', 'templates')
 
-        self.user_templates = UserTemplates()
+        self.overrides = TemplateOverrides()
 
-        if user_templates and isinstance(user_templates, UserTemplates):
-            logger.debug(f"Setting user templates: {user_templates}")
-            self.load_user_templates(user_templates)
-        elif user_templates:
-            logger.error("Provided template config is not a UserTemplates instance")
+        if overrides and isinstance(overrides, TemplateOverrides):
+            logger.debug(f"Setting template overrides: {overrides}")
+            self.load_user_overrides(overrides)
+        elif overrides:
+            logger.error("Provided template config is not a TemplateOverrides instance")
 
         self.template_env = Environment(loader=self.template_loader, autoescape=True)
         self.templates_cache = {}
         self._set_default_templates()
 
-    def load_user_templates(self, user_templates: UserTemplates | None) -> None:
-        """Load user template overrides.
+    def load_user_overrides(self, overrides: TemplateOverrides | None) -> None:
+        """Load user-defined template overrides.
 
         Args:
-            user_templates: A `UserTemplates` instance whose non-`None` values
+            overrides: A `TemplateOverrides` instance whose non-`None` values
                 will override the corresponding defaults. `None` resets an
                 override to packaged defaults, an empty string disables output
                 for that template.
         """
-        if not user_templates:
-            logger.warning("Trying to load user templates, but no user templates are set")
+        if not overrides:
+            logger.warning("Trying to load template overrides, but no overrides are set")
             return
 
-        for name, value in vars(user_templates).items():
+        for name, value in vars(overrides).items():
             if value is not None:
-                logger.debug(f"Setting user template for '{name}': '{value}'")
-                setattr(self.user_templates, name, value)
+                logger.debug(f"Setting template override for '{name}': '{value}'")
+                setattr(self.overrides, name, value)
             else:
                 # In case there are multiple calls to this method, ensure that
-                # potentially previously set user templates are reset to None
-                setattr(self.user_templates, name, None)
+                # potentially previously set overrides are reset to None
+                setattr(self.overrides, name, None)
 
     def _set_default_templates(self) -> None:
         """Initialize the default fallback templates.
@@ -230,7 +229,7 @@ class Templater:
     def _get_template(self, name: str, template_type: str = "") -> Template | None:
         """Return a Jinja template for a node or block `name`, or `None`.
 
-        First checks for a user-provided template override in `UserTemplates`.
+        First checks for a user-provided template override in `TemplateOverrides`.
         If not found or set to `None`, attempts to load the corresponding
         template file from the configured template directory - either the
         one provided by the user, or the package-provided default.
@@ -250,18 +249,18 @@ class Templater:
         logger.info(f"[ctx {hex(id(self))}] Getting {template_type} template for '{name}'")
         key = name.lower().replace(' ', '_')
 
-        user_template = self._lookup_user_template(key, template_type)
+        overrides = self._lookup_template_override(key, template_type)
 
-        if isinstance(user_template, str):
-            # User override template string found
-            if str(user_template) == '':
+        if isinstance(overrides, str):
+            # User-defined template override string found
+            if str(overrides) == '':
                 # Empty string, template is explicitly disabled
-                logger.debug("  -> found empty user template")
+                logger.debug("  -> found empty template override")
                 return None
 
             # Return a Template from the non-empty user override string
-            logger.debug("  -> found user template")
-            return Template(user_template)
+            logger.debug("  -> found template override")
+            return Template(overrides)
 
         file_template = self._lookup_file_template(key, template_type)
 
@@ -272,14 +271,14 @@ class Templater:
         logger.debug("  -> no template found")
         return None
 
-    def _lookup_user_template(self, key: str, template_type: str) -> str | None:
-        """Look up a user template for the given `key` and `template_type`.
+    def _lookup_template_override(self, key: str, template_type: str) -> str | None:
+        """Look up a template override for the given `key` and `template_type`.
 
-        If it's found from the `UserTemplates`, its value is returned.
+        If it's found from the `TemplateOverrides`, its value is returned.
         If it isn't found, or its value is set to `None`, `None` is returned.
 
         Args:
-            key: Template name normalized as the `UserTemplates` key.
+            key: Template name normalized as the `TemplateOverrides` key.
             template_type: Template type, "blocks", "nodes", or "".
 
         Returns:
@@ -287,7 +286,7 @@ class Templater:
         """
         if template_type == "blocks":
             key += "_block"
-        return getattr(self.user_templates, key, None)
+        return getattr(self.overrides, key, None)
 
     def _lookup_file_template(self, key: str, template_type: str) -> Template | None:
         """Look up a template file for the given `key` and `template_type`.

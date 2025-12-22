@@ -11,8 +11,7 @@ render Iron Vault/Obsidian‑style content:
 Public API
 ----------
 - ``IronVaultExtension``: Main Markdown extension to register all processors.
-- ``IronVaultTemplates``: Container to override/disable Jinja templates used by
-  parsers. Pass an instance as the ``templates`` config value to the extension.
+- ``IronVaultTemplateOverrides``: Container to override/disable Jinja templates.
 - ``FrontmatterException`` and ``MechanicsBlockException``: Error types raised
   by processors when encountering malformed input.
 - ``Link``: Lightweight dataclass representing a collected wiki link.
@@ -20,18 +19,18 @@ Public API
 Example:
     ```python
     from markdown import Markdown
-    from ironvaultmd import IronVaultExtension, IronVaultTemplates
+    from ironvaultmd import IronVaultExtension, IronVaultTemplateOverrides
 
     links: list = []
     frontmatter: dict = {}
-    templates = IronVaultTemplates(  # override or disable templates if desired
+    overrides = IronVaultTemplateOverrides(  # override or disable templates if desired
         clock='<div class="ivm-clock">Clock {{ name }} activity happened</div>',  # skip the details
         ooc='<div class="my-own-ooc-class">{{ comment }}</div>',  # change to custom CSS class
         xp=''.  # don't render xp changes
     )
 
     md = Markdown(extensions=[
-        IronVaultExtension(links=links, frontmatter=frontmatter, templates=templates)
+        IronVaultExtension(links=links, frontmatter=frontmatter, template_overrides=overrides)
     ])
 
     html = md.convert(
@@ -50,7 +49,7 @@ __version__ = "0.4.0"
 logger_name = "ironvaultmd"
 
 from .ironvault import IronVaultExtension as IronVaultExtension
-from .parsers.templater import UserTemplates as IronVaultTemplates
+from .parsers.templater import TemplateOverrides as IronVaultTemplateOverrides
 from .processors.frontmatter import FrontmatterException as FrontmatterException
 from .processors.links import Link
 from .processors.mechanics import MechanicsBlockException as MechanicsBlockException

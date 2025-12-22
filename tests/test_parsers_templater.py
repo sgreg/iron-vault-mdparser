@@ -3,7 +3,7 @@ from jinja2 import Template, PackageLoader
 
 from ironvaultmd.parsers.blocks import ActorBlockParser
 from ironvaultmd.parsers.nodes import AddNodeParser, MeterNodeParser
-from ironvaultmd.parsers.templater import Templater, UserTemplates, get_templater, set_templater, clear_templater
+from ironvaultmd.parsers.templater import Templater, TemplateOverrides, get_templater, set_templater, clear_templater
 from utils import verify_is_dummy_block_element
 
 
@@ -51,15 +51,15 @@ def test_templater_unknown_names():
     for template_type in types:
         assert templater.get_template("unknown", template_type) is None
 
-def test_user_template_load():
+def test_user_overrides_load():
     templater = Templater()
 
-    user_templates = UserTemplates()
-    user_templates.add = '<div class="test-class">test add</div>'
-    user_templates.meter = '<div class="test-class">test meter</div>'
-    user_templates.actor_block = '<div class="test-class"></div>'
+    overrides = TemplateOverrides()
+    overrides.add = '<div class="test-class">test add</div>'
+    overrides.meter = '<div class="test-class">test meter</div>'
+    overrides.actor_block = '<div class="test-class"></div>'
 
-    templater.load_user_templates(user_templates)
+    templater.load_user_overrides(overrides)
 
     add_template = templater.get_template("add", "nodes")
     meter_template = templater.get_template("meter", "nodes")
@@ -71,10 +71,10 @@ def test_user_template_load():
     assert roll_template.filename.endswith("/roll.html")
     assert actor_template.filename == "<template>"
 
-def test_user_template_load_invalid():
+def test_user_overrides_load_invalid():
     templater = Templater()
 
-    templater.load_user_templates(None)
+    templater.load_user_overrides(None)
 
     add_template = templater.get_template("add", "nodes")
     meter_template = templater.get_template("meter", "nodes")
@@ -82,12 +82,12 @@ def test_user_template_load_invalid():
     assert add_template.filename.endswith("/add.html")
     assert meter_template.filename.endswith("/meter.html")
 
-def test_user_template_render_node(md_gen, ctx):
-    user_templates = UserTemplates()
-    user_templates.add = '<div class="test-class">test add with value {{ add }}</div>'
-    user_templates.actor_block = '<div class="test-class"><div class="actor">Actor {{ name }}</div></div>'
+def test_user_overrides_render_node(md_gen, ctx):
+    overrides = TemplateOverrides()
+    overrides.add = '<div class="test-class">test add with value {{ add }}</div>'
+    overrides.actor_block = '<div class="test-class"><div class="actor">Actor {{ name }}</div></div>'
 
-    md_gen(templates=user_templates)
+    md_gen(template_overrides=overrides)
 
     add_parser = AddNodeParser()
 
@@ -98,11 +98,11 @@ def test_user_template_render_node(md_gen, ctx):
     assert node.get("class") == "test-class"
     assert node.text == "test add with value 2"
 
-def test_user_template_render_block(md_gen, ctx):
-    user_templates = UserTemplates()
-    user_templates.actor_block = '<div class="test-class"><div class="actor">Actor "{{ name }}"</div></div>'
+def test_user_overrides_render_block(md_gen, ctx):
+    overrides = TemplateOverrides()
+    overrides.actor_block = '<div class="test-class"><div class="actor">Actor "{{ name }}"</div></div>'
 
-    md_gen(templates=user_templates)
+    md_gen(template_overrides=overrides)
 
     actor_parser = ActorBlockParser()
 
@@ -123,12 +123,12 @@ def test_user_template_render_block(md_gen, ctx):
     assert inner_node is not None
     assert inner_node.text == 'Actor "The Actor"'
 
-def test_user_template_disable(md_gen, ctx):
-    user_templates = UserTemplates()
-    user_templates.add = ''
-    user_templates.meter = '<div class="test-class">{{ meter_name }} {{ from }} to {{ to }}</div>'
+def test_user_overrides_disable_node(md_gen, ctx):
+    overrides = TemplateOverrides()
+    overrides.add = ''
+    overrides.meter = '<div class="test-class">{{ meter_name }} {{ from }} to {{ to }}</div>'
 
-    md_gen(templates=user_templates)
+    md_gen(template_overrides=overrides)
 
     add_parser = AddNodeParser()
     meter_parser = MeterNodeParser()
@@ -142,11 +142,11 @@ def test_user_template_disable(md_gen, ctx):
     assert nodes[0].get("class") == "test-class"
     assert nodes[0].text == "test meter 5 to 3"
 
-def test_user_template_disable_block(md_gen, ctx):
-    user_templates = UserTemplates()
-    user_templates.actor_block = ''
+def test_user_overrides_disable_block(md_gen, ctx):
+    overrides = TemplateOverrides()
+    overrides.actor_block = ''
 
-    md_gen(templates=user_templates)
+    md_gen(template_overrides=overrides)
 
     actor_parser = ActorBlockParser()
 
@@ -165,7 +165,7 @@ def test_default_templates():
     assert templater.get_default_template("blocks").render(data).strip() == '<div class="ivm-block">Test: test test test</div>'
     assert templater.get_default_template("invalid").render(data).strip() == '<div></div>'
 
-    templater = Templater(theme="/random/nonexisting/path")
+    templater = Templater(path="/random/nonexisting/path")
     assert templater.get_default_template("blocks").render(data).strip() == '<div></div>'
     assert templater.get_default_template("invalid").render(data).strip() == '<div></div>'
 
@@ -178,8 +178,8 @@ def test_fallback_templater():
 
     assert isinstance(default_templater.template_loader, PackageLoader)
 
-    assert isinstance(default_templater.user_templates, UserTemplates)
-    assert default_templater.user_templates.add is None
+    assert isinstance(default_templater.overrides, TemplateOverrides)
+    assert default_templater.overrides.add is None
 
     assert default_templater.default_templates is not None
     assert default_templater.get_default_template("mechanics").render().strip() == '<div class="ivm-mechanics"></div>'
@@ -193,10 +193,10 @@ def test_fallback_templater():
 
 
 def test_multiple_templater():
-    user_templates = UserTemplates(add='<div class="add-class">{{ add }}</div>')
-    theme = "tests/data/theme/"
-    templater_one = Templater(user_templates=user_templates)
-    templater_two = Templater(theme=theme)
+    overrides = TemplateOverrides(add='<div class="add-class">{{ add }}</div>')
+    path = "tests/data/templates/"
+    templater_one = Templater(overrides=overrides)
+    templater_two = Templater(path=path)
 
     data = {"add": 2, "reason": "just because"}
 
@@ -216,8 +216,8 @@ def test_multiple_templater():
     # Verify it still renders the initial one at this point
     assert template.render(data) == '<div class="add-class">2</div>'
 
-    # Get and parse the template again, verify it's now rendered from the theme
+    # Get and parse the template again, verify it's now rendered from the templates
     template = get_templater().get_template("add", "nodes")
     # Note, if this fails, make sure the working directory is set to the project root, not tests/
     assert template is not None
-    assert template.render(data).strip() == '<div class="theme-test">Add +2 just because</div>'
+    assert template.render(data).strip() == '<div class="templates-test">Add +2 just because</div>'

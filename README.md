@@ -145,15 +145,15 @@ This is ideal if you're _mostly_ happy with the default templates, but want to t
 
 ```python
 import markdown
-from ironvaultmd import IronVaultExtension, IronVaultTemplates
+from ironvaultmd import IronVaultExtension, IronVaultTemplateOverrides
 
-my_templates = IronVaultTemplates()
-my_templates.add  = '<div class="my-own-class">Adding {{ add }}</div>'
-my_templates.roll = '<div class="ivm-roll">{{ total }} vs {{ vs1 }} and {{ vs2 }}</div>'
-my_templates.link = '<i>{{ label }}</i>'
-my_templates.xp = '' # don't add xp nodes to HTML output
+my_overrides = IronVaultTemplateOverrides()
+my_overrides.add  = '<div class="my-own-class">Adding {{ add }}</div>'
+my_overrides.roll = '<div class="ivm-roll">{{ total }} vs {{ vs1 }} and {{ vs2 }}</div>'
+my_overrides.link = '<i>{{ label }}</i>'
+my_overrides.xp = '' # don't add xp nodes to HTML output
 
-md = markdown.Markdown(extensions=[IronVaultExtension(templates=my_templates)])
+md = markdown.Markdown(extensions=[IronVaultExtension(template_overrides=my_overrides)])
 ```
 
 Note that you can provide both `template_path` and `template_overrides` values, and the overrides always take precedence over file-based templates.

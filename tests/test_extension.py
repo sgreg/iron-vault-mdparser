@@ -2,7 +2,7 @@ import pytest
 from markdown import Markdown
 
 from ironvaultmd import IronVaultExtension
-from ironvaultmd.parsers.templater import UserTemplates, get_templater, Templater, set_templater
+from ironvaultmd.parsers.templater import TemplateOverrides, get_templater, Templater, set_templater
 from ironvaultmd.processors.links import Link
 
 
@@ -125,87 +125,87 @@ def test_extension_links_invalid_type(md_gen):
         md_gen(links=links)
 
 
-def test_extension_templates(md_gen):
+def test_extension_template_overrides(md_gen):
     markdown = """```iron-vault-mechanics
 add 2 "for a reason"
 ```"""
-    user_templates = UserTemplates()
-    user_templates.add = '<div class="test-class">test add with value {{ add }}</div>'
+    overrides = TemplateOverrides()
+    overrides.add = '<div class="test-class">test add with value {{ add }}</div>'
 
-    md_instance = md_gen(templates=user_templates)
+    md_instance = md_gen(template_overrides=overrides)
     html = md_instance.convert(markdown)
 
     assert '<div class="test-class">test add with value 2</div>' in html
 
 
-def test_extension_templates_invalid(md_gen):
+def test_extension_template_overrides_invalid(md_gen):
     markdown = """```iron-vault-mechanics
 add 2 "for a reason"
 ```"""
 
     # Set invalid content as user-override templates
-    md_instance = md_gen(templates={"ab": "cd"})
+    md_instance = md_gen(template_overrides={"ab": "cd"})
     html = md_instance.convert(markdown)
 
     # Verify the default nodes/add.html template is used
     assert '<div class="ivm-add">' in html
 
 
-def test_extension_theme(md_gen):
+def test_extension_templates_path(md_gen):
     markdown = """```iron-vault-mechanics
 add 2 "for a reason"
 ```"""
 
-    # Generate md instance with an invalid theme directory
-    md_instance = md_gen(theme="tests/data/theme")
+    # Generate md instance with an invalid templates directory
+    md_instance = md_gen(template_path="tests/data/templates")
     html = md_instance.convert(markdown)
 
-    # Verify theme template is used
-    assert '<div class="theme-test">Add +2 for a reason</div>' in html
+    # Verify templates template is used
+    assert '<div class="templates-test">Add +2 for a reason</div>' in html
 
 
-def test_extension_theme_fail(md_gen):
+def test_extension_templates_path_fail(md_gen):
     markdown = """```iron-vault-mechanics
 add 2 "for a reason"
 ```"""
 
-    # Generate md instance with an invalid theme directory
-    md_instance = md_gen(theme="nonexisting/path")
+    # Generate md instance with an invalid templates directory
+    md_instance = md_gen(template_path="nonexisting/path")
     html = md_instance.convert(markdown)
 
     # Verify the default fallback template <div></div> is used
     assert html == "<div></div>"
 
     # Create user templates overrides to add alongside the invalid path
-    user_templates = UserTemplates()
-    user_templates.add = '<div class="test-class">test add with value {{ add }}</div>'
+    overrides = TemplateOverrides()
+    overrides.add = '<div class="test-class">test add with value {{ add }}</div>'
 
-    md_instance = md_gen(theme="nonexisting/path", templates=user_templates)
+    md_instance = md_gen(template_path="nonexisting/path", template_overrides=overrides)
     html = md_instance.convert(markdown)
 
     # Verify the user template override is used this time
     assert '<div class="test-class">test add with value 2</div>' in html
 
 
-def test_extension_swap_theme(md_gen):
+def test_extension_swap_templates(md_gen):
     markdown = """```iron-vault-mechanics
 add 2 "for a reason"
 ```"""
 
-    # Generate md instance with an invalid theme directory
-    md_instance = md_gen(theme="tests/data/theme")
+    # Generate md instance with an invalid templates directory
+    md_instance = md_gen(template_path="tests/data/templates")
 
     template = get_templater().get_template("add", "nodes")
     # Note, if this fails, make sure the working directory is set to the project root, not tests/
     assert template is not None
 
     html = md_instance.convert(markdown)
-    assert '<div class="theme-test">Add +2 for a reason</div>' in html
+    assert '<div class="templates-test">Add +2 for a reason</div>' in html
 
     # Create user templates overrides and create a new Templater instance with it
-    user_templates = UserTemplates()
-    user_templates.add = '<div class="test-class">test add with value {{ add }}</div>'
-    templater = Templater(user_templates=user_templates)
+    overrides = TemplateOverrides()
+    overrides.add = '<div class="test-class">test add with value {{ add }}</div>'
+    templater = Templater(overrides=overrides)
 
     # Set the new Templater as the active one
     set_templater(templater)
@@ -278,11 +278,11 @@ More text
     links = []
     frontmatter = {}
 
-    user_templates = UserTemplates()
-    user_templates.ooc = '<div class="my-ooc-class">(ooc: "{{ comment }}")</div>'
-    user_templates.link = '<span>{{ label }} ({{ ref }})</span>'
+    overrides = TemplateOverrides()
+    overrides.ooc = '<div class="my-ooc-class">(ooc: "{{ comment }}")</div>'
+    overrides.link = '<span>{{ label }} ({{ ref }})</span>'
 
-    md_instance = md_gen(links=links, frontmatter=frontmatter, templates=user_templates)
+    md_instance = md_gen(links=links, frontmatter=frontmatter, template_overrides=overrides)
     html = md_instance.convert(markdown)
 
     assert links == expected_links

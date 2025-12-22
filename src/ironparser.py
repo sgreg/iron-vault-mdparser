@@ -6,7 +6,7 @@ import sys
 import markdown
 from markdown.extensions.fenced_code import FencedCodeExtension
 
-from ironvaultmd import IronVaultExtension, IronVaultTemplates, Link
+from ironvaultmd import IronVaultExtension, IronVaultTemplateOverrides, Link
 
 logger = logging.getLogger("ironparser")
 
@@ -78,13 +78,14 @@ if __name__ == "__main__":
 
     links: list[Link] = []
     frontmatter = {}
-    templates = IronVaultTemplates()
-    templates.progress = '<div class="ivm-progress">Progress for <b>{{ name }}</b> ({{ rank }}): {{ from }} &amp;rarr; {{ to }}</div>'
-    templates.xp = '' # Don't add dedicated xp node div
+    overrides = IronVaultTemplateOverrides()
+    overrides.progress = '<div class="ivm-progress">Progress for <b>{{ name }}</b> ({{ rank }}): {{ from }} &amp;rarr; {{ to }}</div>'
+    overrides.xp = '' # Don't add dedicated xp node div
 
     markdown_extensions = [
         FencedCodeExtension(), # for parsing code blocks
-        IronVaultExtension(links=links, frontmatter=frontmatter, templates=templates),
+        IronVaultExtension(links=links, frontmatter=frontmatter, template_overrides=overrides),
+        # IronVaultExtension(links=links, frontmatter=frontmatter, template_path="templates/", template_overrides=overrides),
     ]
     md = markdown.Markdown(extensions=markdown_extensions)
 

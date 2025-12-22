@@ -33,15 +33,15 @@ arguments when constructing `IronVaultExtension` or via Markdown config):
 
 - `links` (list): Optional list that will be populated with parsed wiki links.
 - `frontmatter` (dict): Optional dict that receives parsed YAML front matter.
-- `templates` (UserTemplates): Optional overrides for Jinja templates.
-- `theme` (str): Optional path for templates to use.
+- `template_overrides` (TemplateOverrides): Optional overrides for templates.
+- `template_path` (str): Optional path for templates to use.
 """
 import logging
 
 from markdown.extensions import Extension
 
 from ironvaultmd import logger_name
-from ironvaultmd.parsers.templater import UserTemplates, Templater, set_templater
+from ironvaultmd.parsers.templater import TemplateOverrides, Templater, set_templater
 from ironvaultmd.processors.frontmatter import IronVaultFrontmatterPreprocessor
 from ironvaultmd.processors.links import WikiLinkProcessor
 from ironvaultmd.processors.mechanics import (
@@ -69,7 +69,7 @@ class IronVaultExtension(Extension):
                 following optional keys are recognized:
                 - `links` (list): Collect parsed wiki links.
                 - `frontmatter` (dict): Receive parsed YAML front matter.
-                - `templates` (UserTemplates): Override/disable Jinja templates.
+                - `templates` (TemplateOverrides): Override/disable templates.
 
         Raises:
             TypeError: If `links` is provided but is not a list, or if
@@ -79,8 +79,8 @@ class IronVaultExtension(Extension):
         self.config = {
             'links': [[], 'List of collected links'],
             'frontmatter': [{}, "YAML Frontmatter parsed into dictionary"],
-            'templates': [{}, "UserTemplate instance of user-defined templates"],
-            'theme': ["", "Path to a theme directory with templates"],
+            'template_path': ["", "Path to a directory with custom templates"],
+            'template_overrides': [{}, "TemplateOverrides instance with user-defined template overrides"],
         }
 
         super().__init__(**kwargs)
@@ -95,13 +95,13 @@ class IronVaultExtension(Extension):
         if self.frontmatter is not None and not isinstance(self.frontmatter, dict):
             raise TypeError("Parameter 'frontmatter' must be a dict")
 
-        theme: str | None = self.getConfig("theme", None)
-        logger.debug(f"Template theme: {theme}")
+        path: str | None = self.getConfig("template_path", None)
+        logger.debug(f"Template path: {path}")
 
-        user_templates: UserTemplates | None = self.getConfig("templates", None)
-        logger.debug(f"Template user-overrides: {user_templates}")
+        overrides: TemplateOverrides | None = self.getConfig("template_overrides", None)
+        logger.debug(f"Template overrides: {overrides}")
 
-        templater = Templater(theme, user_templates)
+        templater = Templater(path, overrides)
         set_templater(templater)
 
     def extendMarkdown(self, md) -> None:

@@ -90,7 +90,7 @@ def test_node_fallback_args_override(ctx):
 
 def test_node_template_disable(block_ctx):
     # Disable template for this parser
-    get_templater().user_templates.roll = ''
+    get_templater().overrides.roll = ''
 
     parser = RollNodeParser()
 
