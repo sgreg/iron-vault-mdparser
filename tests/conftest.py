@@ -8,7 +8,7 @@ from ironvaultmd.ironvault import (
     IronVaultExtension,
 )
 from ironvaultmd.parsers.context import Context, BlockContext
-from ironvaultmd.parsers.templater import templater
+from ironvaultmd.parsers.templater import reset_templater, clear_templater
 from ironvaultmd.processors.frontmatter import IronVaultFrontmatterPreprocessor
 from ironvaultmd.processors.links import WikiLinkProcessor
 from ironvaultmd.processors.mechanics import (
@@ -18,9 +18,14 @@ from ironvaultmd.processors.mechanics import (
 
 
 @pytest.fixture(autouse=True)
-def reset_templater():
-    # Workaround to reset user template states between tests.
-    templater.__init__()
+def reset_templater_fixture(request: pytest.FixtureRequest):
+    if "templater_no_init" in request.keywords:
+        clear_templater()
+    else:
+        reset_templater()
+    yield
+    # Just in case, reset once more after the test
+    reset_templater()
 
 
 @pytest.fixture(name="md")

@@ -1,12 +1,35 @@
-"""Jinja templating helper for mechanics rendering.
+"""Jinja templating for mechanics rendering.
 
-This module provides a thin wrapper around Jinja to load default HTML
-templates shipped with the package and to optionally override them with
-user-provided snippets at runtime. Parsers obtain templates via the shared
-`templater` instance defined at the bottom of this module.
+This module provides context-aware template management for Iron Vault mechanics
+rendering. It wraps Jinja2 to load HTML templates from either package-provided
+defaults or custom directories, with optional user-defined overrides.
+
+The main components are:
+
+- `UserTemplates`: A dataclass holding optional template string overrides for
+  blocks, nodes, and other mechanics elements.
+- `Templater`: The core template loader and renderer that checks user overrides
+  first, then falls back to file-based templates.
+- Context-local templater management via `get_templater()`, `set_templater()`,
+  `reset_templater()`, and `clear_templater()` for multi-instance support.
+
+Typical usage through the `IronVaultExtension`:
+
+```python
+from ironvaultmd.ironvault import IronVaultExtension
+from ironvaultmd.parsers.templater import UserTemplates
+
+user_templates = UserTemplates(
+    roll='<div class="custom-roll">{{ action }}+{{ stat }}</div>'
+)
+
+md = Markdown(extensions=[IronVaultExtension(templates=user_templates)])
+html = md.convert(your_markdown_text)
+```
 """
 
 import logging
+from contextvars import ContextVar
 from dataclasses import dataclass
 
 from jinja2 import Template, PackageLoader, Environment, TemplateNotFound, FileSystemLoader
@@ -73,60 +96,65 @@ class UserTemplates:
 
 
 class Templater:
-    """Helper that resolves Jinja templates for mechanics elements.
+    """Resolves Jinja templates for mechanics elements.
 
-    It first checks for an override provided via `UserTemplates` and, if not
-    present, falls back to loading the default template file from the
-    `templates` package directory.
+    Provides a two-tier template lookup: first checks for a user-provided
+    template override in `UserTemplates`, then falls back to loading a
+    template file from either a user-provided directory or the package's
+    default `templates` folder.
+
+    Caches compiled templates for performance and maintains a set of
+    default fallback templates for nodes, blocks, and mechanics containers.
+
+    Attributes:
+        template_loader: Jinja2 loader (`FileSystemLoader` for user-provided,
+            directory, `PackageLoader` for package defaults).
+        template_env: Jinja2 `Environment` instance for template rendering.
+        user_templates: `UserTemplates` instance holding optional overrides.
+        theme: Optional path to a user-provided templates directory.
+        default_templates: Dictionary of fallback `Template` instances for
+            nodes, blocks, and mechanics.
+        templates_cache: Cache of compiled templates keyed by
+            `"{template_type}:{name}"`.
     """
 
-    template_env: Environment | None = None
     template_loader: FileSystemLoader | PackageLoader | None = None
+    template_env: Environment | None = None
     user_templates: UserTemplates | None = None
     theme: str | None = None
+    default_templates: dict[str, Template]
+    templates_cache: dict[str, Template]
 
-    def __init__(self) -> None:
+    def __init__(self, theme: str | None = None, user_templates: UserTemplates | None = None) -> None:
         """Initialize the templating environment.
 
-        Arranges template handling to use the Jinja `PackageLoader` pointing
-        to the package-provided templates as default. This can be overridden
-        by providing a `theme` a `templates` config to set a theme directory
-        or `UserTemplates` instance respectively.
-        """
-        self.template_loader = PackageLoader('ironvaultmd.parsers', 'templates')
-        self.template_env = Environment(loader=self.template_loader, autoescape=True)
-        self.user_templates = UserTemplates()
-
-    def set_theme(self, theme: str) -> bool:
-        """Load theme template overrides
+        Sets up Jinja template handling with either a user-provided directory
+        or package-provided templates as the source. User templates can be
+        provided to override defaults.
 
         Args:
-            theme: Path to the theme directory
-
-        Returns:
-            `True` if a basic sanity check succeeded, `False` if it failed.
+            theme: Optional path to a directory containing custom templates.
+            user_templates: Optional `UserTemplates` instance containing
+                template overrides.
         """
+        if theme:
+            logger.debug(f"Using theme templates {theme}")
+            self.template_loader = FileSystemLoader(theme)
+        else:
+            logger.debug("Using package-provided templates")
+            self.template_loader = PackageLoader('ironvaultmd.parsers', 'templates')
 
-        logger.info(f"Loading theme from {theme}")
-        loader = FileSystemLoader(theme)
-        env = Environment(loader=loader, autoescape=True)
+        self.user_templates = UserTemplates()
 
-        # Basic sanity check, try to load the node and block fallback files
-        try:
-            logger.debug("Theme sanity check: loading nodes/node.html")
-            env.get_template("nodes/node.html")
-            logger.debug("Theme sanity check: loading blocks/block.html")
-            env.get_template("blocks/block.html")
-        except TemplateNotFound:
-            logger.error("Loading theme failed sanity check")
-            return False
+        if user_templates and isinstance(user_templates, UserTemplates):
+            logger.debug(f"Setting user templates: {user_templates}")
+            self.load_user_templates(user_templates)
+        elif user_templates:
+            logger.error("Provided template config is not a UserTemplates instance")
 
-        logger.debug(f"Theme sanity check success, using theme {theme}")
-        self.template_loader = loader
-        self.template_env = env
-        self.user_templates = None
-
-        return True
+        self.template_env = Environment(loader=self.template_loader, autoescape=True)
+        self.templates_cache = {}
+        self._set_default_templates()
 
     def load_user_templates(self, user_templates: UserTemplates | None) -> None:
         """Load user template overrides.
@@ -150,15 +178,66 @@ class Templater:
                 # potentially previously set user templates are reset to None
                 setattr(self.user_templates, name, None)
 
+    def _set_default_templates(self) -> None:
+        """Initialize the default fallback templates.
+
+        Creates a minimal `<div></div>` fallback and attempts to load
+        default templates for nodes, blocks, and mechanics. If loading
+        fails (e.g., user-provided directory doesn't contain the matching
+        template file), the minimal fallback is used or those as well.
+        """
+        default = Template("<div></div>")
+        self.default_templates = {
+            "default": default,
+            "nodes": self.get_template("node", "nodes") or default,
+            "blocks": self.get_template("block", "blocks") or default,
+            "mechanics": self.get_template("mechanics", "blocks") or default,
+        }
+
+    def get_default_template(self, key: str) -> Template:
+        """Retrieve a default fallback template by key.
+
+        Args:
+            key: Template key (`"nodes"`, `"blocks"`, `"mechanics"`)
+
+        Returns:
+            The corresponding default `Template`, or the generic `<div></div>`
+            fallback if the key is not recognized.
+            """
+        if key in self.default_templates:
+            return self.default_templates[key]
+        return self.default_templates["default"]
 
     def get_template(self, name: str, template_type: str = "") -> Template | None:
+        """Get a compiled template for a mechanics element.
+
+        Checks the cache first, then delegates to `_get_template()` if
+        not found. The result is cached for future lookups.
+
+        Args:
+            name: Element name, e.g., `"Progress Roll"`, or `"oracle"`.
+            template_type: `"blocks"`, `"nodes"`, or `""` for other elements.
+
+        Returns:
+            A compiled Jinja `Template` or `None` when explicitly disabled
+            or reading the template file fails / it doesn't exist.
+        """
+        cache_key = f"{template_type}:{name}"
+        if cache_key not in self.templates_cache:
+            self.templates_cache[cache_key] = self._get_template(name,template_type)
+        return self.templates_cache[cache_key]
+
+    def _get_template(self, name: str, template_type: str = "") -> Template | None:
         """Return a Jinja template for a node or block `name`, or `None`.
 
-        Looks up the `name` and `block_type` to a matching key in the
-        `UserTemplates` and creates a `Template` from it. If none is set,
-        looks up a matching file in the templates/ directory and creates
-        a `Template` from it. If that doesn't exist or can't be read,
-        `None` is returned.
+        First checks for a user-provided template override in `UserTemplates`.
+        If not found or set to `None`, attempts to load the corresponding
+        template file from the configured template directory - either the
+        one provided by the user, or the package-provided default.
+
+        If the user-provided template override is an empty string, or file
+        lookup is unsuccessful, `None` is returned to disable rendering
+        of that specific template.
 
         Args:
             name: Element name, e.g., `Progress Roll` or `oracle`.
@@ -166,9 +245,9 @@ class Templater:
 
         Returns:
             A compiled Jinja `Template` or `None` when explicitly disabled
-                or reading the template file fails or doesn't exist.
+            or reading the template file fails / it doesn't exist.
         """
-        logger.debug(f"Getting {template_type} template for '{name}'")
+        logger.info(f"[ctx {hex(id(self))}] Getting {template_type} template for '{name}'")
         key = name.lower().replace(' ', '_')
 
         user_template = self._lookup_user_template(key, template_type)
@@ -206,9 +285,6 @@ class Templater:
         Returns:
             Template string if found and set, `None` otherwise.
         """
-        if self.user_templates is None:
-            return None
-
         if template_type == "blocks":
             key += "_block"
         return getattr(self.user_templates, key, None)
@@ -218,7 +294,7 @@ class Templater:
 
         If a matching file is found, its compiled `Template` is returned.
         If no file is found, loading it fails, or `template_type` is neither
-            `blocks`, `nodes`, or an empty string, `None` is returned
+        `blocks`, `nodes`, or an empty string, `None` is returned
 
         Args:
             key: Template name normalized as the filename key.
@@ -242,5 +318,53 @@ class Templater:
         return template
 
 
-templater = Templater()
-"""Shared templater instance used by parsers to render output."""
+_templater_var: ContextVar[Templater | None] = ContextVar('templater', default=None)
+"""Context variable for managing per-context `Templater` instances."""
+
+def get_templater() -> Templater:
+    """Get the current context's `Templater` instance.
+
+    Returns the context-local `Templater` if one exists, otherwise
+    returns a default instance (mainly for testing and simple use cases).
+
+    Returns:
+        The context-specific `Templater` instance.
+    """
+    templater_instance = _templater_var.get()
+
+    if templater_instance is None:
+        # Fallback to a default instance if no context is set
+        logger.warning("TEMPLATER: No instance set, creating default fallback")
+        templater_instance = Templater()
+        _templater_var.set(templater_instance)
+
+    logger.debug(f"TEMPLATER: get instance {hex(id(templater_instance))}")
+    return templater_instance
+
+def set_templater(templater_instance: Templater) -> None:
+    """Set a `Templater` instance for the current context.
+
+    Args:
+        templater_instance: The `Templater` to use in this context.
+    """
+    logger.debug(f"TEMPLATER: set instance {hex(id(templater_instance))}")
+    _templater_var.set(templater_instance)
+
+def reset_templater() -> None:
+    """Reset the current context's templater to a fresh instance.
+
+    Creates a new default `Templater` instance and sets it as the current
+    context's templater. Mainly used for testing to ensure a clean state.
+    """
+    _templater_var.set(Templater())
+    logger.debug(f"TEMPLATER: rst instance {_templater_var.get()}")
+
+def clear_templater() -> None:
+    """Unset the current context's templater.
+
+    Sets the context's templater to `None`, which will trigger creation
+    of a default fallback instance on the next call to `get_templater()`.
+    Mainly used for testing to verify default fallback behavior.
+    """
+    _templater_var.set(None)
+    logger.debug("TEMPLATER: clr instance")

@@ -1,19 +1,11 @@
-from jinja2 import Template
 import xml.etree.ElementTree as etree
-
 
 from ironvaultmd.parsers.base import NodeParser, MechanicsBlockParser
 from ironvaultmd.parsers.context import BlockContext
 from ironvaultmd.parsers.nodes import RollNodeParser
-from ironvaultmd.parsers.templater import templater
+from ironvaultmd.parsers.templater import get_templater
 from utils import verify_is_dummy_block_element
 
-
-def test_node_get_template():
-    parser = NodeParser("Roll", "")
-    assert parser.template is not None
-    assert isinstance(parser.template, Template)
-    assert parser.template.filename.endswith("/roll.html")
 
 def test_node_regex_match():
     regex = r'^test data "(?P<test_data>.+)"$'
@@ -98,10 +90,9 @@ def test_node_fallback_args_override(ctx):
 
 def test_node_template_disable(block_ctx):
     # Disable template for this parser
-    templater.user_templates.roll = ''
+    get_templater().user_templates.roll = ''
 
     parser = RollNodeParser()
-    assert parser.template is None
 
     # Verify roll context is reset
     assert not block_ctx.roll.rolled
@@ -128,7 +119,6 @@ def test_block_no_match(ctx):
     name = BlockContext.Names("Test", "test", "actor")
     # Create a parser that only matches small letters
     parser = MechanicsBlockParser(name, r'name="(?P<name>[a-z]*)"')
-    assert parser.template is not None
 
     # Define data that contains not only small letters
     data = "value123"
@@ -179,9 +169,6 @@ def test_block_no_match(ctx):
 def test_block_no_template(ctx):
     name = BlockContext.Names("test", "test", "unknown-template")
     parser = MechanicsBlockParser(name, ".*")
-
-    # Verify the defined template isn't found
-    assert parser.template is None
 
     parser.begin(ctx, "test test test")
     verify_is_dummy_block_element(ctx.parent)

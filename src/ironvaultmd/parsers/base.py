@@ -15,11 +15,9 @@ import re
 import xml.etree.ElementTree as etree
 from typing import Any
 
-from jinja2 import Template
-
 from ironvaultmd import logger_name
 from ironvaultmd.parsers.context import Context, BlockContext
-from ironvaultmd.parsers.templater import templater
+from ironvaultmd.parsers.templater import get_templater
 
 logger = logging.getLogger(logger_name)
 
@@ -29,19 +27,16 @@ class NodeParser:
 
     Subclasses should provide a `regex` pattern describing the accepted input
     for a node and may override `create_args` to transform captured values into
-    template arguments. If a template with the same name exists, the parsed
-    node will be rendered and appended to the current parent element.
+    template arguments. A "nodes" type template of the same name as provided
+    is looked up during parsing.
 
     Attributes:
         node_name: Human-readable name of the node (also used to load the
             default template via the `Templater`).
         regex: Compiled regular expression used to match a node line.
-        template: Jinja `Template` resolved for `node_name`, or `None` if no
-            template is available.
     """
     node_name: str
     regex: re.Pattern[str]
-    template: Template | None
 
     def __init__(self, name: str, regex: str) -> None:
         """Initialize the node parser.
@@ -52,7 +47,6 @@ class NodeParser:
         """
         self.node_name = name
         self.regex = re.compile(regex)
-        self.template = templater.get_template(name, "nodes")
 
     def _match(self, data: str) -> dict[str, Any] | None:
         """Try to match input text and return a group dictionary.
@@ -79,18 +73,24 @@ class NodeParser:
         The node name itself is therefore not part of the `data` string,
         only its parameters.
 
-        Rendered output is appended directly to the parent HTML element
-        stored within the passed `Context`.
+        If the line matches the parser's `regex`, the node's template is
+        looked up from the active `Templater`, otherwise the default
+        node fallback template is used.
+
+        If the template lookup returns `None`, nothing is rendered.
+        Otherwise, the rendered output is appended directly to the
+        parent HTML element stored within the passed `Context`.
 
         Args:
             ctx: Current parsing `Context`.
             data: Node parameters string.
         """
-        template = self.template
+        template = get_templater().get_template(self.node_name, "nodes")
         matches = self._match(data)
         if matches is None:
-            # Use generic node template as fallback, showing data as-is
-            template = templater.get_template("node", "nodes")
+            # Use the fallback node template, showing data as-is
+            logger.debug(f"Using fallback template for {self.node_name} node")
+            template = get_templater().get_default_template("nodes")
             args = {"node_name": self.node_name, "content": data}
 
         else:
@@ -127,12 +127,7 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
         name: Block name collection (display, parser, and template name).
         regex: Compiled pattern used to match and extract parameters from the
             block's opening line.
-        template: Jinja `Template` resolved for `block_name`, or `None` if no
-            template is available or purposely disabled.
-        fallback_template: Fallback Jinja `Template` for non-matched regexes.
     """
-
-    fallback_template = templater.get_template("block", "blocks")
 
     def __init__(self, name: BlockContext.Names, regex: str) -> None:
         """Create the block parser.
@@ -143,10 +138,10 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
         """
         self.name = name
         self.regex = re.compile(regex)
-        self.template = templater.get_template(name.template, "blocks")
 
     def _match(self, data: str) -> dict[str, Any] | None:
-        """Try to match the block opening line and return a group dictionary.
+        """Try to match the block's opening line and either return the match
+        group dictionary or `None` in case it didn't match.
 
         Args:
             data: Raw block parameter string.
@@ -160,7 +155,7 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
             logger.warning(f"Fail to match parameters for block {self.name.block}: {repr(data)}")
             return None
 
-        logger.debug(match)
+        logger.debug(f"MechanicsBlockParser {self.name.block} match: {match}")
         return match.groupdict()
 
     def begin(self, ctx: Context, data: str) -> None:
@@ -172,6 +167,10 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
 
         If the opening line cannot be matched, a generic block element is
         created containing a textual representation of the original input.
+
+        Note that the block's root element created here is only a temporary
+        dummy `<div>`. Template rendering and creating the block's proper
+        element happen in the `finalize()` call.
 
         Args:
             ctx: Current parsing `Context`.
@@ -208,7 +207,13 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
     def finalize(self, ctx) -> None:
         """Finalize the block after all nested nodes have been parsed.
 
-        Renders the template with its parsed arguments (found in `ctx.args`)
+        If the line matches the parser's `regex`, the block's template is
+        looked up from the active `Templater`, otherwise the default
+        node fallback template is used.
+
+        If the template lookup returns `None`, nothing is rendered,
+        and the block remains in its initial, dummy `<div>`. Otherwise,
+        renders the template with its parsed arguments (found in `ctx.args`)
         and replaces the block's temporary `<div>` container parent with it.
 
         Calls `finalize_args()` which subclasses may override to add more
@@ -217,14 +222,11 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
         Args:
             ctx: Current parsing `Context`.
         """
-        template = self.template
-        # Resolve the template based on matches.
-        # Check this first to ensure malformed data or missing parts in the parser
-        # will be detected by rendering a fallback div in case the template is disabled.
-        # Let's see later if this was a good idea.
-        if ctx.matches is None:
-            logger.debug(f"Using fallback template for {self.name.block}")
-            template = self.fallback_template
+        if ctx.matches is not None:
+            template = get_templater().get_template(self.name.template, "blocks")
+        else:
+            logger.debug(f"Using fallback template for {self.name.block} block")
+            template = get_templater().get_default_template("blocks")
 
         if template is None:
             # Do nothing, the block is already in a dummy <div>,

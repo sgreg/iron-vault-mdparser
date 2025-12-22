@@ -25,7 +25,7 @@ from dataclasses import dataclass
 
 from markdown.inlinepatterns import InlineProcessor
 
-from ironvaultmd.parsers.templater import templater
+from ironvaultmd.parsers.templater import get_templater
 
 
 @dataclass
@@ -55,7 +55,6 @@ class WikiLinkProcessor(InlineProcessor):
     Attributes:
         links: Optional list to collect parsed `Link` instances. When `None`,
             links are not collected.
-        template: The Jinja template used to render link elements.
 
     Note:
         The actual href resolution is deferred. The processor renders a
@@ -81,7 +80,6 @@ class WikiLinkProcessor(InlineProcessor):
         # [[link#anchor|with label]]
         wikilink_pattern = r'!?\[\[([^]|#]+)(?:#([^|\]]+))?(?:\|([^]]+))?]]'
         self.links = links
-        self.template = templater.get_template("link")
         super().__init__(wikilink_pattern)
 
     def handleMatch(self, m: re.Match[str], data: str) -> tuple[etree.Element | str, int, int]:
@@ -115,7 +113,8 @@ class WikiLinkProcessor(InlineProcessor):
                 label = ref
 
             link = Link(ref, anchor, label)
-            element = etree.fromstring(self.template.render(link.__dict__))
+            template = get_templater().get_template("link")
+            element = etree.fromstring(template.render(link.__dict__)) if template else label
 
             if self.links is not None:
                 self.links.append(link)

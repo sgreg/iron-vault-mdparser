@@ -1,8 +1,9 @@
-from jinja2 import Template
+import pytest
+from jinja2 import Template, PackageLoader
 
 from ironvaultmd.parsers.blocks import ActorBlockParser
 from ironvaultmd.parsers.nodes import AddNodeParser, MeterNodeParser
-from ironvaultmd.parsers.templater import Templater, UserTemplates
+from ironvaultmd.parsers.templater import Templater, UserTemplates, get_templater, set_templater, clear_templater
 from utils import verify_is_dummy_block_element
 
 
@@ -57,7 +58,6 @@ def test_user_template_load():
     user_templates.add = '<div class="test-class">test add</div>'
     user_templates.meter = '<div class="test-class">test meter</div>'
     user_templates.actor_block = '<div class="test-class"></div>'
-    user_templates.mechanics_block = '<div class="test-class"></div>'
 
     templater.load_user_templates(user_templates)
 
@@ -65,13 +65,11 @@ def test_user_template_load():
     meter_template = templater.get_template("meter", "nodes")
     roll_template = templater.get_template("roll", "nodes")
     actor_template = templater.get_template("actor", "blocks")
-    mechanics_template = templater.get_template("mechanics", "blocks")
 
     assert add_template.filename == "<template>"
     assert meter_template.filename == "<template>"
     assert roll_template.filename.endswith("/roll.html")
     assert actor_template.filename == "<template>"
-    assert mechanics_template.filename == "<template>"
 
 def test_user_template_load_invalid():
     templater = Templater()
@@ -92,7 +90,6 @@ def test_user_template_render_node(md_gen, ctx):
     md_gen(templates=user_templates)
 
     add_parser = AddNodeParser()
-    assert add_parser.template.filename == "<template>"
 
     add_parser.parse(ctx, '2 "for test reasons"')
     node = ctx.parent.find("div")
@@ -108,7 +105,6 @@ def test_user_template_render_block(md_gen, ctx):
     md_gen(templates=user_templates)
 
     actor_parser = ActorBlockParser()
-    assert actor_parser.template.filename == "<template>"
 
     actor_parser.begin(ctx, 'name="[[link|The Actor]]"')
     verify_is_dummy_block_element(ctx.parent)
@@ -137,9 +133,6 @@ def test_user_template_disable(md_gen, ctx):
     add_parser = AddNodeParser()
     meter_parser = MeterNodeParser()
 
-    assert add_parser.template is None
-    assert meter_parser.template is not None
-
     add_parser.parse(ctx, '2 "for test reasons"')
     meter_parser.parse(ctx, '"test meter" from=5 to=3')
 
@@ -157,9 +150,6 @@ def test_user_template_disable_block(md_gen, ctx):
 
     actor_parser = ActorBlockParser()
 
-    # Verify template is None
-    assert actor_parser.template is None
-
     actor_parser.begin(ctx, 'name="[[link|The Actor]]"')
     verify_is_dummy_block_element(ctx.parent)
 
@@ -167,3 +157,67 @@ def test_user_template_disable_block(md_gen, ctx):
 
     # Verify that with a disabled template, ctx.parent is still the dummy <div>
     verify_is_dummy_block_element(ctx.parent.find("div"))
+
+def test_default_templates():
+    data = {"block_name": "Test", "content": "test test test"}
+
+    templater = Templater()
+    assert templater.get_default_template("blocks").render(data).strip() == '<div class="ivm-block">Test: test test test</div>'
+    assert templater.get_default_template("invalid").render(data).strip() == '<div></div>'
+
+    templater = Templater(theme="/random/nonexisting/path")
+    assert templater.get_default_template("blocks").render(data).strip() == '<div></div>'
+    assert templater.get_default_template("invalid").render(data).strip() == '<div></div>'
+
+
+@pytest.mark.templater_no_init
+def test_fallback_templater():
+    default_templater = get_templater()
+
+    assert default_templater is not None
+
+    assert isinstance(default_templater.template_loader, PackageLoader)
+
+    assert isinstance(default_templater.user_templates, UserTemplates)
+    assert default_templater.user_templates.add is None
+
+    assert default_templater.default_templates is not None
+    assert default_templater.get_default_template("mechanics").render().strip() == '<div class="ivm-mechanics"></div>'
+
+    # Verify calling get_templater() again yields the same instance
+    assert get_templater() == default_templater
+
+    # Verify get_templater() yields a new fallback instance after clearing it
+    clear_templater()
+    assert get_templater() != default_templater
+
+
+def test_multiple_templater():
+    user_templates = UserTemplates(add='<div class="add-class">{{ add }}</div>')
+    theme = "tests/data/theme/"
+    templater_one = Templater(user_templates=user_templates)
+    templater_two = Templater(theme=theme)
+
+    data = {"add": 2, "reason": "just because"}
+
+    # Activate the first Templater instance
+    set_templater(templater_one)
+    assert get_templater() == templater_one
+
+    # Get and parse the template, verify it's the user override
+    template = get_templater().get_template("add", "nodes")
+    assert template is not None
+    assert template.render(data) == '<div class="add-class">2</div>'
+
+    # Activate the second Templater instance
+    set_templater(templater_two)
+    assert get_templater() == templater_two
+
+    # Verify it still renders the initial one at this point
+    assert template.render(data) == '<div class="add-class">2</div>'
+
+    # Get and parse the template again, verify it's now rendered from the theme
+    template = get_templater().get_template("add", "nodes")
+    # Note, if this fails, make sure the working directory is set to the project root, not tests/
+    assert template is not None
+    assert template.render(data).strip() == '<div class="theme-test">Add +2 just because</div>'

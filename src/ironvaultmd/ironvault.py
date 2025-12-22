@@ -34,13 +34,14 @@ arguments when constructing `IronVaultExtension` or via Markdown config):
 - `links` (list): Optional list that will be populated with parsed wiki links.
 - `frontmatter` (dict): Optional dict that receives parsed YAML front matter.
 - `templates` (UserTemplates): Optional overrides for Jinja templates.
+- `theme` (str): Optional path for templates to use.
 """
 import logging
 
 from markdown.extensions import Extension
 
 from ironvaultmd import logger_name
-from ironvaultmd.parsers.templater import UserTemplates, templater
+from ironvaultmd.parsers.templater import UserTemplates, Templater, set_templater
 from ironvaultmd.processors.frontmatter import IronVaultFrontmatterPreprocessor
 from ironvaultmd.processors.links import WikiLinkProcessor
 from ironvaultmd.processors.mechanics import (
@@ -94,30 +95,14 @@ class IronVaultExtension(Extension):
         if self.frontmatter is not None and not isinstance(self.frontmatter, dict):
             raise TypeError("Parameter 'frontmatter' must be a dict")
 
-        self.set_template_overrides()
+        theme: str | None = self.getConfig("theme", None)
+        logger.debug(f"Template theme: {theme}")
 
-    def set_template_overrides(self) -> None:
-        """Set up theme and user-defined template overrides
+        user_templates: UserTemplates | None = self.getConfig("templates", None)
+        logger.debug(f"Template user-overrides: {user_templates}")
 
-        Tries to set an optional theme path as the template source.
-        If none is provided, or setting it failed, tries a "template"
-        configuration holding a `UserTemplate` instance next to override
-        the templates. If that isn't set either, or isn't a valid
-        `UserTemplates` instance, the default templates remain in use.
-        """
-        if theme := self.getConfig("theme", None):
-            logger.debug(f"Setting theme: {theme}")
-            if templater.set_theme(theme):
-                return
-
-        if templates := self.getConfig('templates', None):
-            if isinstance(templates, UserTemplates):
-                logger.debug(f"Setting user templates: {templates}")
-                templater.load_user_templates(templates)
-            else:
-                logger.error("Provided template config is not a UserTemplates instance")
-
-        logger.debug("Using default templates")
+        templater = Templater(theme, user_templates)
+        set_templater(templater)
 
     def extendMarkdown(self, md) -> None:
         """Register processors on a `markdown.Markdown` instance.

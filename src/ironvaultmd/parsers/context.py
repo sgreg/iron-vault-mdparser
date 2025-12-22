@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from ironvaultmd import logger_name
-from ironvaultmd.parsers.templater import templater
+from ironvaultmd.parsers.templater import get_templater
 from ironvaultmd.util import check_dice
 
 logger = logging.getLogger(logger_name)
@@ -257,10 +257,8 @@ class Context:
         root: The outermost iron-vault-mechanics block `<div>`.
         blocks: Internal stack of `BlockContext` instances, handling all
             nodes and blocks contained within the main mechanics block.
-        template: Cached template string for the mechanics block `Element`
         root_name: `BlockContext.Names` values for the root element.
     """
-    template: str | None = None
     root_name = BlockContext.Names("root", None, None)
 
     def __init__(self, root: etree.Element) -> None:
@@ -277,26 +275,12 @@ class Context:
         Args:
             root: Root HTML element the mechanics block `<div>` is appended to
         """
-        mechanics_block = etree.fromstring(self._get_template())
+        template = get_templater().get_default_template("mechanics")
+        mechanics_block = etree.fromstring(template.render())
         root.append(mechanics_block)
 
         self.root = mechanics_block
         self.blocks: list[BlockContext] = []
-
-    @classmethod
-    def _get_template(cls) -> str:
-        """Retrieve the pre-rendered mechanics block `<div>` template string.
-
-        Creates the template the first time it's called and caches it.
-        Later calls return the cached template then.
-
-        Returns:
-            str: A string representing the pre-rendered HTML template.
-        """
-        if cls.template is None:
-            template = templater.get_template("Mechanics", "blocks")
-            cls.template = template.render()
-        return cls.template
 
     @property
     def parent(self) -> etree.Element:

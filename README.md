@@ -109,6 +109,40 @@ print(my_frontmatter)
 ```
 
 ### User Templates
+
+#### Template Files
+If you don't like the package-provided default templates, you can pass your own set of templates to the extension.
+
+To make this work, you'll need a dedicated directory that resembles the default template directory layout:
+```text
+my-own-templates/
+├── blocks
+│   ├── actor.html
+│   ├── block.html
+│   ├── ...
+├── link.html
+└── nodes
+    ├── add.html
+    ├── burn.html
+    ├── ...
+```
+
+Setting your own template directory:
+```python
+import markdown
+from ironvaultmd import IronVaultExtension
+
+md = markdown.Markdown(extensions=[IronVaultExtension(template_path="my-own-templates/")])
+```
+
+#### Template Overrides
+Template files, both passed as a theme and default package-provided ones, can be overridden for additional flexibility.
+
+This allows to either change the rendered text, by providing an alternative template string that Jinja understands,
+or completely disable the specific template by setting it to an empty string `""`.
+
+This is ideal if you're _mostly_ happy with the default templates, but want to tweak a thing or two.
+
 ```python
 import markdown
 from ironvaultmd import IronVaultExtension, IronVaultTemplates
@@ -121,6 +155,8 @@ my_templates.xp = '' # don't add xp nodes to HTML output
 
 md = markdown.Markdown(extensions=[IronVaultExtension(templates=my_templates)])
 ```
+
+Note that you can provide both `template_path` and `template_overrides` values, and the overrides always take precedence over file-based templates.
 
 ## Developing
 

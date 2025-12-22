@@ -2,7 +2,7 @@ import xml.etree.ElementTree as etree
 
 import pytest
 
-from ironvaultmd.parsers.templater import UserTemplates, Templater
+from ironvaultmd.parsers.templater import UserTemplates, Templater, set_templater
 from ironvaultmd.processors.links import Link
 from utils import StringCompareData
 
@@ -234,3 +234,54 @@ def test_linkproc_user_template_anchor(linkproc_gen, md_gen):
     element, _, _ = processor.handleMatch(match, data)
     assert element.get("class") == "test-class"
     assert element.text == 'test link "link#anchor" with label "label"'
+
+def test_linkproc_no_template(linkproc_gen, md_gen):
+    user_templates = UserTemplates()
+    user_templates.link = ''
+
+    links = []
+
+    md_gen(links=links, templates=user_templates)
+
+    processor = linkproc_gen(links)
+
+    data = "[[link]]"
+    match = processor.compiled_re.search(data)
+    assert match is not None
+    element, _, _ = processor.handleMatch(match, data)
+    assert isinstance(element, str)
+    assert element == "link"
+
+    assert len(links) == 1
+    assert links[0].label == "link"
+
+def test_linkproc_template_swap(linkproc_gen, md_gen):
+    user_templates = UserTemplates()
+    user_templates.link = '<div class="test-class">test link "{{ ref }}" with label "{{ label }}"</div>'
+
+    links = []
+
+    md_gen(links=links, templates=user_templates)
+
+    processor = linkproc_gen(links)
+
+    data = "[[link]]"
+    match = processor.compiled_re.search(data)
+    assert match is not None
+    element, _, _ = processor.handleMatch(match, data)
+    assert element.get("class") == "test-class"
+    assert element.text == 'test link "link" with label "link"'
+
+    user_templates.link = '<div class="another-class">{{ label }}</div>'
+
+    # Verify that tweaking just the value doesn't affect anything yet
+    element, _, _ = processor.handleMatch(match, data)
+    assert element.get("class") == "test-class"
+    assert element.text == 'test link "link" with label "link"'
+
+    templater = Templater(user_templates=user_templates)
+    set_templater(templater)
+
+    element, _, _ = processor.handleMatch(match, data)
+    assert element.get("class") == "another-class"
+    assert element.text == 'link'
