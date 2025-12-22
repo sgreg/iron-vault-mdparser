@@ -1,0 +1,17 @@
+{#
+Roll result node
+
+score       total value counting for the roll
+vs1         value of the first challenge die
+vs2         value of the second challenge die
+hitmiss     outcome of the roll, "strong", "weak", or "miss"
+match       true if challenge dice are a match
+
+#}
+<div class="ivm-roll-result ivm-roll-{{ hitmiss }}{{ " ivm-roll-match" if match }}">
+    Roll result:
+    <span class="ivm-roll-score">{{ score }}</span> vs
+    <span class="ivm-roll-vs">{{ vs1 }}</span> |
+    <span class="ivm-roll-vs">{{ vs2 }}</span>
+    <span class="ivm-roll-outcome">{{ hitmiss }}{{ " WITH MATCH!" if match }}</span>
+</div>

@@ -14,12 +14,14 @@ provided via `ironvaultmd.parsers.templater`.
 """
 
 import logging
+import xml.etree.ElementTree as etree
 from dataclasses import asdict
 from typing import Any
 
 from ironvaultmd import logger_name
 from ironvaultmd.parsers.base import MechanicsBlockParser
 from ironvaultmd.parsers.context import Context, BlockContext
+from ironvaultmd.parsers.templater import get_templater
 from ironvaultmd.util import convert_link_name
 
 logger = logging.getLogger(logger_name)
@@ -49,6 +51,21 @@ class MoveBlockParser(MechanicsBlockParser):
         name = BlockContext.Names("Move", "move", "move")
         regex = r'"\[(?P<name>[^]]+)]\((?P<link>[^)]+)\)"'
         super().__init__(name, regex)
+
+    def finalize_nodes(self, ctx: Context) -> None:
+        """Add the move's roll outcome as a dedicated node.
+
+        If the `rolled` flag isn't set in the attached `RollContext`,
+        or no `roll-result` template is found, nothing happens.
+
+        Args:
+            ctx: Current parsing `Context`.
+        """
+        if ctx.roll.rolled:
+            template = get_templater().get_template("roll_result", "nodes")
+            if template is not None:
+                element = etree.fromstring(template.render(asdict(ctx.roll.get())))
+                ctx.parent.append(element)
 
     def finalize_args(self, ctx: Context) -> dict[str, Any]:
         """Add the move's roll outcome to the args.

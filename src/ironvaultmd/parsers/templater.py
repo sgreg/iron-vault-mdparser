@@ -65,6 +65,7 @@ class TemplateOverrides:
         progress_roll: Template for the `progress-roll` node.
         reroll: Template for the `reroll` node.
         roll: Template for the `roll` node.
+        roll_result: Template for a summarized roll result appended to a move.
         track: Template for the `track` node.
         xp: Template for the `xp` node.
         link: Template for wiki links rendered by the links processor.
@@ -89,6 +90,7 @@ class TemplateOverrides:
     progress_roll: str | None = None
     reroll: str | None = None
     roll: str | None = None
+    roll_result: str | None = None
     track: str | None = None
     xp: str | None = None
     # Other elements

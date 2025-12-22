@@ -5,6 +5,7 @@ from ironvaultmd.parsers.blocks import (
     OracleBlockParser,
     OraclePromptBlockParser,
 )
+from ironvaultmd.parsers.templater import Templater, TemplateOverrides, set_templater
 from utils import verify_is_dummy_block_element
 
 
@@ -54,10 +55,12 @@ def test_parser_move_no_roll(ctx):
 
     parser.finalize(ctx)
 
+    # Verify the move is rendered without a result class
     blocks = ctx.parent.findall("div")
     assert len(blocks) == 1
     assert blocks[0].get("class") == "ivm-move"
 
+    # Verify just the move name is in the block
     children = blocks[0].findall("div")
     assert len(children) == 1
     assert children[0].get("class") == "ivm-move-name"
@@ -80,10 +83,35 @@ def test_parser_move_with_roll(ctx):
     ctx.roll.roll(5, 2, 0, 3, 8) # total 7 vs 3 | 8, expect weak hit
     parser.finalize(ctx)
 
+    # Verify the move is rendered with a result class
     blocks = ctx.parent.findall("div")
     assert len(blocks) == 1
     assert blocks[0].get("class") == "ivm-move ivm-move-result-weak"
 
+    # Verify the move name and a roll result node are in the block
+    children = blocks[0].findall("div")
+    assert len(children) == 2
+    assert children[0].get("class") == "ivm-move-name"
+    assert children[0].text == "Move Name"
+    assert children[1].get("class") == "ivm-roll-result ivm-roll-weak"
+    assert "Roll result" in children[1].text
+
+def test_parser_move_with_roll_no_result_template(ctx):
+    parser = MoveBlockParser()
+    templater = Templater(overrides=TemplateOverrides(roll_result=''))
+    set_templater(templater)
+
+    data = '"[Move Name](Move Link)"'
+    parser.begin(ctx, data)
+    ctx.roll.roll(5, 2, 0, 3, 8) # total 7 vs 3 | 8, expect weak hit
+    parser.finalize(ctx)
+
+    # Verify the move is rendered with a result class
+    blocks = ctx.parent.findall("div")
+    assert len(blocks) == 1
+    assert blocks[0].get("class") == "ivm-move ivm-move-result-weak"
+
+    # Verify the move name but not the roll result node are in the block
     children = blocks[0].findall("div")
     assert len(children) == 1
     assert children[0].get("class") == "ivm-move-name"

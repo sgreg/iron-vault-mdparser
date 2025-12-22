@@ -222,6 +222,8 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
         Args:
             ctx: Current parsing `Context`.
         """
+        self.finalize_nodes(ctx)
+
         if ctx.matches is not None:
             template = get_templater().get_template(self.name.template, "blocks")
         else:
@@ -238,6 +240,20 @@ class MechanicsBlockParser: # there's already a BlockParser in Markdown itself, 
             ctx.replace_root(new_root)
 
         ctx.pop()
+
+    def finalize_nodes(self, ctx: Context) -> None:
+        """Add extra nodes to the block during finalization.
+
+        Called at the beginning of the finalization step, before the template
+        lookup and possible root node replacement.
+
+        Subclasses can override this method to add extra nodes, such as
+        a roll result summary in the move block. Does nothing by default.
+
+        Args:
+            ctx: Current parsing `Context`.
+        """
+        pass
 
     def finalize_args(self, ctx: Context) -> dict[str, Any]:
         """Extend template arguments during finalization.

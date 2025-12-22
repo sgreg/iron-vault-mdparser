@@ -441,6 +441,11 @@ span.ivm-position-badspot {
     font-weight: var(--ivm-name-weight)
 }
 
+.ivm-roll-result {
+    border-radius: var(--ivm-radius-sm);
+    padding: var(--ivm-pad-sm);
+}
+
 /* ---------- Tracks ---------- */
 .ivm-track {
     padding: var(--ivm-pad-md);
