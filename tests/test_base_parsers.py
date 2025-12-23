@@ -1,6 +1,12 @@
 import xml.etree.ElementTree as etree
 
-from ironvaultmd.parsers.base import NodeParser, MechanicsBlockParser
+from ironvaultmd.parsers.base import (
+    NodeParser,
+    MechanicsBlockParser,
+    ParameterNodeParser,
+    ParameterBlockParser,
+    ParameterParsingMixin
+)
 from ironvaultmd.parsers.context import BlockContext
 from ironvaultmd.parsers.nodes import RollNodeParser
 from ironvaultmd.parsers.templater import get_templater
@@ -17,6 +23,85 @@ def test_node_regex_match():
 
     no_match = parser._match('nothing that will match')
     assert no_match is None
+
+def test_param_node_match(ctx):
+    parser = ParameterNodeParser("Node", ["one", "two", "hyphen-param"])
+    args = parser._match('one="value one" two=2 optional=true hyphen-param="matched" empty=""')
+    assert args == {
+        "one": "value one",
+        "two": 2,
+        "hyphen-param": "matched",
+        "extra": {
+            "optional": True,
+            "empty": "",
+        }
+    }
+
+    parser = ParameterNodeParser("EmptyKeyNode", [])
+    args = parser._match('one=1 two="a different value"')
+    assert args == {
+        "extra": {
+            "one": 1,
+            "two": "a different value"
+        }
+    }
+
+    parser = ParameterNodeParser("CaseSensitiveParamNode", ["caseSensitiveKey"])
+    args = parser._match('casesensitivekey=false')
+    assert args == {
+        "extra": {
+            "casesensitivekey": False
+        }
+    }
+
+def test_param_node_no_match(ctx):
+    parser = ParameterNodeParser("Node", ["key"])
+
+    assert parser._match("") is None
+    assert parser._match("doesn't have any key value pairs") is None
+    assert parser._match("does have some key=value pair but that still won't match") is None
+    assert parser._match("key=value pair at the beginning makes no difference here") is None
+    assert parser._match("capital-boolean=TRUE") is None
+    assert parser._match('key="unbalanced quotes') is None
+
+def test_mixin_parse(ctx):
+    # Test the else case in parameter conversion.
+    #
+    # This shouldn't be possible in reality because the regex won't match.
+    # Create new Parser with an extended regex, matching now also "misc" as value,
+    # which still isn't covered int he _parse_params() call though.
+    class TestParser(ParameterParsingMixin, NodeParser):
+        def __init__(self, keys: list[str]) -> None:
+            params_regex = r'^(?P<params>(?:[\w-]+=(?:"[^"]*"|\d+|true|false|misc)(?:\s+|$))+)$'
+            param_regex = r'([\w-]+)=((?:"[^"]*"|\d+|true|false|misc))'
+
+            super().__init__("Test", params_regex, param_regex)
+            self.known_keys = keys
+
+    # Verify first a valid case (same as in test_param_node_match() above) behaves still the same
+    parser = TestParser(["one", "two", "hyphen-param"])
+    args = parser._match('one="value one" two=2 optional=true hyphen-param="matched" empty=""')
+    assert args == {
+        "one": "value one",
+        "two": 2,
+        "hyphen-param": "matched",
+        "extra": {
+            "optional": True,
+            "empty": "",
+        }
+    }
+
+    # Sneak in a now-matched, but still not converted value (unchecked=misc)
+    match = {"params": 'one="value one" unchecked=misc two=2'}
+    args = parser._parse_params(match)
+
+    # Verify the invalid part is simply skipped
+    assert args == {
+        "one": "value one",
+        "two": 2,
+        "extra": {}
+    }
+
 
 def test_node_node_render(ctx):
     regex = r'^test data "(?P<test_data>.+)"$'
@@ -61,7 +146,7 @@ def test_node_args_override(ctx):
     data = 'test data "123"'
 
     class TestParser(NodeParser):
-        def create_args(self, match, context):
+        def handle_args(self, match, context):
             return {"test_data": "overridden"}
 
     parser = TestParser("Test", regex)
@@ -76,7 +161,7 @@ def test_node_fallback_args_override(ctx):
     data = 'no match'
 
     class TestParser(NodeParser):
-        def create_args(self, match, context):
+        def handle_args(self, match, context):
             # Verify create_args isn't called when there's no match
             raise Exception("shouldn't have called create_args")
 
@@ -165,6 +250,45 @@ def test_block_no_match(ctx):
     name_node = nodes[1].find("div")
     assert name_node is not None
     assert name_node.text == "valid"
+
+def test_block_node_match(ctx):
+    parser = ParameterBlockParser(BlockContext.Names("Block", "", ""), ["one", "two", "hyphen-param"])
+    args = parser._match('one="value one" two=2 optional=true hyphen-param="matched" empty=""')
+    assert args == {
+        "one": "value one",
+        "two": 2,
+        "hyphen-param": "matched",
+        "extra": {
+            "optional": True,
+            "empty": "",
+        }
+    }
+
+    parser = ParameterBlockParser(BlockContext.Names("EmptyKeyNode", "", ""), [])
+    args = parser._match('one=1 two="a different value"')
+    assert args == {
+        "extra": {
+            "one": 1,
+            "two": "a different value"
+        }
+    }
+
+    parser = ParameterBlockParser(BlockContext.Names("CaseSensitiveParamNode", "", ""), ["caseSensitiveKey"])
+    args = parser._match('casesensitivekey=false')
+    assert args == {
+        "extra": {
+            "casesensitivekey": False
+        }
+    }
+
+def test_block_node_no_match(ctx):
+    parser = ParameterBlockParser(BlockContext.Names("Block", "", ""), ["key"])
+
+    assert parser._match("") is None
+    assert parser._match("doesn't have any key value pairs") is None
+    assert parser._match("does have some key=value pair but that still won't match") is None
+    assert parser._match("key=value pair at the beginning makes no difference here") is None
+    assert parser._match("capital-boolean=TRUE") is None
 
 def test_block_no_template(ctx):
     name = BlockContext.Names("test", "test", "unknown-template")

@@ -101,7 +101,7 @@ class OracleBlockParser(MechanicsBlockParser):
         regex = r'^name="(\[(?P<oracle_name>[^\]]+)\]\(datasworn:.+\)|(?P<oracle_text>[^"]+))" result="(?P<result>[^"]+)" roll=(?P<roll>\d+)$'
         super().__init__(name, regex)
 
-    def create_args(self, data: dict[str, Any]) -> dict[str, Any]:
+    def handle_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:
         # This is also taken straight from the oracle node parser.
         # Should probably combine those to some common place?
         oracle_raw = data.get("oracle_name") or data.get("oracle_text")

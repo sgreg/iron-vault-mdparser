@@ -24,7 +24,8 @@ def test_parser_add(ctx):
     parser = AddNodeParser()
 
     assert parser.node_name == "Add"
-    assert parser.regex
+    assert parser.input_regex
+    assert not parser.extra_regex
 
     classes = ["add"]
 
@@ -46,7 +47,8 @@ def test_parser_burn(block_ctx):
     parser = BurnNodeParser()
 
     assert parser.node_name == "Burn"
-    assert parser.regex
+    assert parser.input_regex
+    assert not parser.extra_regex
 
     classes = ["meter-burn"]
 
@@ -70,7 +72,8 @@ def test_parser_clock(ctx):
     parser = ClockNodeParser()
 
     assert parser.node_name == "Clock"
-    assert parser.regex
+    assert parser.input_regex
+    assert not parser.extra_regex
 
     classes = ["clock"]
 
@@ -106,7 +109,8 @@ def test_parser_impact(ctx):
     parser = ImpactNodeParser()
 
     assert parser.node_name == "Impact"
-    assert parser.regex
+    assert parser.input_regex
+    assert not parser.extra_regex
 
     classes = [
         "impact",
@@ -132,7 +136,8 @@ def test_parser_initiative(ctx):
     parser = InitiativeNodeParser()
 
     assert parser.node_name == "Initiative"
-    assert parser.regex
+    assert parser.input_regex
+    assert not parser.extra_regex
 
     classes = [
         "initiative-nocombat",
@@ -168,7 +173,8 @@ def test_parser_meter(ctx):
     parser = MeterNodeParser()
 
     assert parser.node_name == "Meter"
-    assert parser.regex
+    assert parser.input_regex
+    assert not parser.extra_regex
 
     classes = [
         "meter-increase",
@@ -206,7 +212,8 @@ def test_parser_move(ctx):
     parser = MoveNodeParser()
 
     assert parser.node_name == "Move"
-    assert parser.regex
+    assert parser.input_regex
+    assert not parser.extra_regex
 
     classes = ["move"]
 
@@ -228,6 +235,9 @@ def test_parser_ooc(ctx):
     parser = OocNodeParser()
 
     assert parser.node_name == "OOC"
+    assert parser.input_regex
+    assert not parser.extra_regex
+
     assert ctx.parent.find("div") is None
 
     contents = [
@@ -250,7 +260,8 @@ def test_parser_oracle(ctx):
     parser = OracleNodeParser()
 
     assert parser.node_name == "Oracle"
-    assert parser.regex
+    assert parser.input_regex
+    assert not parser.extra_regex
 
     classes = ["oracle"]
 
@@ -278,7 +289,8 @@ def test_parser_position(ctx):
     parser = PositionNodeParser()
 
     assert parser.node_name == "Position"
-    assert parser.regex
+    assert parser.input_regex
+    assert not parser.extra_regex
 
     classes = [
         "position-nocombat",
@@ -314,7 +326,8 @@ def test_parser_progress(ctx):
     parser = ProgressNodeParser()
 
     assert parser.node_name == "Progress"
-    assert parser.regex
+    assert parser.input_regex
+    assert not parser.extra_regex
 
     classes = ["progress"]
 
@@ -344,7 +357,8 @@ def test_parser_progressroll(block_ctx):
     parser = ProgressRollNodeParser()
 
     assert parser.node_name == "Progress Roll"
-    assert parser.regex
+    assert parser.input_regex
+    assert not parser.extra_regex
 
     classes = [
         "roll-strong",
@@ -388,7 +402,8 @@ def test_parser_reroll(block_ctx):
     parser = RerollNodeParser()
 
     assert parser.node_name == "Reroll"
-    assert parser.regex
+    assert parser.input_regex
+    assert not parser.extra_regex
 
     classes = ["reroll"]
 
@@ -425,7 +440,8 @@ def test_parser_roll(block_ctx):
     parser = RollNodeParser()
 
     assert parser.node_name == "Roll"
-    assert parser.regex
+    assert parser.input_regex
+    assert not parser.extra_regex
 
     classes = [
         "roll-strong",
@@ -469,7 +485,8 @@ def test_parser_track(ctx):
     parser = TrackNodeParser()
 
     assert parser.node_name == "Track"
-    assert parser.regex
+    assert parser.input_regex
+    assert not parser.extra_regex
 
     classes = ["track"]
 
@@ -494,7 +511,8 @@ def test_parser_xp(ctx):
     parser = XpNodeParser()
 
     assert parser.node_name == "XP"
-    assert parser.regex
+    assert parser.input_regex
+    assert not parser.extra_regex
 
     classes = [
         "ivm-xp",
