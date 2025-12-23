@@ -1,11 +1,15 @@
 {#
 Track node
+May contain "extra" data
 
-track_name  name of the track
-status      status of the track event, "added", "removed"
+name    name of the track
+status  status of the track event, "added", "removed"
 #}
 <div class="ivm-track">
     Track
-    <span class="ivm-track-name">{{ track_name }}</span>
+    <span class="ivm-track-name">{{ name }}</span>
     <span class="ivm-track-status">{{ status }}</span>
+    {%- if extra %}
+    <span>({{ extra }})</span>
+    {%- endif %}
 </div>

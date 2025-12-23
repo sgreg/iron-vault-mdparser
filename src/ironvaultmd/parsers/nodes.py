@@ -1,16 +1,21 @@
 """Concrete node parsers for Iron Vault mechanics.
 
-Each class derives from `NodeParser` and is responsible for parsing a single
-mechanics line (e.g., `roll`, `progress-roll`, `burn`, `clock`). Parsers use a
-compiled regex to extract named groups and may override `create_args` to
-massage values, compute derived fields, or consult the current parsing
-`Context` (for example, to perform rolls).
-"""
+Each class derives from either `NodeParser` or `ParameterNodeParser` and is
+responsible for parsing a single mechanics node line (e.g., `roll`,
+`progress-roll`, `burn`, `clock`).
 
+Parsers use a compiled regex to extract named groups and may override
+`handle_args` to adjust values, compute derived fields, or consult the
+current parsing `Context` (for example, to perform rolls).
+
+Classes derived from `NodeParser` use a strict, fixed parameter-based regex,
+while classes derived from `ParameterNodeParser` use a more relaxed key=value
+of arbitrary order regex.
+"""
 from dataclasses import asdict
 from typing import Any
 
-from ironvaultmd.parsers.base import NodeParser
+from ironvaultmd.parsers.base import NodeParser, ParameterNodeParser
 from ironvaultmd.parsers.context import Context
 from ironvaultmd.util import check_ticks, convert_link_name, initiative_slugify, position_slugify, ticks_to_progress
 
@@ -45,22 +50,18 @@ class BurnNodeParser(NodeParser):
         return data | asdict(result)
 
 
-class ClockNodeParser(NodeParser):
+class ClockNodeParser(ParameterNodeParser):
     """Parser for clock progress or status change lines."""
     def __init__(self) -> None:
         # clock from=2 name="[[Lone Howls\/Clocks\/Titanhold Bounty Hunters closing in on Dykstra.md|Titanhold Bounty Hunters closing in on Dykstra]]" out-of=6 to=3
         # clock name="[[Lone Howls\/Clocks\/Titanhold Bounty Hunters closing in on Dykstra.md|Titanhold Bounty Hunters closing in on Dykstra]]" status="added"
+        keys = ["name", "from", "to", "out-of", "status"]
+        super().__init__("Clock", keys)
 
-        # Note that https://ironvault.quest/blocks/mechanics-blocks.html#%60clock%60 actually shows a different order.
-        # Probably a good idea to capture arbitrary order of parameters in all the node parsers.
-
-        regex = r'^(from=(?P<from>\d+) )?name="\[\[.*\|(?P<name>.*)\]\]" (?(from)out-of=(?P<segments>\d+) to=(?P<to>\d+)|status="(?P<status>(added|removed|resolved))")$'
-        #          ^...................^^                                 ^^^^^^^
-        #        make 'from=x ' optional,                        check if 'from' group was actually set,
-        #        it's only in clock progresses,                  if so, expect 'out-of' and 'to' here,
-        #        but not in clock status changes                 otherwise expect 'status'
-
-        super().__init__("Clock", regex)
+    def handle_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:
+        data["name"] = convert_link_name(data.get("name", "unknown"))
+        data["segments"] = data.get("out-of", 0)
+        return data
 
 
 class ImpactNodeParser(NodeParser):
@@ -165,32 +166,19 @@ class OocNodeParser(NodeParser):
         super().__init__("OOC", regex)
 
 
-class OracleNodeParser(NodeParser):
+class OracleNodeParser(ParameterNodeParser):
     """Parser for oracle roll results (text or datasworn references)."""
     def __init__(self) -> None:
         # oracle name="[Core Oracles \/ Theme](datasworn:oracle_rollable:starforged\/core\/theme)" result="Warning" roll=96
         # oracle name="Will [[Lone Howls\/Clocks\/Clock decrypt Verholm research.md|Clock decrypt Verholm research]] advance? (Likely)" result="No" roll=83
-        regex = r'^name="(\[(?P<oracle_name>[^\]]+)\]\(datasworn:.+\)|(?P<oracle_text>[^"]+))" result="(?P<result>[^"]+)" roll=(?P<roll>\d+)$'
-        super().__init__("Oracle", regex)
+        known_keys = ["name", "result", "roll", "cursed", "replaced"]
+        super().__init__("Oracle", known_keys)
 
     def handle_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:
-        """Derive a normalized oracle name and return extended arguments.
+        data["oracle"] = convert_link_name(data.get("name", "unknown"))
+        data["result"] = convert_link_name(data.get("result", "unknown"))
 
-        Args:
-            data: Regex groups for `oracle_name` or `oracle_text`, plus
-                `result` and `roll`.
-            _: Current parsing context (unused).
-
-        Returns:
-            The original groups merged with a normalized `oracle` display name
-            derived from either `oracle_name` or `oracle_text`.
-        """
-        oracle_raw = data.get("oracle_name") or data.get("oracle_text")
-        oracle = convert_link_name(oracle_raw) if oracle_raw else "undefined"
-
-        data["result"] = convert_link_name(data["result"])
-
-        return data | {"oracle": oracle}
+        return data
 
 
 class PositionNodeParser(NodeParser):
@@ -214,12 +202,13 @@ class PositionNodeParser(NodeParser):
         return data | {"from_slug": position_slugify(data["from"]), "to_slug": position_slugify(data["to"])}
 
 
-class ProgressNodeParser(NodeParser):
+class ProgressNodeParser(ParameterNodeParser):
     """Parser for `progress` track changes."""
     def __init__(self) -> None:
         # progress: from=8 name="[[Lone Howls\/Progress\/Connection Dykstra.md|Connection Dykstra]]" rank="dangerous" steps=1
-        regex = r'^from=(?P<from>\d+) name="\[\[.*\|(?P<name>.*)\]\]" rank="(?P<rank>\w+)" steps=(?P<steps>\d+)$'
-        super().__init__("Progress", regex)
+        # regex = r'^from=(?P<from>\d+) name="\[\[.*\|(?P<name>.*)\]\]" rank="(?P<rank>\w+)" steps=(?P<steps>\d+)$'
+        keys = ["from", "name", "rank", "steps"]
+        super().__init__("Progress", keys)
 
     def handle_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:
         """Compute and add the new progress state based on rank and progress.
@@ -235,32 +224,32 @@ class ProgressNodeParser(NodeParser):
             The original groups rearranged to contain the old and new progress
             state in both ticks and as tuple `(boxes, ticks)`.
         """
-        from_ticks = int(data["from"])
-        steps = int(data["steps"])
-        ticks, to_ticks = check_ticks(data["rank"], from_ticks, steps)
-        from_progress = ticks_to_progress(from_ticks)
-        to_progress = ticks_to_progress(to_ticks)
+        from_ticks = data.get("from", 0)
+        steps = data.get("steps", 0)
+        ticks, to_ticks = check_ticks(data.get("rank", "unknown"), from_ticks, steps)
 
         return {
-            "name": data["name"],
-            "rank": data["rank"],
+            "name": convert_link_name(data.get("name", "undefined")),
+            "rank": data.get("rank", "unknown"),
             "steps": steps,
-            "from": from_progress,
-            "to": to_progress,
+            "from": ticks_to_progress(from_ticks),
+            "to": ticks_to_progress(to_ticks),
             "from_ticks": from_ticks,
             "to_ticks": to_ticks,
             "ticks": ticks,
+            "extra": data["extra"]
         }
 
 
-class ProgressRollNodeParser(NodeParser):
+
+class ProgressRollNodeParser(ParameterNodeParser):
     """Parser for `progress-roll` outcomes with optional name."""
     def __init__(self) -> None:
         # progress-roll name="[[Lone Howls\/Progress\/Combat Tayla.md|Combat Tayla]]" score=8 vs1=1 vs2=4
         # Note, before Dec 2024, name parameter may be missing, so pack the whole 'name="[[..|..]]" ' into optional group '(?: ...)?'
         # Addition: in some cases the name might be in the back: progress-roll score=8 vs1=1 vs2=4 name="[[...|...]]"
-        regex = r'^(?:name="\[\[.*\|(?P<name_front>.*)\]\]" )?score=(?P<score>\d+) vs1=(?P<vs1>\d+) vs2=(?P<vs2>\d+)(?: name="\[\[.*\|(?P<name_back>.*)\]\]")?$'
-        super().__init__("Progress Roll", regex)
+        keys=["name", "score", "vs1", "vs2"]
+        super().__init__("Progress Roll", keys)
 
     def handle_args(self, data: dict[str, Any], ctx: Context) -> dict[str, Any]:
         """Perform the progress roll via context and set the track name.
@@ -279,9 +268,7 @@ class ProgressRollNodeParser(NodeParser):
             The original groups plus a normalized `name` and the serialized
             `RollResult` (score, dice, hit/miss, match flags).
         """
-        name = data.get("name_front") or data.get("name_back") or "undefined"
-        data["name"] = name
-
+        data["name"] = convert_link_name(data.get("name", "undefined"))
         result = ctx.roll.progress_roll(data["score"], data["vs1"], data["vs2"])
         return data | asdict(result)
 
@@ -334,15 +321,16 @@ class RollNodeParser(NodeParser):
         return data | asdict(result)
 
 
-class TrackNodeParser(NodeParser):
+class TrackNodeParser(ParameterNodeParser):
     """Parser for `track` status changes (added/removed/resolved)."""
     def __init__(self) -> None:
         # track name="[[Lone Howls\/Progress\/Combat Tayla.md|Combat Tayla]]" status="removed"
+        keys = ["name", "status"]
+        super().__init__("Track", keys)
 
-        # XXX this should have similar content than the clock node, double-check that
-        # see https://ironvault.quest/blocks/mechanics-blocks.html#%60track%60
-        regex = r'^name="\[\[.*\|(?P<track_name>.*)\]\]" status="(?P<status>\w+)"$'
-        super().__init__("Track", regex)
+    def handle_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:
+        data["name"] = convert_link_name(data.get("name", "undefined"))
+        return data
 
 
 class XpNodeParser(NodeParser):

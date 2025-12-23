@@ -29,11 +29,14 @@ and results may be disappointing.
 
 #### Mechanics blocks and nodes
 Currently supported blocks within a mechanics block:
-actor, move, oracle-group, oracle, prompted oracle
+actor, move, oracle-group, **oracle**, prompted oracle
 
 Currently supported nodes within a mechanics block or any of the other blocks:
-add, burn, clock, impact, initiative, meter, move, out-of-character comments,
-oracle, position, progress, progress-roll, reroll, roll, track, xp.
+add, burn, **clock**, impact, initiative, meter, move, out-of-character comments,
+**oracle**, position, **progress**, **progress-roll**, reroll, roll, **track**, xp.
+
+Elements in **bold** support a generic key=value parameter in hopes to cover differences
+in the game systems (and possible Iron Vault version compatibilities) better.
 
 #### Links
 Links are currently detected and optionally collected into a list with their reference and label,

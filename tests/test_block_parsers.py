@@ -182,7 +182,7 @@ def test_parser_oracle_block_text(ctx):
     assert ctx.args["oracle"] == "Will some clock advance?"
 
     assert ctx.args["result"] == "Clock Result"
-    assert ctx.args["roll"] == "23"
+    assert ctx.args["roll"] == 23
 
     parser.finalize(ctx)
 

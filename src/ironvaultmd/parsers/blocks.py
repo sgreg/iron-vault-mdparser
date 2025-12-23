@@ -1,16 +1,10 @@
-"""Block parsers for Iron Vault mechanics.
+"""Concrete block parsers for Iron Vault mechanics.
 
-This module implements concrete `MechanicsBlockParser` subclasses that handle
-high-level mechanics constructs:
+Each class derives from either `MechanicsBlockParser` or `ParameterBlockParser`
+and is responsible for parsing a block within a mechanics block (e.g., "move",
+"actor", oracles).
 
-- `ActorBlockParser`: Creates an actor container with a rendered name.
-- `MoveBlockParser`: Creates a move container and, on finalize, decorates it
-  based on the computed roll result.
-- `OracleGroupBlockParser` and `OracleBlockParser`: Render oracle-related sections.
-- `OraclePromptBlockParser`: Renders narrative oracle prompts.
-
-Parsers rely on helpers from `ironvaultmd.util` and optional Jinja templates
-provided via `ironvaultmd.parsers.templater`.
+See also the `nodes.py` module for additional information.
 """
 
 import logging
@@ -19,7 +13,7 @@ from dataclasses import asdict
 from typing import Any
 
 from ironvaultmd import logger_name
-from ironvaultmd.parsers.base import MechanicsBlockParser
+from ironvaultmd.parsers.base import MechanicsBlockParser, ParameterBlockParser
 from ironvaultmd.parsers.context import Context, BlockContext
 from ironvaultmd.parsers.templater import get_templater
 from ironvaultmd.util import convert_link_name
@@ -91,25 +85,21 @@ class OracleGroupBlockParser(MechanicsBlockParser):
         super().__init__(name, regex)
 
 
-class OracleBlockParser(MechanicsBlockParser):
+class OracleBlockParser(ParameterBlockParser):
     """Block parser for a single oracle roll result."""
     def __init__(self) -> None:
         name = BlockContext.Names("Oracle", "oracle", "oracle")
         # See the oracle node parser, there can be two types (that I know of so far):
         # oracle name="[Core Oracles \/ Theme](datasworn:oracle_rollable:starforged\/core\/theme)" result="Warning" roll=96
         # oracle name="Will [[Lone Howls\/Clocks\/Clock decrypt Verholm research.md|Clock decrypt Verholm research]] advance? (Likely)" result="No" roll=83
-        regex = r'^name="(\[(?P<oracle_name>[^\]]+)\]\(datasworn:.+\)|(?P<oracle_text>[^"]+))" result="(?P<result>[^"]+)" roll=(?P<roll>\d+)$'
-        super().__init__(name, regex)
+        known_keys = ["name", "result", "roll", "cursed", "replaced"]
+        super().__init__(name, known_keys)
 
     def handle_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:
-        # This is also taken straight from the oracle node parser.
-        # Should probably combine those to some common place?
-        oracle_raw = data.get("oracle_name") or data.get("oracle_text")
-        oracle = convert_link_name(oracle_raw) if oracle_raw else "undefined"
+        data["oracle"] = convert_link_name(data.get("name", "unknown"))
+        data["result"] = convert_link_name(data.get("result", "unknown"))
 
-        data["result"] = convert_link_name(data["result"])
-
-        return data | {"oracle": oracle}
+        return data
 
 
 class OraclePromptBlockParser(MechanicsBlockParser):
