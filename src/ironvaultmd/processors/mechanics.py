@@ -152,6 +152,7 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
 
     RE_BLOCK_LINE = re.compile(r'^(?P<name>actor|move|oracle-group|oracle|-) (?P<params>[^{]*) \{')
     RE_NODE_LINE = re.compile(r'^(?P<name>add|burn|clock|impact|initiative|meter|move|oracle|position|progress|progress-roll|reroll|roll|track|xp|-) (?P<params>.*)$')
+    RE_OOC_LINE = re.compile(r'^- "[^"]*$')
 
     # Other blocks that exist (see https://ironvault.quest/blocks/index.html)
     #   ...most are actually just for displaying information, which could be considered nice-to-have in the future.
@@ -260,9 +261,25 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
         """
         logger.debug(f"x> adding content {repr(content)}")
 
+        multiline_ooc = None
+
         lines = [chunk for chunk in content.split("\n") if chunk]
         for idx, line in enumerate(lines):
             logger.debug(f"line #{idx: 2d}: '{line}'")
+
+            # Check for multiline out-of-character comments, i.e., a OOC line without closing quotes.
+            # If found, collect all the next lines until the closing quote is found at the end of a line.
+            # Merge into a single line separated with <br> and proceed with the regular line parsing.
+            if (ooc_match := self.RE_OOC_LINE.search(line)) is not None:
+                multiline_ooc = [ooc_match.group(0)]
+                continue
+            elif multiline_ooc is not None:
+                multiline_ooc.append(line)
+                if line[-1] != '"':
+                    continue
+                line = "<br>".join(multiline_ooc)
+                multiline_ooc = None
+
 
             if (block_match := self.RE_BLOCK_LINE.search(line)) is not None:
                 name = block_match.group("name")

@@ -53,7 +53,7 @@ move "[React Under Fire](datasworn:move:starforged\\/combat\\/react_under_fire)"
     <span class="ivm-roll-outcome">strong</span>
 </div>
 </div>
-<div class="ivm-ooc">// in control</div>
+<div class="ivm-ooc">in control</div>
 </div>"""
 
     html = md.convert(markdown)

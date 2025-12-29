@@ -240,9 +240,10 @@ def test_parser_ooc(ctx):
     assert ctx.parent.find("div") is None
 
     contents = [
-        "",
         "ooc",
-        "anything really=goes from=3 to **markdown** _content_ ~and~ *everything*"
+        "anything really=goes from=3 to **markdown** _content_ ~and~ *everything*",
+        "escaped \"quoted\" text too",
+        'unescaped "quoted" text too, even though that is not possible from iron-vault itself',
     ]
 
     for content in contents:

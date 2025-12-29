@@ -162,8 +162,22 @@ class MoveNodeParser(NodeParser):
 class OocNodeParser(NodeParser):
     """Parser for out-of-character notes inside mechanics blocks."""
     def __init__(self) -> None:
-        regex = r'^"(?P<comment>[^"]*)"$'
+        regex = '^"(?P<comment>.*)"$'
         super().__init__("OOC", regex)
+
+    def handle_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:
+        """Return template args replacing escaping from double quotes.
+
+        Args:
+            data: Regex group including `comment`.
+            _: Current parsing context (unused).
+
+        Returns:
+            The original dictionary with unescaped double quotes.
+
+        """
+        data["comment"] = str(data.get("comment", "")).replace('\\"', '"')
+        return data
 
 
 class OracleNodeParser(ParameterNodeParser):
