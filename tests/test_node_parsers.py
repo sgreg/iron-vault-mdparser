@@ -23,7 +23,7 @@ from ironvaultmd.parsers.nodes import (
 def test_parser_add(ctx):
     parser = AddNodeParser()
 
-    assert parser.node_name == "Add"
+    assert parser.names.name == "Add"
     assert parser.input_regex
     assert not parser.extra_regex
 
@@ -46,7 +46,7 @@ def test_parser_add(ctx):
 def test_parser_burn(block_ctx):
     parser = BurnNodeParser()
 
-    assert parser.node_name == "Burn"
+    assert parser.names.name == "Burn"
     assert parser.input_regex
     assert not parser.extra_regex
 
@@ -71,7 +71,7 @@ def test_parser_burn(block_ctx):
 def test_parser_clock(ctx):
     parser = ClockNodeParser()
 
-    assert parser.node_name == "Clock"
+    assert parser.names.name == "Clock"
     assert parser.input_regex
     assert parser.extra_regex
 
@@ -107,7 +107,7 @@ def test_parser_clock(ctx):
 def test_parser_impact(ctx):
     parser = ImpactNodeParser()
 
-    assert parser.node_name == "Impact"
+    assert parser.names.name == "Impact"
     assert parser.input_regex
     assert not parser.extra_regex
 
@@ -134,7 +134,7 @@ def test_parser_impact(ctx):
 def test_parser_initiative(ctx):
     parser = InitiativeNodeParser()
 
-    assert parser.node_name == "Initiative"
+    assert parser.names.name == "Initiative"
     assert parser.input_regex
     assert not parser.extra_regex
 
@@ -171,7 +171,7 @@ def test_parser_initiative(ctx):
 def test_parser_meter(ctx):
     parser = MeterNodeParser()
 
-    assert parser.node_name == "Meter"
+    assert parser.names.name == "Meter"
     assert parser.input_regex
     assert not parser.extra_regex
 
@@ -210,7 +210,7 @@ def test_parser_meter(ctx):
 def test_parser_move(ctx):
     parser = MoveNodeParser()
 
-    assert parser.node_name == "Move"
+    assert parser.names.name == "Move"
     assert parser.input_regex
     assert not parser.extra_regex
 
@@ -233,7 +233,7 @@ def test_parser_move(ctx):
 def test_parser_ooc(ctx):
     parser = OocNodeParser()
 
-    assert parser.node_name == "OOC"
+    assert parser.names.name == "OOC"
     assert parser.input_regex
     assert not parser.extra_regex
 
@@ -259,7 +259,7 @@ def test_parser_ooc(ctx):
 def test_parser_oracle(ctx):
     parser = OracleNodeParser()
 
-    assert parser.node_name == "Oracle"
+    assert parser.names.name == "Oracle"
     assert parser.input_regex
     assert parser.extra_regex
 
@@ -289,7 +289,7 @@ def test_parser_oracle(ctx):
 def test_parser_position(ctx):
     parser = PositionNodeParser()
 
-    assert parser.node_name == "Position"
+    assert parser.names.name == "Position"
     assert parser.input_regex
     assert not parser.extra_regex
 
@@ -326,7 +326,7 @@ def test_parser_position(ctx):
 def test_parser_progress(ctx):
     parser = ProgressNodeParser()
 
-    assert parser.node_name == "Progress"
+    assert parser.names.name == "Progress"
     assert parser.input_regex
     assert parser.extra_regex
 
@@ -358,7 +358,7 @@ def test_parser_progress(ctx):
 def test_parser_progressroll(block_ctx):
     parser = ProgressRollNodeParser()
 
-    assert parser.node_name == "Progress Roll"
+    assert parser.names.name == "Progress Roll"
     assert parser.input_regex
     assert parser.extra_regex
 
@@ -404,7 +404,7 @@ def test_parser_progressroll(block_ctx):
 def test_parser_reroll(block_ctx):
     parser = RerollNodeParser()
 
-    assert parser.node_name == "Reroll"
+    assert parser.names.name == "Reroll"
     assert parser.input_regex
     assert not parser.extra_regex
 
@@ -442,7 +442,7 @@ def test_parser_reroll(block_ctx):
 def test_parser_roll(block_ctx):
     parser = RollNodeParser()
 
-    assert parser.node_name == "Roll"
+    assert parser.names.name == "Roll"
     assert parser.input_regex
     assert not parser.extra_regex
 
@@ -487,7 +487,7 @@ def test_parser_roll(block_ctx):
 def test_parser_track(ctx):
     parser = TrackNodeParser()
 
-    assert parser.node_name == "Track"
+    assert parser.names.name == "Track"
     assert parser.input_regex
     assert parser.extra_regex
 
@@ -514,7 +514,7 @@ def test_parser_track(ctx):
 def test_parser_xp(ctx):
     parser = XpNodeParser()
 
-    assert parser.node_name == "XP"
+    assert parser.names.name == "XP"
     assert parser.input_regex
     assert not parser.extra_regex
 

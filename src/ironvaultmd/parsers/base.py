@@ -29,23 +29,23 @@ class Parser:
     and optionally parsing key=value parameters from the matched groups.
 
     Attributes:
-        node_name: Human-readable name of the parser (used for logging and templates).
+        names: Name collection of the parser, used for logging and lookup.
         input_regex: Compiled regular expression used to match input.
         extra_regex: Optional compiled regex for parsing key=value pairs.
     """
-    node_name: str # TODO use NameCollection here
+    names: NameCollection
     input_regex: re.Pattern[str]
     extra_regex: re.Pattern[str] | None
 
-    def __init__(self, name: str, line_regex: str, param_regex: str | None = None) -> None:
+    def __init__(self, names: NameCollection, line_regex: str, param_regex: str | None = None) -> None:
         """Initialize the parser.
 
         Args:
-            name: Display name for the parser (used for template lookup and logging).
+            names: Name collection of the parser.
             line_regex: Regular expression string for matching input.
             param_regex: Optional regex for parsing individual key=value parameters.
         """
-        self.node_name = name
+        self.names = names
         self.input_regex = re.compile(line_regex)
         self.extra_regex = re.compile(param_regex) if param_regex else None
 
@@ -61,10 +61,10 @@ class Parser:
         match = self.input_regex.search(data)
 
         if match is None:
-            logger.warning(f"Failed to match parameters for {self.node_name}: {repr(data)}")
+            logger.warning(f"Failed to match parameters for {self.names.name}: {repr(data)}")
             return None
 
-        logger.debug(f"{self.node_name} match: {match}")
+        logger.debug(f"{self.names.name} match: {match}")
         return self._parse_params(match.groupdict())
 
     # noinspection PyMethodMayBeStatic
@@ -104,7 +104,7 @@ class ParameterParsingMixin:
     Classes using this mixin must have:
     - param_regex: Compiled regex for parsing key=value pairs
     - known_keys: List of expected parameter names
-    - node_name: Parser name (for logging)
+    - names: Parser name collection (for logging).
 
     Attributes:
         PARAMS_REGEX: Pattern matching the entire parameter string.
@@ -115,7 +115,7 @@ class ParameterParsingMixin:
 
     extra_regex: re.Pattern[str]
     known_keys: list[str]
-    node_name: str
+    names: NameCollection
 
     def _parse_params(self, data: dict[str, Any]) -> dict[str, Any]:
         """Parse key=value pairs and separate known from unknown parameters.
@@ -141,7 +141,7 @@ class ParameterParsingMixin:
             elif value in ('true', 'false'):
                 params[key] = value == 'true'
             else:
-                logger.warning(f"Unexpected param match in {self.node_name}: {value}")
+                logger.warning(f"Unexpected param match in {self.names.name}: {value}")
 
         # Separate known from unknown parameters
         known = {}
@@ -155,7 +155,7 @@ class ParameterParsingMixin:
 
         known["extra"] = extra
 
-        logger.debug(f"Parsed params for {self.node_name}: {known}")
+        logger.debug(f"Parsed params for {self.names.name}: {known}")
         return known
 
 
@@ -190,15 +190,15 @@ class NodeParser(Parser):
         matches = self._match(data)
         if matches is None:
             # Use the fallback node template, showing data as-is
-            logger.debug(f"Using fallback template for {self.node_name} node")
+            logger.debug(f"Using fallback template for {self.names.name} node")
             template = get_templater().get_default_template("nodes")
-            args = {"node_name": self.node_name, "content": data}
+            args = {"node_name": self.names.name, "content": data}
 
         else:
-            template = get_templater().get_template(self.node_name, "nodes")
+            template = get_templater().get_template(self.names.template, "nodes")
             args = self.handle_args(matches, ctx)
 
-        logger.debug(f"Arranged args for {self.node_name}: {args}")
+        logger.debug(f"Arranged args for {self.names.name}: {args}")
 
         if template is not None:
             out = template.render(args)
@@ -225,14 +225,14 @@ class ParameterNodeParser(ParameterParsingMixin, NodeParser):
     """
     known_keys: list[str]
 
-    def __init__(self, name: str, keys: list[str]) -> None:
+    def __init__(self, names: NameCollection, keys: list[str]) -> None:
         """Initialize with a list of expected parameter keys.
 
         Args:
-            name: Display name for the node.
+            names: Name collection for the node.
             keys: List of known/expected parameter names.
         """
-        super().__init__(name, ParameterParsingMixin.PARAMS_REGEX, ParameterParsingMixin.PARAM_REGEX)
+        super().__init__(names, ParameterParsingMixin.PARAMS_REGEX, ParameterParsingMixin.PARAM_REGEX)
         self.known_keys = keys
 
 
@@ -242,11 +242,7 @@ class MechanicsBlockParser(Parser):
     Block parsers own a subtree in the output and typically span multiple
     lines. They create a root element in `begin`, may add additional content as
     nodes are parsed, and can perform finalization in `finalize`.
-
-    Attributes:
-        names: Block name collection (display, parser, and template name).
     """
-    names: NameCollection
 
     def __init__(self, names: NameCollection, line_regex: str, param_regex: str | None = None) -> None:
         """Initialize the block parser.
@@ -256,8 +252,7 @@ class MechanicsBlockParser(Parser):
             line_regex: Regular expression string for the opening line.
             param_regex: Optional regex for parsing individual key=value parameters.
         """
-        super().__init__(names.name, line_regex, param_regex)
-        self.names = names
+        super().__init__(names, line_regex, param_regex)
 
     def begin(self, ctx: Context, data: str) -> None:
         """Create the block's root element and push it to the Context stack.

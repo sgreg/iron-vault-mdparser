@@ -7,7 +7,7 @@ from ironvaultmd.parsers.base import (
     ParameterBlockParser,
     ParameterParsingMixin
 )
-from ironvaultmd.parsers.context import BlockContext, NameCollection
+from ironvaultmd.parsers.context import NameCollection
 from ironvaultmd.parsers.nodes import RollNodeParser
 from ironvaultmd.parsers.templater import get_templater
 from utils import verify_is_dummy_block_element
@@ -15,7 +15,7 @@ from utils import verify_is_dummy_block_element
 
 def test_node_regex_match():
     regex = r'^test data "(?P<test_data>.+)"$'
-    parser = NodeParser("Node", regex)
+    parser = NodeParser(NameCollection("Node"), regex)
 
     match = parser._match('test data "123"')
     assert match is not None
@@ -25,7 +25,7 @@ def test_node_regex_match():
     assert no_match is None
 
 def test_param_node_match(ctx):
-    parser = ParameterNodeParser("Node", ["one", "two", "hyphen-param"])
+    parser = ParameterNodeParser(NameCollection("Node"), ["one", "two", "hyphen-param"])
     args = parser._match('one="value one" two=2 optional=true hyphen-param="matched" empty=""')
     assert args == {
         "one": "value one",
@@ -37,7 +37,7 @@ def test_param_node_match(ctx):
         }
     }
 
-    parser = ParameterNodeParser("EmptyKeyNode", [])
+    parser = ParameterNodeParser(NameCollection("EmptyKeyNode"), [])
     args = parser._match('one=1 two="a different value"')
     assert args == {
         "extra": {
@@ -46,7 +46,7 @@ def test_param_node_match(ctx):
         }
     }
 
-    parser = ParameterNodeParser("CaseSensitiveParamNode", ["caseSensitiveKey"])
+    parser = ParameterNodeParser(NameCollection("CaseSensitiveParamNode"), ["caseSensitiveKey"])
     args = parser._match('casesensitivekey=false')
     assert args == {
         "extra": {
@@ -55,7 +55,7 @@ def test_param_node_match(ctx):
     }
 
 def test_param_node_no_match(ctx):
-    parser = ParameterNodeParser("Node", ["key"])
+    parser = ParameterNodeParser(NameCollection("Node"), ["key"])
 
     assert parser._match("") is None
     assert parser._match("doesn't have any key value pairs") is None
@@ -75,7 +75,7 @@ def test_mixin_parse(ctx):
             params_regex = r'^(?P<params>(?:[\w-]+=(?:"[^"]*"|\d+|true|false|misc)(?:\s+|$))+)$'
             param_regex = r'([\w-]+)=((?:"[^"]*"|\d+|true|false|misc))'
 
-            super().__init__("Test", params_regex, param_regex)
+            super().__init__(NameCollection("Test"), params_regex, param_regex)
             self.known_keys = keys
 
     # Verify first a valid case (same as in test_param_node_match() above) behaves still the same
@@ -107,7 +107,7 @@ def test_node_node_render(ctx):
     regex = r'^test data "(?P<test_data>.+)"$'
     data = 'test data "123"'
 
-    parser = NodeParser("Test", regex)
+    parser = NodeParser(NameCollection("Test", "test", "test"), regex)
     parser.parse(ctx, data)
 
     node = ctx.parent.find("div")
@@ -119,11 +119,10 @@ def test_node_fallback_render(ctx):
     # This won't match, should fall back to a generic node element
     data = 'no match'
 
-    parser = NodeParser("Test", regex)
+    parser = NodeParser(NameCollection("Test", "test", "test"), regex)
     parser.parse(ctx, data)
 
     node = ctx.parent.find("div")
-    print(etree.tostring(ctx.parent))
     assert node is not None
     assert node.text == f"Test: {data}"
 
@@ -131,7 +130,6 @@ def test_node_fallback_render(ctx):
     valid_data = 'test data "yes match"'
     parser.parse(ctx, valid_data)
     nodes = ctx.parent.findall("div")
-    print(etree.tostring(ctx.parent))
 
     # Should contain both the old and new div
     assert len(nodes) == 2
@@ -149,7 +147,7 @@ def test_node_args_override(ctx):
         def handle_args(self, match, context):
             return {"test_data": "overridden"}
 
-    parser = TestParser("Test", regex)
+    parser = TestParser(NameCollection("Test", "test", "test"), regex)
     parser.parse(ctx, data)
 
     node = ctx.parent.find("div")
@@ -165,7 +163,7 @@ def test_node_fallback_args_override(ctx):
             # Verify create_args isn't called when there's no match
             raise Exception("shouldn't have called create_args")
 
-    parser = TestParser("Test", regex)
+    parser = TestParser(NameCollection("Test", "test", "test"), regex)
     parser.parse(ctx, data)
 
     node = ctx.parent.find("div")
