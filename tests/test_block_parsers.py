@@ -11,9 +11,9 @@ from utils import verify_is_dummy_block_element
 
 def test_parser_actor(ctx):
     parser = ActorBlockParser()
-    assert parser.name.block == "Actor"
-    assert parser.name.parser == "actor"
-    assert parser.name.template == "actor"
+    assert parser.names.name == "Actor"
+    assert parser.names.parser == "actor"
+    assert parser.names.template == "actor"
 
     data = 'name="[[link|Character Name]]"'
     parser.begin(ctx, data)
@@ -23,7 +23,7 @@ def test_parser_actor(ctx):
     assert "name" in ctx.args.keys()
     assert ctx.args["name"] == "Character Name"
 
-    assert ctx.name == parser.name
+    assert ctx.names == parser.names
     verify_is_dummy_block_element(ctx.parent)
 
     parser.finalize(ctx)
@@ -41,9 +41,9 @@ def test_parser_actor(ctx):
 
 def test_parser_move_no_roll(ctx):
     parser = MoveBlockParser()
-    assert parser.name.block == "Move"
-    assert parser.name.parser == "move"
-    assert parser.name.template == "move"
+    assert parser.names.name == "Move"
+    assert parser.names.parser == "move"
+    assert parser.names.template == "move"
 
     data = '"[Move Name](Move Link)"'
     parser.begin(ctx, data)
@@ -68,9 +68,9 @@ def test_parser_move_no_roll(ctx):
 
 def test_parser_move_with_roll(ctx):
     parser = MoveBlockParser()
-    assert parser.name.block == "Move"
-    assert parser.name.parser == "move"
-    assert parser.name.template == "move"
+    assert parser.names.name == "Move"
+    assert parser.names.parser == "move"
+    assert parser.names.template == "move"
 
     data = '"[Move Name](Move Link)"'
     parser.begin(ctx, data)
@@ -119,9 +119,9 @@ def test_parser_move_with_roll_no_result_template(ctx):
 
 def test_parser_oracle_group(ctx):
     parser = OracleGroupBlockParser()
-    assert parser.name.block == "Oracle Group"
-    assert parser.name.parser == "oracle-group"
-    assert parser.name.template == "oracle"
+    assert parser.names.name == "Oracle Group"
+    assert parser.names.parser == "oracle-group"
+    assert parser.names.template == "oracle"
 
     data = 'name="Group Name"'
     parser.begin(ctx, data)
@@ -143,9 +143,9 @@ def test_parser_oracle_group(ctx):
 
 def test_parser_oracle_block_name(ctx):
     parser = OracleBlockParser()
-    assert parser.name.block == "Oracle"
-    assert parser.name.parser == "oracle"
-    assert parser.name.template == "oracle"
+    assert parser.names.name == "Oracle"
+    assert parser.names.parser == "oracle"
+    assert parser.names.template == "oracle"
 
     data = 'name="[Oracle Name](datasworn:link)" result="Oracle Result" roll=55'
     parser.begin(ctx, data)
@@ -168,9 +168,9 @@ def test_parser_oracle_block_name(ctx):
 
 def test_parser_oracle_block_text(ctx):
     parser = OracleBlockParser()
-    assert parser.name.block == "Oracle"
-    assert parser.name.parser == "oracle"
-    assert parser.name.template == "oracle"
+    assert parser.names.name == "Oracle"
+    assert parser.names.parser == "oracle"
+    assert parser.names.template == "oracle"
 
     data = 'name="Will [[ignore|some clock]] advance?" result="Clock Result" roll=23'
     parser.begin(ctx, data)
@@ -198,9 +198,9 @@ def test_parser_oracle_block_text(ctx):
 
 def test_parser_oracle_prompt(ctx):
     parser = OraclePromptBlockParser()
-    assert parser.name.block == "Oracle Prompt"
-    assert parser.name.parser == "-"
-    assert parser.name.template == "oracle"
+    assert parser.names.name == "Oracle Prompt"
+    assert parser.names.parser == "-"
+    assert parser.names.template == "oracle"
 
     data = '"My Oracle Prompt"'
     parser.begin(ctx, data)

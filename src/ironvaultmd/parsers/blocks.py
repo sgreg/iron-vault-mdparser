@@ -14,7 +14,7 @@ from typing import Any
 
 from ironvaultmd import logger_name
 from ironvaultmd.parsers.base import MechanicsBlockParser, ParameterBlockParser
-from ironvaultmd.parsers.context import Context, BlockContext
+from ironvaultmd.parsers.context import Context, NameCollection
 from ironvaultmd.parsers.templater import get_templater
 from ironvaultmd.util import convert_link_name
 
@@ -29,9 +29,9 @@ class ActorBlockParser(MechanicsBlockParser):
     """
     def __init__(self) -> None:
         """Initialize the parser with its regex pattern."""
-        name = BlockContext.Names("Actor", "actor", "actor")
+        names = NameCollection("Actor", "actor", "actor")
         regex = r'^name="\[\[.*\|(?P<name>.*)\]\]"$'
-        super().__init__(name, regex)
+        super().__init__(names, regex)
 
 
 class MoveBlockParser(MechanicsBlockParser):
@@ -42,9 +42,9 @@ class MoveBlockParser(MechanicsBlockParser):
     """
     def __init__(self) -> None:
         """Initialize the parser with its regex pattern."""
-        name = BlockContext.Names("Move", "move", "move")
+        names = NameCollection("Move", "move", "move")
         regex = r'"\[(?P<name>[^]]+)]\((?P<link>[^)]+)\)"'
-        super().__init__(name, regex)
+        super().__init__(names, regex)
 
     def finalize_nodes(self, ctx: Context) -> None:
         """Add the move's roll outcome as a dedicated node.
@@ -80,20 +80,20 @@ class OracleGroupBlockParser(MechanicsBlockParser):
     """Block parser for an oracle group header."""
     def __init__(self) -> None:
         """Initialize the parser with its regex pattern."""
-        name = BlockContext.Names("Oracle Group", "oracle-group", "oracle")
+        names = NameCollection("Oracle Group", "oracle-group", "oracle")
         regex = r'^name="(?P<oracle>[^"]*)"$'
-        super().__init__(name, regex)
+        super().__init__(names, regex)
 
 
 class OracleBlockParser(ParameterBlockParser):
     """Block parser for a single oracle roll result."""
     def __init__(self) -> None:
-        name = BlockContext.Names("Oracle", "oracle", "oracle")
+        names = NameCollection("Oracle", "oracle", "oracle")
         # See the oracle node parser, there can be two types (that I know of so far):
         # oracle name="[Core Oracles \/ Theme](datasworn:oracle_rollable:starforged\/core\/theme)" result="Warning" roll=96
         # oracle name="Will [[Lone Howls\/Clocks\/Clock decrypt Verholm research.md|Clock decrypt Verholm research]] advance? (Likely)" result="No" roll=83
         known_keys = ["name", "result", "roll", "cursed", "replaced"]
-        super().__init__(name, known_keys)
+        super().__init__(names, known_keys)
 
     def handle_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:
         data["oracle"] = convert_link_name(data.get("name", "unknown"))
@@ -106,6 +106,6 @@ class OraclePromptBlockParser(MechanicsBlockParser):
     """Block parser for oracle prompts (narrative lines)."""
     def __init__(self) -> None:
         """Initialize the parser with its regex pattern."""
-        name = BlockContext.Names("Oracle Prompt", "-", "oracle")
+        names = NameCollection("Oracle Prompt", "-", "oracle")
         regex = r'^"(?P<prompt>[^"]*)"$'
-        super().__init__(name, regex)
+        super().__init__(names, regex)

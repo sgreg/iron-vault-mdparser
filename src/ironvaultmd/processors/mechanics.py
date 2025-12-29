@@ -296,5 +296,5 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
                 parser.parse(ctx, data)
 
             elif line == '}':
-                parser = self.block_parsers.get(ctx.name.parser)
+                parser = self.block_parsers.get(ctx.names.parser)
                 parser.finalize(ctx)

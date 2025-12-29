@@ -7,7 +7,7 @@ from ironvaultmd.parsers.base import (
     ParameterBlockParser,
     ParameterParsingMixin
 )
-from ironvaultmd.parsers.context import BlockContext
+from ironvaultmd.parsers.context import BlockContext, NameCollection
 from ironvaultmd.parsers.nodes import RollNodeParser
 from ironvaultmd.parsers.templater import get_templater
 from utils import verify_is_dummy_block_element
@@ -201,9 +201,9 @@ def test_node_template_disable(block_ctx):
     assert not result.match
 
 def test_block_no_match(ctx):
-    name = BlockContext.Names("Test", "test", "actor")
+    names = NameCollection("Test", "test", "actor")
     # Create a parser that only matches small letters
-    parser = MechanicsBlockParser(name, r'name="(?P<name>[a-z]*)"')
+    parser = MechanicsBlockParser(names, r'name="(?P<name>[a-z]*)"')
 
     # Define data that contains not only small letters
     data = "value123"
@@ -214,7 +214,7 @@ def test_block_no_match(ctx):
 
     # Verify fallback args were created
     assert "block_name" in ctx.args.keys()
-    assert ctx.args["block_name"] == name.block
+    assert ctx.args["block_name"] == names.name
 
     assert "content" in ctx.args.keys()
     assert ctx.args["content"] == data
@@ -252,7 +252,7 @@ def test_block_no_match(ctx):
     assert name_node.text == "valid"
 
 def test_block_node_match(ctx):
-    parser = ParameterBlockParser(BlockContext.Names("Block", "", ""), ["one", "two", "hyphen-param"])
+    parser = ParameterBlockParser(NameCollection("Block"), ["one", "two", "hyphen-param"])
     args = parser._match('one="value one" two=2 optional=true hyphen-param="matched" empty=""')
     assert args == {
         "one": "value one",
@@ -264,7 +264,7 @@ def test_block_node_match(ctx):
         }
     }
 
-    parser = ParameterBlockParser(BlockContext.Names("EmptyKeyNode", "", ""), [])
+    parser = ParameterBlockParser(NameCollection("EmptyKeyNode"), [])
     args = parser._match('one=1 two="a different value"')
     assert args == {
         "extra": {
@@ -273,7 +273,7 @@ def test_block_node_match(ctx):
         }
     }
 
-    parser = ParameterBlockParser(BlockContext.Names("CaseSensitiveParamNode", "", ""), ["caseSensitiveKey"])
+    parser = ParameterBlockParser(NameCollection("CaseSensitiveParamNode"), ["caseSensitiveKey"])
     args = parser._match('casesensitivekey=false')
     assert args == {
         "extra": {
@@ -282,7 +282,7 @@ def test_block_node_match(ctx):
     }
 
 def test_block_node_no_match(ctx):
-    parser = ParameterBlockParser(BlockContext.Names("Block", "", ""), ["key"])
+    parser = ParameterBlockParser(NameCollection("Block"), ["key"])
 
     assert parser._match("") is None
     assert parser._match("doesn't have any key value pairs") is None
@@ -291,8 +291,8 @@ def test_block_node_no_match(ctx):
     assert parser._match("capital-boolean=TRUE") is None
 
 def test_block_no_template(ctx):
-    name = BlockContext.Names("test", "test", "unknown-template")
-    parser = MechanicsBlockParser(name, ".*")
+    names = NameCollection("test", "test", "unknown-template")
+    parser = MechanicsBlockParser(names, ".*")
 
     parser.begin(ctx, "test test test")
     verify_is_dummy_block_element(ctx.parent)

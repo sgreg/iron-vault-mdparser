@@ -16,7 +16,7 @@ import xml.etree.ElementTree as etree
 from typing import Any
 
 from ironvaultmd import logger_name
-from ironvaultmd.parsers.context import Context, BlockContext
+from ironvaultmd.parsers.context import Context, BlockContext, NameCollection
 from ironvaultmd.parsers.templater import get_templater
 
 logger = logging.getLogger(logger_name)
@@ -33,7 +33,7 @@ class Parser:
         input_regex: Compiled regular expression used to match input.
         extra_regex: Optional compiled regex for parsing key=value pairs.
     """
-    node_name: str # TODO make BlockContext.Names Context.Names and use it here (rename .block to .item or something)
+    node_name: str # TODO use NameCollection here
     input_regex: re.Pattern[str]
     extra_regex: re.Pattern[str] | None
 
@@ -244,20 +244,20 @@ class MechanicsBlockParser(Parser):
     nodes are parsed, and can perform finalization in `finalize`.
 
     Attributes:
-        name: Block name collection (display, parser, and template name).
+        names: Block name collection (display, parser, and template name).
     """
-    name: BlockContext.Names
+    names: NameCollection
 
-    def __init__(self, name: BlockContext.Names, line_regex: str, param_regex: str | None = None) -> None:
+    def __init__(self, names: NameCollection, line_regex: str, param_regex: str | None = None) -> None:
         """Initialize the block parser.
 
         Args:
-            name: Name collection for the block.
+            names: Name collection for the block.
             line_regex: Regular expression string for the opening line.
             param_regex: Optional regex for parsing individual key=value parameters.
         """
-        super().__init__(name.block, line_regex, param_regex)
-        self.name = name
+        super().__init__(names.name, line_regex, param_regex)
+        self.names = names
 
     def begin(self, ctx: Context, data: str) -> None:
         """Create the block's root element and push it to the Context stack.
@@ -278,8 +278,8 @@ class MechanicsBlockParser(Parser):
         """
         matches = self._match(data)
         if matches is None:
-            logger.warning(f"Failed to match {self.name.block}: '{data}'")
-            args = {"block_name": self.name.block, "content": data}
+            logger.warning(f"Failed to match {self.names.name}: '{data}'")
+            args = {"block_name": self.names.name, "content": data}
         else:
             args = self.handle_args(matches, ctx)
 
@@ -287,7 +287,7 @@ class MechanicsBlockParser(Parser):
         # we just need a container at this point
         element = etree.SubElement(ctx.parent, "div")
 
-        block = BlockContext(self.name, element, matches, args)
+        block = BlockContext(self.names, element, matches, args)
         ctx.push(block)
 
     def finalize(self, ctx: Context) -> None:
@@ -312,9 +312,9 @@ class MechanicsBlockParser(Parser):
         self.finalize_nodes(ctx)
 
         if ctx.matches is not None:
-            template = get_templater().get_template(self.name.template, "blocks")
+            template = get_templater().get_template(self.names.template, "blocks")
         else:
-            logger.debug(f"Using fallback template for {self.name.block} block")
+            logger.debug(f"Using fallback template for {self.names.name} block")
             template = get_templater().get_default_template("blocks")
 
         if template is None:
@@ -380,12 +380,12 @@ class ParameterBlockParser(ParameterParsingMixin, MechanicsBlockParser):
     """
     known_keys: list[str]
 
-    def __init__(self, name: BlockContext.Names, keys: list[str]) -> None:
+    def __init__(self, names: NameCollection, keys: list[str]) -> None:
         """Initialize with expected parameter keys.
 
         Args:
-            name: Name collection for the block.
+            names: Name collection for the block.
             keys: List of known/expected parameter names.
         """
-        super().__init__(name, ParameterParsingMixin.PARAMS_REGEX, ParameterParsingMixin.PARAM_REGEX)
+        super().__init__(names, ParameterParsingMixin.PARAMS_REGEX, ParameterParsingMixin.PARAM_REGEX)
         self.known_keys = keys

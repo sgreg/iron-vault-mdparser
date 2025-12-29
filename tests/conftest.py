@@ -7,7 +7,7 @@ import pytest
 from ironvaultmd.ironvault import (
     IronVaultExtension,
 )
-from ironvaultmd.parsers.context import Context, BlockContext
+from ironvaultmd.parsers.context import Context, BlockContext, NameCollection
 from ironvaultmd.parsers.templater import reset_templater, clear_templater
 from ironvaultmd.processors.frontmatter import IronVaultFrontmatterPreprocessor
 from ironvaultmd.processors.links import WikiLinkProcessor
@@ -86,7 +86,7 @@ def parser_context(parent) -> Generator[Context]:
 @pytest.fixture(name="block_ctx")
 def parser_content(ctx) -> Generator[Context]:
     block_parent = etree.SubElement(ctx.parent, "div")
-    name = BlockContext.Names("Test", "test", "test")
-    block = BlockContext(name, block_parent, {}, {})
+    names = NameCollection("Test", "test", "test")
+    block = BlockContext(names, block_parent, {}, {})
     ctx.push(block)
     yield ctx

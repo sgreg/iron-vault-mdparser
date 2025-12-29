@@ -3,6 +3,7 @@
 This module defines small helper classes that carry state while parsing
 `iron-vault-mechanics` sections:
 
+- `NameCollection`: Contextual names for logging and parser / template lookup.
 - `RollResult`: A lightweight value object representing the outcome of a roll.
 - `RollContext`: Mutable roll state capable of performing move and progress rolls,
   momentum-burn adjustments, as well as selective rerolls.
@@ -22,6 +23,25 @@ from ironvaultmd.parsers.templater import get_templater
 from ironvaultmd.util import check_dice
 
 logger = logging.getLogger(logger_name)
+
+
+@dataclass
+class NameCollection:
+    """Represents the names used for parsing context.
+
+    Different use cases require different versions of the name,
+    such as displaying the name of a block or node itself (`name`),
+    the lookup key name of the block or node parser (`parser`),
+    and the parser's associated template key name (`template`).
+
+    Attributes:
+        name: Display name, e.g., "Oracle Group", "Progress Roll".
+        parser: Parser lookup name, e.g., "oracle-group", "progress-roll".
+        template: Template lookup name, e.g., "oracle_group", "progress_roll".
+    """
+    name: str
+    parser: str | None = None
+    template: str | None = None
 
 
 @dataclass
@@ -214,33 +234,14 @@ class BlockContext:
     """Container for a named mechanics block and its roll context.
 
     Attributes:
-        name: Name of the current mechanics block parser (e.g., `move`).
+        names: Names of the current mechanics block parser (e.g., `move`).
         root: Root HTML element of the block in the output tree.
         matches: Named regex groups the parser matched, or `None`.
         args: Dictionary of parsed arguments.
         roll: `RollContext` attached to the block to accumulate roll data.
     """
 
-    @dataclass
-    class Names:
-        """
-        Represents the names used for block parsing context.
-
-        Different use cases require different versions of the block name,
-        such as displaying the name of the block itself (`block`),
-        the starting line matched by the block processor (`parser`),
-        and the parser's associated template name (`template`).
-
-        Attributes:
-            block: Display name, e.g., "Oracle Group", "Oracle Prompt".
-            parser: Parser lookup name, e.g., "oracle-group", "-".
-            template: Template lookup name, e.g., "oracle_group", "oracle".
-        """
-        block: str
-        parser: str | None
-        template: str | None
-
-    name: Names
+    names: NameCollection
     root: etree.Element
     matches: dict[str, Any] | None
     args: dict[str, Any]
@@ -251,15 +252,15 @@ class Context:
     """Stack-based parsing context for mechanics block content.
 
     Manages an element stack via `push`/`pop` and exposes convenience
-    properties for the current parent, block name, and roll context.
+    properties for the current parent, block names, and roll context.
 
     Attributes:
         root: The outermost iron-vault-mechanics block `<div>`.
         blocks: Internal stack of `BlockContext` instances, handling all
             nodes and blocks contained within the main mechanics block.
-        root_name: `BlockContext.Names` values for the root element.
+        root_names: `NameCollection` values for the root element.
     """
-    root_name = BlockContext.Names("root", None, None)
+    root_names = NameCollection("root")
 
     def __init__(self, root: etree.Element) -> None:
         """Initialize a new Context.
@@ -288,9 +289,9 @@ class Context:
         return self.blocks[-1].root if self.blocks else self.root
 
     @property
-    def name(self) -> BlockContext.Names:
-        """Return the name of the current block or `root` if none is active."""
-        return self.blocks[-1].name if self.blocks else self.root_name
+    def names(self) -> NameCollection:
+        """Return the names of the current block or `root` if none is active."""
+        return self.blocks[-1].names if self.blocks else self.root_names
 
     @property
     def matches(self) -> dict[str, Any] | None:

@@ -1,48 +1,48 @@
 import xml.etree.ElementTree as etree
 
-from ironvaultmd.parsers.context import Context, RollContext, RollResult, BlockContext
+from ironvaultmd.parsers.context import Context, RollContext, RollResult, BlockContext, NameCollection
 
 
 def test_context_stack(parent):
     ctx = Context(parent)
 
     assert len(ctx.blocks) == 0
-    assert ctx.name.block == "root"
+    assert ctx.names.name == "root"
     assert ctx.roll is None
 
     root_element = ctx.parent # main mechanics block <div> created within Context() initialization
 
     # Create and push a new element
     element = etree.SubElement(ctx.parent, "div")
-    block = BlockContext(BlockContext.Names("test", "", ""), element, {}, {})
+    block = BlockContext(NameCollection("test", "", ""), element, {}, {})
     ctx.push(block)
     # Verify there are 2 elements in the stack and 'parent' points to the new one
     assert len(ctx.blocks) == 1
     assert ctx.parent == element
-    assert ctx.name.block == "test"
+    assert ctx.names.name == "test"
     assert ctx.roll is not None
 
     # Pop the stack and verify 'parent' is the mechanics block element again
     ctx.pop()
     assert len(ctx.blocks) == 0
     assert ctx.parent == root_element
-    assert ctx.name.block == "root"
+    assert ctx.names.name == "root"
     assert ctx.roll is None
 
     # Make sure pop() won't remove the last element
     ctx.pop()
     assert len(ctx.blocks) == 0
     assert ctx.parent == root_element
-    assert ctx.name.block == "root"
+    assert ctx.names.name == "root"
     assert ctx.roll is None
 
 def test_context_properties(parent):
     ctx = Context(parent)
 
     assert ctx.parent == ctx.root
-    assert ctx.name.block == "root"
-    assert ctx.name.parser is None
-    assert ctx.name.template is None
+    assert ctx.names.name == "root"
+    assert ctx.names.parser is None
+    assert ctx.names.template is None
     assert ctx.matches is None
     assert ctx.args is None
     assert ctx.roll is None
@@ -50,7 +50,7 @@ def test_context_properties(parent):
     element = etree.SubElement(ctx.parent, "div")
 
     block = BlockContext(
-        BlockContext.Names("Test", "test-parser", "test_template"),
+        NameCollection("Test", "test-parser", "test_template"),
         element,
         {
             "match-key": "match-value",
@@ -64,9 +64,9 @@ def test_context_properties(parent):
 
     assert ctx.parent == element
 
-    assert ctx.name.block == "Test"
-    assert ctx.name.parser == "test-parser"
-    assert ctx.name.template == "test_template"
+    assert ctx.names.name == "Test"
+    assert ctx.names.parser == "test-parser"
+    assert ctx.names.template == "test_template"
 
     assert ctx.matches is not None
     assert len(ctx.matches) == 1
@@ -94,7 +94,7 @@ def test_context_replace_root(parent):
     assert ctx.parent == original_root
 
     # Push element, verify now it's the parent (but not the root)
-    block = BlockContext(BlockContext.Names("test", "", ""), element_one, {}, {})
+    block = BlockContext(NameCollection("test"), element_one, {}, {})
     ctx.push(block)
     assert ctx.parent == element_one
     assert ctx.root == original_root
