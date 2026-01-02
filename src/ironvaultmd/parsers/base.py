@@ -179,7 +179,8 @@ class NodeParser(Parser):
         is looked up from the active `Templater`, otherwise the default
         node fallback template is used.
 
-        If the template lookup returns `None`, nothing is rendered.
+        If the template lookup returns `None`, or the template rendering
+        results in an empty element, nothing is rendered.
         Otherwise, the rendered output is appended directly to the
         parent HTML element stored within the passed `Context`.
 
@@ -201,8 +202,10 @@ class NodeParser(Parser):
         logger.debug(f"Arranged args for {self.names.name}: {args}")
 
         if template is not None:
-            out = template.render(args)
-            ctx.parent.append(etree.fromstring(out))
+            if out := template.render(args).strip():
+                ctx.parent.append(etree.fromstring(out))
+            else:
+                logger.debug(f"Template {template.filename} rendered no element for node {repr(data)}")
 
 
 class ParameterNodeParser(ParameterParsingMixin, NodeParser):
@@ -296,6 +299,8 @@ class MechanicsBlockParser(Parser):
         and the block remains in its initial, dummy `<div>`. Otherwise,
         renders the template with its parsed arguments (found in `ctx.args`)
         and replaces the block's temporary `<div>` container parent with it.
+        If rendering results in empty content due to conditional templating,
+        the parent replacement is skipped.
 
         Calls two finalization methods that subclasses may override:
          - `finalize_nodes()` to add extra nodes into the block
@@ -318,8 +323,12 @@ class MechanicsBlockParser(Parser):
             pass
         else:
             args = self.finalize_args(ctx)
-            new_root = etree.fromstring(template.render(args))
-            ctx.replace_root(new_root)
+            if out := template.render(args).strip():
+                new_root = etree.fromstring(out)
+                ctx.replace_root(new_root)
+            else:
+                # Note, this keeps the dummy div around currently, so the block remains rendered
+                logger.debug(f"Template {template.filename} rendered no element for block args {repr(ctx.args)}")
 
         ctx.pop()
 

@@ -1,5 +1,3 @@
-import xml.etree.ElementTree as etree
-
 from ironvaultmd.parsers.base import (
     NodeParser,
     MechanicsBlockParser,
@@ -7,10 +5,11 @@ from ironvaultmd.parsers.base import (
     ParameterBlockParser,
     ParameterParsingMixin
 )
-from ironvaultmd.parsers.context import NameCollection
-from ironvaultmd.parsers.nodes import RollNodeParser
-from ironvaultmd.parsers.templater import get_templater
-from utils import verify_is_dummy_block_element
+from ironvaultmd.parsers.blocks import MoveBlockParser
+from ironvaultmd.parsers.context import NameCollection, Context
+from ironvaultmd.parsers.nodes import RollNodeParser, ClockNodeParser
+from ironvaultmd.parsers.templater import get_templater, reset_templater
+from utils import verify_is_dummy_block_element, element_text
 
 
 def test_node_regex_match():
@@ -198,6 +197,40 @@ def test_node_template_disable(block_ctx):
     assert result.hitmiss == "weak"
     assert not result.match
 
+def test_node_template_conditional(ctx):
+    parser = ClockNodeParser()
+
+    segment_data = 'from=3 name="Some Clock Progress" out-of=6 to=4'
+    status_data = 'name="Some Clock Status" status="added"'
+
+    # First, make sure the segment_data string is actually rendered properly
+    parser.parse(ctx, segment_data)
+    node = ctx.parent.find("div")
+    assert node is not None
+    assert "Some Clock Progress" in element_text(node)
+
+    # Reset templater (needed because of internal caching) ...
+    reset_templater()
+    # ... set up override, rendering only "status" clock strings ...
+    get_templater().overrides.clock = """
+{% if status %}
+<div class="ivm-clock">{{ name }}: {{ status }}</div>
+{% endif %}
+"""
+    # ... and clear previously rendered content.
+    ctx.parent.clear()
+
+    # Parse again the same data, verifying nothing is rendered this time
+    parser.parse(ctx, segment_data)
+    assert ctx.parent.find("div") is None
+
+    # Parse the status_data string to verify that one is still rendered
+    parser.parse(ctx, status_data)
+    node = ctx.parent.find("div")
+    assert node is not None
+    assert node.text == "Some Clock Status: added"
+
+
 def test_block_no_match(ctx):
     names = NameCollection("Test", "test", "actor")
     # Create a parser that only matches small letters
@@ -301,3 +334,40 @@ def test_block_no_template(ctx):
     nodes = ctx.root.findall("div")
     assert len(nodes) == 1
     verify_is_dummy_block_element(nodes[0])
+
+def test_block_template_conditional(parent):
+    ctx = Context(parent)
+    parser = MoveBlockParser()
+
+    data = '"[Some Move](ignore)" {\n}\n'
+
+    parser.begin(ctx, data)
+
+    parser.finalize(ctx)
+    node = ctx.root.find("div")
+    assert node is not None
+    assert node.get("class") == "ivm-move"
+
+    reset_templater()
+    get_templater().overrides.move_block = """
+{% if rolled %}
+<div class="ivm-move">{{ name }} was rolled</div>
+{% endif %}
+"""
+
+    ctx.parent.clear()
+
+    parser.begin(ctx, data)
+    parser.finalize(ctx)
+    node = ctx.root.find("div")
+    # Note, this remains a dummy div at this point, no block nodes are removed here
+    verify_is_dummy_block_element(node)
+
+    ctx.parent.clear()
+
+    parser.begin(ctx, data)
+    ctx.roll.roll(1, 2, 3, 4, 5)
+    parser.finalize(ctx)
+    node = ctx.root.find("div")
+    assert node is not None
+    assert node.text == "Some Move was rolled"
