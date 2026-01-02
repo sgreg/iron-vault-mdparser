@@ -256,6 +256,7 @@ class Context:
 
     Attributes:
         root: The outermost iron-vault-mechanics block `<div>`.
+        parent_root: The element `root` itself is appended to.
         blocks: Internal stack of `BlockContext` instances, handling all
             nodes and blocks contained within the main mechanics block.
         root_names: `NameCollection` values for the root element.
@@ -277,10 +278,9 @@ class Context:
             root: Root HTML element the mechanics block `<div>` is appended to
         """
         template = get_templater().get_default_template("mechanics")
-        mechanics_block = etree.fromstring(template.render())
-        root.append(mechanics_block)
-
-        self.root = mechanics_block
+        self.root = etree.fromstring(template.render())
+        self.parent_root = root
+        self.parent_root.append(self.root)
         self.blocks: list[BlockContext] = []
 
     @property
@@ -373,3 +373,17 @@ class Context:
 
         # Set the block's own root element to the new one
         block.root = new_root
+
+    def finalize(self) -> None:
+        """Finalize the context handling.
+
+        Called at the very end of handling a mechanics block.
+
+        Checks if the resulting root element has any children rendered.
+        If not (e.g., in case all templates of nodes within the block were
+        purposely disabled), removes the whole mechanics block from its own
+        parent root element to avoid rendering an empty `<div>` element.
+        """
+        if len(self.root.findall("*")) == 0:
+            logger.debug("CONTEXT: finalizing with zero children, removing itself")
+            self.parent_root.remove(self.root)

@@ -251,6 +251,7 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
         logger.debug(f"mechanics block content: {repr(content)}")
         ctx = Context(parent)
         self.parse_content(ctx, content)
+        ctx.finalize()
 
     def parse_content(self, ctx: Context, content: str) -> None:
         """Parse mechanics content lines using block and node parsers.

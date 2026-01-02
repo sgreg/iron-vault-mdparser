@@ -163,12 +163,31 @@ def test_extension_templates_path(md_gen):
 add 2 "for a reason"
 ```"""
 
-    # Generate md instance with an invalid templates directory
+    # Generate md instance with a valid templates directory
     md_instance = md_gen(template_path="tests/data/templates")
     html = md_instance.convert(markdown)
 
     # Verify templates template is used
     assert '<div class="templates-test">Add +2 for a reason</div>' in html
+
+
+def test_extension_templates_path_missing(md_gen):
+    markdown = """```iron-vault-mechanics
+meter "Momentum" from=3 to=2
+```
+
+```iron-vault-mechanics
+add 2 "for a reason"
+```"""
+
+    # Generate md instance with a valid templates directory, but missing `meter.html` node template
+    md_instance = md_gen(template_path="tests/data/templates")
+    html = md_instance.convert(markdown)
+
+    # Verify `add` template was used, but `meter` isn't rendered at all
+    assert '<div class="templates-test">Add +2 for a reason</div>' in html
+    assert "Momentum" not in html
+    assert html.count("ivm-mechanics") == 1
 
 
 def test_extension_templates_path_fail(md_gen):
@@ -180,8 +199,8 @@ add 2 "for a reason"
     md_instance = md_gen(template_path="nonexisting/path")
     html = md_instance.convert(markdown)
 
-    # Verify the default fallback template <div></div> is used
-    assert html == "<div></div>"
+    # Verify the template is disabled, and nothing is rendered
+    assert html == ""
 
     # Create user templates overrides to add alongside the invalid path
     overrides = TemplateOverrides()

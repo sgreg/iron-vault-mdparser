@@ -114,6 +114,34 @@ def test_context_replace_root(parent):
     assert ctx.parent == element_two
     assert ctx.parent.get("class") == "test-class"
 
+def test_context_finalize_empty(parent):
+    assert len(parent.findall("*")) == 0
+    ctx = Context(parent)
+    assert len(parent.findall("*")) == 1
+
+    elem = parent.find("div")
+    assert elem == ctx.root
+    assert elem.get("class") == "ivm-mechanics"
+    assert len(elem.findall("*")) == 0
+
+    ctx.finalize()
+    assert len(parent.findall("*")) == 0
+
+
+def test_context_finalize_nonempty(parent):
+    ctx = Context(parent)
+    assert len(parent.findall("*")) == 1
+
+    elem = parent.find("div")
+    assert elem == ctx.root
+    assert elem.get("class") == "ivm-mechanics"
+
+    etree.SubElement(elem, "div")
+    assert len(elem.findall("*")) == 1
+
+    ctx.finalize()
+    assert len(parent.findall("*")) == 1
+
 
 def test_rollcontext_roll():
     rctx = RollContext()
