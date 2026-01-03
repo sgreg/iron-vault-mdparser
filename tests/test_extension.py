@@ -105,17 +105,32 @@ Some text with [[a link]] along a [[link|with label]].
 
     links = []
     md_instance = md_gen(links=links)
-    md_instance.convert(markdown)
+    html = md_instance.convert(markdown)
 
     assert len(links) == 2
 
     assert isinstance(links[0], Link)
     assert links[0].ref == "a link"
     assert links[0].label == "a link"
+    assert 'id="link-1"' in html
 
     assert isinstance(links[1], Link)
     assert links[1].ref == "link"
     assert links[1].label == "with label"
+    assert 'id="link-2"' in html
+
+def test_extension_no_links(md_gen):
+    markdown = """# Some header
+
+Some text with [[a link]] along a [[link|with label]].
+    """
+
+    md_instance = md_gen()
+    html = md_instance.convert(markdown)
+
+    # Verify the link collection still adds the sequence counter
+    assert 'id="link-1"' in html
+    assert 'id="link-2"' in html
 
 
 def test_extension_links_invalid_type(md_gen):
@@ -335,15 +350,24 @@ Regular text with [[a link]] and [[link|link with label]]
     frontmatter = {}
 
     md_instance = md_gen(links=links, frontmatter=frontmatter)
-    md_instance.convert(markdown)
+    html = md_instance.convert(markdown)
 
     assert len(links) == 2
     assert len(frontmatter) == 2
+
+    assert 'id="link-1"' in html
+    assert 'id="link-2"' in html
 
     md_instance.reset()
 
     assert len(links) == 0
     assert len(frontmatter) == 0
+
+    html = md_instance.convert(markdown)
+    assert 'id="link-1"' in html
+    assert 'id="link-2"' in html
+    assert 'id="link-3"' not in html
+    assert 'id="link-4"' not in html
 
 
 def test_extension_reset_none():
@@ -360,4 +384,4 @@ Regular text with [[a link]] and [[link|link with label]]
     md_instance.reset()
 
     assert extension.frontmatter is None
-    assert extension.links is None
+    assert extension.link_collector.links is None

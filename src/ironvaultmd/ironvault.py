@@ -43,7 +43,7 @@ from markdown.extensions import Extension
 from ironvaultmd import logger_name
 from ironvaultmd.parsers.templater import TemplateOverrides, Templater, set_templater
 from ironvaultmd.processors.frontmatter import IronVaultFrontmatterPreprocessor
-from ironvaultmd.processors.links import WikiLinkProcessor
+from ironvaultmd.processors.links import WikiLinkProcessor, LinkCollector
 from ironvaultmd.processors.mechanics import (
     IronVaultMechanicsBlockProcessor,
     IronVaultMechanicsPreprocessor,
@@ -87,9 +87,10 @@ class IronVaultExtension(Extension):
 
         self.md = None
 
-        self.links = self.getConfig('links', None)
-        if self.links is not None and not isinstance(self.links, list):
+        links = self.getConfig('links', None)
+        if links is not None and not isinstance(links, list):
             raise TypeError("Parameter 'links' must be a list")
+        self.link_collector = LinkCollector(links)
 
         self.frontmatter = self.getConfig('frontmatter', None)
         if self.frontmatter is not None and not isinstance(self.frontmatter, dict):
@@ -132,7 +133,6 @@ class IronVaultExtension(Extension):
         Clears the optional `links` and `frontmatter` containers if they have
         been provided, so each conversion starts with a clean state.
         """
-        if self.links is not None:
-            self.links.clear()
+        self.link_collector.reset()
         if self.frontmatter is not None:
             self.frontmatter.clear()

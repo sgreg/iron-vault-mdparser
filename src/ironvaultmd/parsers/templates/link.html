@@ -1,9 +1,10 @@
 {#
 Link element
 
-ref     link reference name, usually another markdown file name
+ref     link reference name, usually another markdown file name (without .md extension)
 anchor  link anchor, referencing e.g. a block or section name in the linked file, "" if none is set
 label   link label name to display
+seq     sequential link counter (starting at 1, reset between parsing calls)
 
 #}
-<span class="ivm-link">{{ label }}</span>
+<span class="ivm-link" id="link-{{ seq }}">{{ label }}</span>

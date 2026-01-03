@@ -3,7 +3,7 @@ import xml.etree.ElementTree as etree
 import pytest
 
 from ironvaultmd.parsers.templater import TemplateOverrides, Templater, set_templater
-from ironvaultmd.processors.links import Link
+from ironvaultmd.processors.links import Link, LinkCollector
 from utils import StringCompareData
 
 
@@ -97,11 +97,11 @@ def test_linkproc_convert(md):
         StringCompareData("[[link#anchor|label]]", "label"),
     ]
 
-    template = '<p><span class="ivm-link">{0}</span></p>'
+    template = '<p><span class="ivm-link" id="link-{0}">{1}</span></p>'
 
-    for d in data:
+    for seq, d in enumerate(data):
         html = md.convert(d.content)
-        assert html == template.format(d.expected)
+        assert html == template.format(seq + 1, d.expected)
 
 
 def test_linkproc_collect(linkproc_gen):
@@ -116,7 +116,7 @@ def test_linkproc_collect(linkproc_gen):
     ]
 
     links = []
-    processor = linkproc_gen(links)
+    processor = linkproc_gen(LinkCollector(links))
 
     for d in data:
         match = processor.compiled_re.search(d)
@@ -156,22 +156,6 @@ def test_linkproc_collect(linkproc_gen):
     assert links[5].label == "label"
 
 
-def test_linkproc_collect_invalid_list(linkproc_gen):
-    # Ensures that passing not a list as link storage will cause TypeErrors
-
-    with pytest.raises(TypeError):
-        links = "string"
-        linkproc_gen(links)
-
-    with pytest.raises(TypeError):
-        links = {}
-        linkproc_gen(links)
-
-    with pytest.raises(TypeError):
-        links = ()
-        linkproc_gen(links)
-
-
 def test_linkproc_template_override(linkproc_gen, md_gen):
     overrides = TemplateOverrides()
     overrides.link = '<div class="test-class">test link "{{ ref }}" with label "{{ label }}"</div>'
@@ -180,7 +164,7 @@ def test_linkproc_template_override(linkproc_gen, md_gen):
 
     md_gen(links=links, template_overrides=overrides)
 
-    processor = linkproc_gen(links)
+    processor = linkproc_gen(LinkCollector(links))
 
     data = "[[link]]"
     match = processor.compiled_re.search(data)
@@ -212,7 +196,7 @@ def test_linkproc_template_override_anchor(linkproc_gen, md_gen):
 
     md_gen(links=links, template_overrides=overrides)
 
-    processor = linkproc_gen(links)
+    processor = linkproc_gen(LinkCollector(links))
 
     data = "[[link]]"
     match = processor.compiled_re.search(data)
@@ -243,7 +227,7 @@ def test_linkproc_no_template(linkproc_gen, md_gen):
 
     md_gen(links=links, template_overrides=overrides)
 
-    processor = linkproc_gen(links)
+    processor = linkproc_gen(LinkCollector(links))
 
     data = "[[link]]"
     match = processor.compiled_re.search(data)
@@ -263,7 +247,7 @@ def test_linkproc_template_swap(linkproc_gen, md_gen):
 
     md_gen(links=links, template_overrides=overrides)
 
-    processor = linkproc_gen(links)
+    processor = linkproc_gen(LinkCollector(links))
 
     data = "[[link]]"
     match = processor.compiled_re.search(data)
@@ -285,3 +269,44 @@ def test_linkproc_template_swap(linkproc_gen, md_gen):
     element, _, _ = processor.handleMatch(match, data)
     assert element.get("class") == "another-class"
     assert element.text == 'link'
+
+
+def test_linkcoll():
+    links = []
+    collector = LinkCollector(links)
+
+    assert collector.links is not None
+    assert collector.count == 0
+
+    collector.add(Link("ref1", "anchor1", "label1"))
+    collector.add(Link("ref2", "anchor2", "label2"))
+
+    assert len(links) == 2
+    assert len(collector.links) == 2
+    assert collector.count == 2
+
+    assert links[0] == collector.links[0]
+    assert links[1] == collector.links[1]
+
+    collector.reset()
+
+    assert len(links) == 0
+    assert len(collector.links) == 0
+    assert collector.count == 0
+
+def test_linkcoll_no_links():
+    collector = LinkCollector()
+
+    assert collector.links is None
+    assert collector.count == 0
+
+    collector.add(Link("ref1", "anchor1", "label1"))
+    collector.add(Link("ref2", "anchor2", "label2"))
+
+    assert collector.links is None
+    assert collector.count == 2
+
+    collector.reset()
+
+    assert collector.links is None
+    assert collector.count == 0

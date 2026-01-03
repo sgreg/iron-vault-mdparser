@@ -8,14 +8,15 @@ processing by the caller.
 Example:
     ```python
     from markdown import Markdown
-    from ironvaultmd.processors.links import WikiLinkProcessor
+    from ironvaultmd.processors.links import WikiLinkProcessor, LinkCollector
 
-    collected = []
+    links = []
+    collector = LinkCollector(links)
     md = Markdown()
-    md.inlinePatterns.register(WikiLinkProcessor(collected), 'iv-wikilink', 175)
+    md.inlinePatterns.register(WikiLinkProcessor(collector), 'iv-wikilink', 175)
     html = md.convert('See [[page#sect|this section]].')
-    assert collected[0].ref == 'page'
-    assert collected[0].label == 'this section'
+    assert links[0].ref == 'page'
+    assert links[0].label == 'this section'
     ```
 """
 
@@ -33,6 +34,56 @@ class Link:
     ref: str
     anchor: str
     label: str
+
+
+class LinkCollector:
+    """Link collection class.
+
+    Keeps count of the number of links collected and optionally collects
+    the parsed links as `Link` instances in a list.
+
+    The counter is reset to zero when the whole `IronVaultExtension` instance
+    is reset. It's also passed to the template during rendering and can be
+    used there as a unique (per parsed document) identifier.
+    """
+
+    def __init__(self, links: list[Link] | None = None) -> None:
+        """Create the collector instance.
+
+        Args:
+            links: Optional list where the links are collected into.
+        """
+        self.links = links
+        self.count = 0
+
+    def add(self, link: Link) -> int:
+        """Add the given `link` to the collector.
+
+        Increments the link counter and adds the given `Link` instance
+        to the internal list - if there is one.
+
+        Args:
+            link: Parsed `Link` instance to add.
+
+        Returns:
+            Number of collected links.
+        """
+        if self.links is not None:
+            self.links.append(link)
+        self.count += 1
+
+        return self.count
+
+    def reset(self) -> None:
+        """Reset the collector instance.
+
+        Clears the internal list - if there is one - and sets
+        the sequence counter back to zero.
+        """
+        if self.links:
+            self.links.clear()
+        self.count = 0
+
 
 class WikiLinkProcessor(InlineProcessor):
     """Markdown inline processor for handling wiki links.
@@ -53,8 +104,8 @@ class WikiLinkProcessor(InlineProcessor):
         using this extension. Maybe. Well, I got some ideas and plans with that at least.
 
     Attributes:
-        links: Optional list to collect parsed `Link` instances. When `None`,
-            links are not collected.
+        links: `LinkCollector` instance holding the link sequence counter,
+            and optionally collects parsed `Link` instances.
 
     Note:
         The actual href resolution is deferred. The processor renders a
@@ -62,7 +113,7 @@ class WikiLinkProcessor(InlineProcessor):
         post-processed later.
     """
 
-    def __init__(self, links: list[Link] | None = None):
+    def __init__(self, link_collector: LinkCollector) -> None:
         """Create the inline processor.
 
         Args:
@@ -71,15 +122,13 @@ class WikiLinkProcessor(InlineProcessor):
         Raises:
             TypeError: If `links` is provided but is not a list.
         """
-        if links is not None and not isinstance(links, list):
-            raise TypeError("Parameter 'links' must be a list")
 
         # [[link as label]]
         # [[link|label]]
         # [[link#anchor]]
         # [[link#anchor|with label]]
         wikilink_pattern = r'!?\[\[([^]|#]+)(?:#([^|\]]+))?(?:\|([^]]+))?]]'
-        self.links = links
+        self.links = link_collector
         super().__init__(wikilink_pattern)
 
     def handleMatch(self, m: re.Match[str], data: str) -> tuple[etree.Element | str, int, int]:
@@ -113,11 +162,14 @@ class WikiLinkProcessor(InlineProcessor):
                 label = ref
 
             link = Link(ref, anchor, label)
+            count = self.links.add(link)
             template = get_templater().get_template("link")
-            element = etree.fromstring(template.render(link.__dict__)) if template else label
 
-            if self.links is not None:
-                self.links.append(link)
+            if template:
+                args = link.__dict__ | {"seq": count}
+                element = etree.fromstring(template.render(args))
+            else:
+                element = label
 
         else:
             element = ''

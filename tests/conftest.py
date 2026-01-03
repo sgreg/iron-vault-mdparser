@@ -10,7 +10,7 @@ from ironvaultmd.ironvault import (
 from ironvaultmd.parsers.context import Context, BlockContext, NameCollection
 from ironvaultmd.parsers.templater import reset_templater, clear_templater
 from ironvaultmd.processors.frontmatter import IronVaultFrontmatterPreprocessor
-from ironvaultmd.processors.links import WikiLinkProcessor
+from ironvaultmd.processors.links import WikiLinkProcessor, LinkCollector
 from ironvaultmd.processors.mechanics import (
     IronVaultMechanicsBlockProcessor,
     IronVaultMechanicsPreprocessor,
@@ -62,7 +62,7 @@ def mechanics_block_blockprocessor(md):
 
 @pytest.fixture(name="linkproc")
 def links_inlineprocessor():
-    processor = WikiLinkProcessor()
+    processor = WikiLinkProcessor(LinkCollector())
     yield processor
 
 @pytest.fixture(name="linkproc_gen")
