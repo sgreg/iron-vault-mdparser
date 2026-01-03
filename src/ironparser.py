@@ -14,7 +14,13 @@ template_top = """<!-- Created by ironparser.py -->
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Default CSS -->
 <link rel="stylesheet" href="ironvault.css"
+<!-- minimal theme CSS -->
+<!--
+<link rel="stylesheet" href="themes/minimal/styles/colors/default.css">
+<link rel="stylesheet" href="themes/minimal/styles/layout/default.css">
+-->
 </head>
 <body>
 <div class="ivm-content">
@@ -78,14 +84,15 @@ if __name__ == "__main__":
 
     links: list[Link] = []
     frontmatter = {}
-    overrides = IronVaultTemplateOverrides()
-    overrides.progress = '<div class="ivm-progress">Progress for <b>{{ name }}</b> ({{ rank }}): {{ from }} &amp;rarr; {{ to }}</div>'
-    overrides.xp = '' # Don't add dedicated xp node div
+    overrides = IronVaultTemplateOverrides(
+        ooc='<div class="ivm-ooc">OOC: {{ comment }}</div>',
+        roll_result='',  # don't add roll_result output
+    )
 
     markdown_extensions = [
         FencedCodeExtension(), # for parsing code blocks
         IronVaultExtension(links=links, frontmatter=frontmatter, template_overrides=overrides),
-        # IronVaultExtension(links=links, frontmatter=frontmatter, template_path="templates/", template_overrides=overrides),
+        # IronVaultExtension(links=links, frontmatter=frontmatter, template_path="themes/minimal/templates"),
     ]
     md = markdown.Markdown(extensions=markdown_extensions)
 

@@ -1,0 +1,26 @@
+{#
+Move block
+This is an enclosing block that will hold at least a "roll" node.
+See nodes/mode.html for the non-rolling move node template.
+
+name        move name
+rolled      true if the move was a dice-rolling move and has valid result values
+score       total value of the action die + stat + adds of the currently rerolled initial roll
+vs1         value of the first challenge die of the currently rerolled initial roll
+vs2         value of the second challenge die of the currently rerolled initial roll
+hitmiss     new outcome of the roll, "strong", "weak", or "miss"
+match       true if challenge dice are a match
+
+Note that the roll result variables (score, vs1, vs2, hitmiss, match) are always available,
+no matter if "rolled" is true or false, but are only useful to include when "rolled" is true.
+
+#}
+{%- if rolled %}
+<div class="ivm-move ivm-move-result-{{ hitmiss }}{{ " ivm-move-result-match" if match }}">
+    <div class="ivm-move-name">{{ name }}: <span class="ivm-roll-outcome">{{ hitmiss }}</span></div>
+</div>
+{%- else %}
+<div class="ivm-move">
+    <div class="ivm-move-name">{{ name }}</div>
+</div>
+{%- endif %}

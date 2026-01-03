@@ -1,0 +1,12 @@
+{#
+XP node
+
+from    old xp value
+to      new xp value
+diff    difference in total xp, positive or negative
+
+#}
+<div class="ivm-xp ivm-xp-{{ "increase" if diff >= 0 else "decrease" }}">
+    <span class="ivm-meter-name">XP</span>:
+    <span class="ivm-meter-diff">{{ "{:+}".format(diff) }}</span>
+</div>

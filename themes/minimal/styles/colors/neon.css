@@ -1,0 +1,26 @@
+:root {
+    --ivm-bg: #06070b;            /* deep space */
+    --ivm-surface: #0b0f16;       /* panel */
+    --ivm-surface-2: #101725;     /* inset panel */
+    --ivm-border: #1e2a3e;        /* cool border */
+    --ivm-text: #e9eef8;          /* bright text */
+    --ivm-text-muted: #9fb0c9;    /* muted */
+    --ivm-code: #f1f5ff;          /* monospace */
+
+    /* Accents (neon) */
+    --ivm-accent: #42f6ff;        /* neon cyan */
+    --ivm-accent-2: #b37aff;      /* neon violet */
+
+    /* Status */
+    --ivm-strong: #25ff9e;        /* neon green */
+    --ivm-weak: #fffd80;          /* amber */
+    --ivm-miss: #fd6892;          /* neon pink/red */
+
+    /* Tints */
+    --ivm-strong-bg: color-mix(in oklab, var(--ivm-strong) 40%, transparent);
+    --ivm-weak-bg: color-mix(in oklab, var(--ivm-weak) 40%, transparent);
+    --ivm-miss-bg: color-mix(in oklab, var(--ivm-miss) 40%, transparent);
+    --ivm-accent-bg: color-mix(in oklab, var(--ivm-accent) 24%, transparent);
+
+    --ivm-panel-gradient: linear-gradient(180deg, var(--ivm-surface), var(--ivm-surface-2));
+}

@@ -1,0 +1,36 @@
+:root {
+    --ivm-bg: #0f1115;
+    --ivm-surface: #141821;
+    --ivm-surface-2: #19202b;
+    --ivm-border: #263142;
+    --ivm-text: #e6e9ef;
+    --ivm-text-muted: #a9b2c3;
+    --ivm-code: #e3e7ef;
+
+    --ivm-accent: #6ea8fe;
+    --ivm-accent-2: #9bafff;
+
+    /* Roll results, reused for all other good (--ivm-strong) and bad (--ivm-miss) states */
+    --ivm-strong: #2bb673;
+    --ivm-weak: #f5a524;
+    --ivm-miss: #e03e3e;
+
+    --ivm-strong-bg: color-mix(in oklab, var(--ivm-strong) 15%, transparent);
+    --ivm-weak-bg: color-mix(in oklab, var(--ivm-weak) 15%, transparent);
+    --ivm-miss-bg: color-mix(in oklab, var(--ivm-miss) 15%, transparent);
+    --ivm-accent-bg: color-mix(in oklab, var(--ivm-accent) 15%, transparent);
+
+    --ivm-panel-gradient: linear-gradient(180deg, var(--ivm-surface), var(--ivm-surface-2));
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --ivm-bg: #f5f7fb;
+        --ivm-surface: #ffffff;
+        --ivm-surface-2: #f7f9fd;
+        --ivm-border: #dfe7f1;
+        --ivm-text: #0d1220;
+        --ivm-text-muted: #5a657a;
+        --ivm-code: #0d1220;
+    }
+}

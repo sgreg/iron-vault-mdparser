@@ -1,0 +1,13 @@
+{#
+Meter node
+
+meter_name  name of the meter to adjust
+from        previous value on the meter
+to          new value on the meter
+diff        difference in change, positive or negative
+
+#}
+<div class="ivm-meter ivm-meter-{{ "increase" if diff >= 0 else "decrease" }}">
+    <span class="ivm-meter-name">{{ meter_name }}</span>:
+    <span class="ivm-meter-diff">{{ "{:+}".format(diff) }}</span>
+</div>

@@ -1,0 +1,20 @@
+{#
+Progress node
+May contain "extra" data
+
+name        name of the track that has progress is marked on
+rank        rank of the track, e.g. "dangerous", "epic"
+steps       number of times progress is marked on the track
+from        previous progress amount as tuple (boxes, ticks)
+to          new progress amount as tuple (boxes, ticks)
+from_ticks  previous progress value in number of ticks
+to_ticks    new progress value in number of ticks
+ticks       total amount of progress in ticks
+
+#}
+<div class="ivm-progress">
+    Progress
+    <span class="ivm-track-name">{{ name }}</span>
+    <span class="ivm-track-rank">({{ rank }})</span>
+    <span class="ivm-track-steps">+{{ steps }}</span>
+</div>

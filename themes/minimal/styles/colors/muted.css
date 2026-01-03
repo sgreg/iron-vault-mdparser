@@ -1,0 +1,44 @@
+
+:root {
+    --ivm-bg: #121315;            /* iron dusk */
+    --ivm-surface: #17191c;       /* forged plate */
+    --ivm-surface-2: #1c1f23;     /* inset plate */
+    --ivm-border: #2a2e33;        /* cold edge */
+    --ivm-text: #e2e4e7;          /* pale ash */
+    --ivm-text-muted: #a2a7ad;    /* mist */
+    --ivm-code: #eceff2;          /* chalk */
+
+    --ivm-accent: #c2a35d;        /* tarnished brass */
+    --ivm-accent-2: #8f7a4a;      /* aged bronze */
+
+    --ivm-strong: #7aa36f;        /* moss green */
+    --ivm-weak: #c6a15a;          /* brass/amber */
+    --ivm-miss: #813a3a;          /* dried blood */
+
+    --ivm-strong-bg: color-mix(in oklab, var(--ivm-strong) 15%, transparent);
+    --ivm-weak-bg: color-mix(in oklab, var(--ivm-weak) 15%, transparent);
+    --ivm-miss-bg: color-mix(in oklab, var(--ivm-miss) 15%, transparent);
+    --ivm-accent-bg: color-mix(in oklab, var(--ivm-accent) 15%, transparent);
+
+    --ivm-panel-gradient: linear-gradient(180deg, var(--ivm-surface), var(--ivm-surface-2));
+}
+@media (prefers-color-scheme: light) {
+    :root {
+        --ivm-bg: #f3f4f6;            /* parchment haze */
+        --ivm-surface: #ffffff;       /* bleached linen */
+        --ivm-surface-2: #f8f9fb;     /* light stone */
+        --ivm-border: #d8dde3;        /* etched edge */
+        --ivm-text: #1a1d22;          /* iron ink */
+        --ivm-text-muted: #5d6670;    /* slate */
+        --ivm-code: #121417;          /* charcoal */
+
+        /* Accents (tarnished metals) */
+        --ivm-accent: #9b7d3e;        /* aged brass (darker for light bg) */
+        --ivm-accent-2: #6f5d34;      /* weathered bronze */
+
+        /* Status (muted but distinct) */
+        --ivm-strong: #3a7a3a;        /* moss green (deeper for contrast) */
+        --ivm-weak: #9b6e23;          /* brass/amber (deeper) */
+        --ivm-miss: #903333;          /* dried blood (deeper) */
+    }
+}

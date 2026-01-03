@@ -1,0 +1,322 @@
+/*
+  Iron Vault Markdown Parser CSS
+
+  Minimal Theme
+
+  NOTE: Make sure to use in combination with one of the color/*.css files
+        Make also sure to include the color CSS before the layout CSS
+
+        Example:
+            <link rel="stylesheet" href="themes/minimal/styles/colors/default.css">
+            <link rel="stylesheet" href="themes/minimal/styles/layout/minimal.css">
+
+*/
+
+/* ---------- Theme and other variables ---------- */
+:root {
+    --ivm-font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans";
+    --ivm-font-mono: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "DejaVu Sans Mono", "Courier New";
+
+    --ivm-name-weight: 600;
+
+    --ivm-pad-sm: 4px 8px;
+    --ivm-pad-md: 10px 12px;
+    --ivm-pad-lg: 14px 16px;
+
+    --ivm-radius-sm: 8px;
+    --ivm-radius-md: 10px;
+    --ivm-radius-lg: 12px;
+}
+
+/* ---------- Base ---------- */
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    background: var(--ivm-bg);
+    color: var(--ivm-text);
+    font-family: var(--ivm-font-sans), sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.ivm-link, a.ivm-link, a {
+    color: var(--ivm-accent);
+    text-decoration: none;
+}
+
+.ivm-link:hover, a:hover {
+    text-decoration: underline;
+}
+
+.ivm-link:focus-visible, a:focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--ivm-accent) 55%, transparent);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* ---------- Content container ---------- */
+.ivm-content {
+    display: block;
+    width: min(80ch, 92%);
+    margin: 24px auto 56px;
+    padding: 28px clamp(20px, 4vw, 40px);
+    background: var(--ivm-surface);
+    border: 1px solid var(--ivm-border);
+    border-radius: 14px;
+}
+
+.ivm-content p {
+    color: var(--ivm-text);
+    margin: 1rem 0;
+}
+
+.ivm-content pre, .ivm-content code {
+    font-family: var(--ivm-font-mono), monospace;
+    color: var(--ivm-code);
+}
+
+.ivm-content pre {
+    background: var(--ivm-surface-2);
+    border: 1px solid var(--ivm-border);
+    padding: var(--ivm-pad-lg);
+    border-radius: var(--ivm-radius-lg);
+    overflow: auto;
+}
+
+/* ---------- Mechanics block ---------- */
+.ivm-mechanics {
+    display: block;
+    width: min(60ch, 100%);
+    margin: 18px auto 26px;
+    padding: var(--ivm-pad-lg);
+    background: var(--ivm-surface-2);
+    border: 1px solid var(--ivm-border);
+    border-radius: var(--ivm-radius-lg);
+}
+
+.ivm-mechanics > :not(:first-child) {
+    margin-top: 12px;
+}
+
+/* ---------- Generic block ---------- */
+.ivm-block {
+    padding: var(--ivm-pad-lg);
+    border-radius: var(--ivm-radius-lg);
+    background: var(--ivm-accent-bg);
+    border: 1px solid var(--ivm-border);
+}
+
+/* ---------- Generic node ---------- */
+.ivm-node {
+    /* placeholder for generic node */
+}
+
+
+/* ---------- Actor block ---------- */
+.ivm-actor {
+    padding: var(--ivm-pad-lg);
+    border: 1px solid var(--ivm-border);
+    border-radius: var(--ivm-radius-lg);
+    background: var(--ivm-surface);
+}
+
+.ivm-actor-name {
+    font-weight: 700;
+    font-style: italic;
+    padding-bottom: 8px;
+    color: var(--ivm-text);
+}
+
+/* ---------- Clock ---------- */
+.ivm-clock {
+    padding: var(--ivm-pad-md);
+    border: 1px solid var(--ivm-border);
+    border-radius: var(--ivm-radius-md);
+    background: var(--ivm-panel-gradient);
+}
+
+.ivm-clock-name {
+    font-weight: var(--ivm-name-weight);
+}
+
+.ivm-clock-value {
+    /* placeholder */
+}
+
+/* ---------- Impact ---------- */
+.ivm-impact {
+    padding: var(--ivm-pad-md);
+    border-radius: var(--ivm-radius-md);
+    background: var(--ivm-surface);
+}
+
+.ivm-impact-marked,
+.ivm-impact-cleared {
+    border: 2px solid var(--ivm-impact-accent);
+    background: var(--ivm-impact-bg);
+}
+
+.ivm-impact-marked {
+    --ivm-impact-accent: var(--ivm-miss);
+    --ivm-impact-bg: var(--ivm-miss-bg);
+}
+
+.ivm-impact-cleared {
+    --ivm-impact-accent: var(--ivm-strong);
+    --ivm-impact-bg: var(--ivm-strong-bg);
+}
+
+.ivm-impact-name {
+    font-weight: var(--ivm-name-weight);
+}
+
+.ivm-impact-state {
+    /* placeholder */
+}
+
+/* ---------- Meter / Momentum ---------- */
+.ivm-meter {
+    padding: var(--ivm-pad-sm);
+    background: transparent;
+}
+
+.ivm-meter-name,
+.ivm-meter-diff {
+    font-weight: var(--ivm-name-weight);
+}
+
+.ivm-meter-increase > .ivm-meter-diff {
+    color: var(--ivm-strong);
+}
+
+.ivm-meter-decrease > .ivm-meter-diff {
+    color: var(--ivm-miss);
+}
+
+/* ---------- Move ---------- */
+.ivm-move {
+    padding: var(--ivm-pad-lg);
+    border-radius: var(--ivm-radius-lg);
+    border: 1px solid var(--ivm-border);
+    background: var(--ivm-surface);
+    position: relative;
+}
+
+.ivm-move:not(:first-child) {
+    margin-top: 12px;
+}
+
+.ivm-move-name {
+    font-weight: 900;
+    letter-spacing: 1pt;
+    margin-bottom: 8px;
+    font-size: 1.0rem;
+}
+
+.ivm-move-result-miss,
+.ivm-move-result-weak,
+.ivm-move-result-strong {
+    border-left: 6px solid var(--ivm-move-accent);
+    background: linear-gradient(90deg, var(--ivm-move-bg), transparent 40%);
+}
+
+.ivm-move-result-miss {
+    --ivm-move-accent: var(--ivm-miss);
+    --ivm-move-bg: var(--ivm-miss-bg);
+}
+
+.ivm-move-result-weak {
+    --ivm-move-accent: var(--ivm-weak);
+    --ivm-move-bg: var(--ivm-weak-bg);
+}
+
+.ivm-move-result-strong {
+    --ivm-move-accent: var(--ivm-strong);
+    --ivm-move-bg: var(--ivm-strong-bg);
+}
+
+.ivm-move-result-miss.ivm-move-result-match,
+.ivm-move-result-strong.ivm-move-result-match {
+    border: 2px solid var(--ivm-move-accent);
+    border-left: 6px solid var(--ivm-move-accent);
+}
+
+.ivm-move-result-match .ivm-move-name::after {
+    content: "  (MATCH!)";
+}
+
+/* ---------- Oracle ---------- */
+.ivm-oracle-block, .ivm-oracle {
+    padding: var(--ivm-pad-md);
+    border: 1px dashed var(--ivm-border);
+    border-radius: var(--ivm-radius-md);
+    background: var(--ivm-panel-gradient);
+}
+
+.ivm-oracle-block {
+    background: var(--ivm-accent-bg);
+}
+
+.ivm-oracle-name {
+    font-weight: var(--ivm-name-weight);
+}
+
+.ivm-oracle-result {
+    font-style: italic;
+}
+
+/* ---------- Progress (see also Track) ---------- */
+.ivm-progress {
+    padding: var(--ivm-pad-md);
+    border: 1px solid var(--ivm-border);
+    border-radius: var(--ivm-radius-md);
+    background: var(--ivm-panel-gradient);
+}
+
+/* ---------- Roll ---------- */
+.ivm-roll-outcome {
+    font-weight: var(--ivm-name-weight)
+}
+
+/* ---------- Tracks ---------- */
+.ivm-track {
+    padding: var(--ivm-pad-md);
+    border: 1px dashed var(--ivm-border);
+    border-radius: var(--ivm-radius-md);
+    background: var(--ivm-surface);
+}
+
+.ivm-track-name,
+.ivm-track-steps {
+    font-weight: var(--ivm-name-weight);
+}
+
+.ivm-track-steps {
+    color: var(--ivm-strong);
+}
+
+/* ---------- XP ---------- */
+.ivm-xp {
+    padding: var(--ivm-pad-sm);
+    background: transparent;
+}
+
+.ivm-xp-increase .ivm-meter-diff {
+    color: var(--ivm-strong);
+}
+
+.ivm-xp-decrease .ivm-meter-diff {
+    color: var(--ivm-miss);
+}
+
+.ivm-xp-value {
+    /* placeholder */
+}
