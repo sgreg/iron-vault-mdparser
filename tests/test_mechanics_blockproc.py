@@ -177,7 +177,7 @@ def test_mechblock_parse_multiline_ooc(ctx, mechblock):
     node = ctx.parent.find("div")
     assert node is not None
     assert "ivm-ooc" in node.get("class")
-    assert "multi<br>line<br>comment" in node.text
+    assert "multi<br />line<br />comment" in node.text
 
 
 def test_mechblock_parse_unknown(ctx, mechblock):

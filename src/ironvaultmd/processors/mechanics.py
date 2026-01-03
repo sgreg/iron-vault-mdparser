@@ -278,7 +278,7 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
                 multiline_ooc.append(line)
                 if line[-1] != '"':
                     continue
-                line = "<br>".join(multiline_ooc)
+                line = "<br />".join(multiline_ooc)
                 multiline_ooc = None
 
 
