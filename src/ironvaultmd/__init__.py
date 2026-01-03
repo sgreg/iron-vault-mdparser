@@ -45,7 +45,7 @@ Attributes:
     logger_name: Name of the package logger used throughout the codebase.
 """
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 logger_name = "ironvaultmd"
 
 from .ironvault import IronVaultExtension as IronVaultExtension
