@@ -31,6 +31,15 @@ from ironvaultmd.parsers.templater import get_templater
 
 @dataclass
 class Link:
+    """Link data.
+
+    Attributes:
+        seq: sequential counter, i.e., link number in the current document.
+        ref: link reference name, whatever the link is pointing to.
+        anchor: anchor within the linked document.
+        label: link label text that is displayed.
+    """
+    seq: int
     ref: str
     anchor: str
     label: str
@@ -56,23 +65,26 @@ class LinkCollector:
         self.links = links
         self.count = 0
 
-    def add(self, link: Link) -> int:
-        """Add the given `link` to the collector.
+    def add(self, ref: str, anchor: str, label: str) -> Link:
+        """Add the given link data to the collector.
 
-        Increments the link counter and adds the given `Link` instance
-        to the internal list - if there is one.
+        Increments the link counter and creates a new `Link` instance from
+        the passed data. If an internal list for collecting links exists,
+        the newly created `Link` is added there.
 
         Args:
-            link: Parsed `Link` instance to add.
+            ref: link reference name.
+            anchor: link anchor.
+            label: link display label.
 
         Returns:
-            Number of collected links.
+            `Link` instance containing the given data and sequence number.
         """
+        self.count += 1
+        link = Link(self.count, ref, anchor, label)
         if self.links is not None:
             self.links.append(link)
-        self.count += 1
-
-        return self.count
+        return link
 
     def reset(self) -> None:
         """Reset the collector instance.
@@ -117,7 +129,7 @@ class WikiLinkProcessor(InlineProcessor):
         """Create the inline processor.
 
         Args:
-            links: Optional list that will be appended with each parsed `Link`.
+            link_collector: Reference to a `LinkCollector` instance.
 
         Raises:
             TypeError: If `links` is provided but is not a list.
@@ -161,15 +173,9 @@ class WikiLinkProcessor(InlineProcessor):
                 # use the link as label text instead then.
                 label = ref
 
-            link = Link(ref, anchor, label)
-            count = self.links.add(link)
+            link = self.links.add(ref, anchor, label)
             template = get_templater().get_template("link")
-
-            if template:
-                args = link.__dict__ | {"seq": count}
-                element = etree.fromstring(template.render(args))
-            else:
-                element = label
+            element = etree.fromstring(template.render(link.__dict__)) if template else label
 
         else:
             element = ''

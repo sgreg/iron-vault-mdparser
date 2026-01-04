@@ -278,8 +278,8 @@ def test_linkcoll():
     assert collector.links is not None
     assert collector.count == 0
 
-    collector.add(Link("ref1", "anchor1", "label1"))
-    collector.add(Link("ref2", "anchor2", "label2"))
+    collector.add("ref1", "anchor1", "label1")
+    collector.add("ref2", "anchor2", "label2")
 
     assert len(links) == 2
     assert len(collector.links) == 2
@@ -287,6 +287,9 @@ def test_linkcoll():
 
     assert links[0] == collector.links[0]
     assert links[1] == collector.links[1]
+
+    assert links[0].seq == 1
+    assert links[1].seq == 2
 
     collector.reset()
 
@@ -300,8 +303,8 @@ def test_linkcoll_no_links():
     assert collector.links is None
     assert collector.count == 0
 
-    collector.add(Link("ref1", "anchor1", "label1"))
-    collector.add(Link("ref2", "anchor2", "label2"))
+    collector.add("ref1", "anchor1", "label1")
+    collector.add("ref2", "anchor2", "label2")
 
     assert collector.links is None
     assert collector.count == 2

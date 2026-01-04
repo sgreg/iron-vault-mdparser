@@ -58,7 +58,6 @@ class IronVaultExtension(Extension):
         config: Python‑Markdown configuration mapping. Recognized keys are
             `links`, `frontmatter`, and `templates`.
         md: The `markdown.Markdown` instance after registration.
-        links: Optional list that will collect parsed links.
         frontmatter: Optional dictionary that will receive parsed front matter.
     """
     def __init__(self, **kwargs):

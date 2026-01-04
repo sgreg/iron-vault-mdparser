@@ -276,9 +276,9 @@ More text
 """
 
     expected_links = [
-        Link("a link", "", "a link"),
-        Link("link", "", "link with label"),
-        Link("link", "anchor", "link with anchor")
+        Link(1, "a link", "", "a link"),
+        Link(2, "link", "", "link with label"),
+        Link(3, "link", "anchor", "link with anchor")
     ]
 
     expected_frontmatter = {
