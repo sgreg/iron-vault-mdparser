@@ -21,7 +21,7 @@ move "[React Under Fire](datasworn:move:starforged\\/combat\\/react_under_fire)"
 - "in control"
 ```"""
 
-    expected_html = """<div class="ivm-mechanics">
+    expected_html = """<div class="ivm-mechanics" role="note">
 <div class="ivm-move ivm-move-result-strong">
 <div class="ivm-move-name">React Under Fire</div>
 <div class="ivm-roll ivm-roll-strong">
@@ -287,7 +287,7 @@ More text
     }
 
     expected_html = """<p>Regular text with <span>a link (a link)</span>, <span>link with label (link)</span>, <span>link with anchor (link)</span></p>
-<div class="ivm-mechanics">
+<div class="ivm-mechanics" role="note">
 <div class="ivm-move ivm-move-result-strong">
 <div class="ivm-move-name">React Under Fire</div>
 <div class="ivm-roll ivm-roll-strong">

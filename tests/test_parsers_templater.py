@@ -182,7 +182,7 @@ def test_fallback_templater():
     assert default_templater.overrides.add is None
 
     assert default_templater.default_templates is not None
-    assert default_templater.get_default_template("mechanics").render().strip() == '<div class="ivm-mechanics"></div>'
+    assert default_templater.get_default_template("mechanics").render().strip() == '<div class="ivm-mechanics" role="note"></div>'
 
     # Verify calling get_templater() again yields the same instance
     assert get_templater() == default_templater
