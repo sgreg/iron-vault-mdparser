@@ -125,6 +125,9 @@ def check_ticks(rank: str, current: int, steps: int) -> tuple[int, int]:
 def ticks_to_progress(total_ticks: int) -> tuple[int, int]:
     """Convert a total number of ticks into full boxes and remaining ticks.
 
+    Note that the function assumes the given `total_ticks` is a valid value,
+    no limitations are performed, and values above 10 boxes can be returned.
+
     Args:
         total_ticks: Number of ticks to convert, e.g., one of the return
             values retrieved from `check_ticks()`.
@@ -136,6 +139,23 @@ def ticks_to_progress(total_ticks: int) -> tuple[int, int]:
     ticks = total_ticks - (boxes * 4)
 
     return boxes, ticks
+
+
+def ticks_to_float(total_ticks: int) -> float:
+    """Convert a total number of ticks into a floating point representation.
+
+    Note that the function assumes the given `total_ticks` is a valid value,
+    no limitations are performed, and values above 10.0 can be returned.
+
+    Args:
+        total_ticks: Number of ticks to convert, e.g., one of the return
+            values retrieved from `check_ticks()`.
+
+    Returns:
+        Float value, e.g. 1.75 for 1 box and 3 ticks.
+    """
+    progress = ticks_to_progress(total_ticks)
+    return progress[0] + (progress[1] * 0.25)
 
 
 def initiative_slugify(initiative: str) -> str:

@@ -17,7 +17,14 @@ from typing import Any
 
 from ironvaultmd.parsers.base import NodeParser, ParameterNodeParser
 from ironvaultmd.parsers.context import Context, NameCollection
-from ironvaultmd.util import check_ticks, convert_link_name, initiative_slugify, position_slugify, ticks_to_progress
+from ironvaultmd.util import (
+    check_ticks,
+    convert_link_name,
+    initiative_slugify,
+    position_slugify,
+    ticks_to_progress,
+    ticks_to_float,
+)
 
 
 class AddNodeParser(NodeParser):
@@ -250,6 +257,8 @@ class ProgressNodeParser(ParameterNodeParser):
             "to": ticks_to_progress(to_ticks),
             "from_ticks": from_ticks,
             "to_ticks": to_ticks,
+            "from_fract": ticks_to_float(from_ticks),
+            "to_fract": ticks_to_float(to_ticks),
             "ticks": ticks,
             "extra": data["extra"]
         }

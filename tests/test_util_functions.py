@@ -8,6 +8,7 @@ from ironvaultmd.util import (
     initiative_slugify,
     position_slugify,
     ticks_to_progress,
+    ticks_to_float,
 )
 from utils import StringCompareData, DiceData, ProgressTickData, ProgressBoxTickData
 
@@ -122,6 +123,25 @@ def test_util_tick_to_progress():
 
     for d in data:
         assert ticks_to_progress(d.ticks) == d.expected
+
+def test_util_tick_to_float():
+    data: list[tuple[int, float]] = [
+        ( 0, 0.00),
+        ( 1, 0.25),
+        ( 2, 0.50),
+        ( 3, 0.75),
+        ( 4, 1.00),
+        ( 5, 1.25),
+        (10, 2.50),
+        (23, 5.75),
+        (40, 10.00),
+        # No range limitation is put in place, so these should still work
+        (41, 10.25),
+        (-1, -0.25),
+    ]
+
+    for d in data:
+        assert ticks_to_float(d[0]) == d[1]
 
 
 def test_util_initiative_slugify():
