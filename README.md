@@ -67,7 +67,7 @@ pip install ironvaultmd
 
 This will install the required dependencies, `markdown` and `pyyaml`, as well.
 
-## Usage
+## Usage within Python code
 
 Quick usage to convert an Iron Vault journal Markdown file to HTML and print it to the terminal:
 
@@ -160,6 +160,56 @@ md = markdown.Markdown(extensions=[IronVaultExtension(template_overrides=my_over
 ```
 
 Note that you can provide both `template_path` and `template_overrides` values, and the overrides always take precedence over file-based templates.
+
+
+## Usage with MkDocs
+
+[MkDocs](https://www.mkdocs.org/) is a static site generator that creates HTML pages from Markdown files,
+using [Python-Markdown](https://pypi.org/project/Markdown/) in the background. Since `ironvaultmd` is an
+extension to just that, MkDocs can be used to create HTML pages from Iron Vault Markdown files.
+
+See [the MkDocs getting started section](https://www.mkdocs.org/getting-started/) about setting it all up.
+
+### Adding `ironvaultmd` support
+
+Add `ironvaultmd` to your MkDocs project's `mkdocs.yml`:
+
+```yaml
+markdown_extensions:
+  - ironvaultmd:IronVaultExtension
+```
+
+See https://www.mkdocs.org/user-guide/configuration/#markdown_extensions for more information.
+
+### Templates
+
+To set a [template files](#template-files) directory, modify the `mkdocs.yml` accordingly:
+
+```yaml
+markdown_extensions:
+  - ironvaultmd:IronVaultExtension:
+      template_path: "docs/themes/minimal/templates/"
+```
+
+**NOTE**:
+1. Make sure you have the colon (`:`) added after `ironvaultmd:IronVaultExtension` if you add a `template_path`
+2. The `template_path` directory must either be relative to the MkDocs project's root directory or an absolute path.
+3. [Template overrides](#template-overrides) are unfortunately not supported
+
+### Styles
+
+```yaml
+extra_css:
+  - /themes/minimal/styles/layout/minimal.css
+  - themes/minimal/styles/colors/muted.css
+```
+
+**NOTE**:
+1. Unlike the templates directory, the `extra_css` directory is relative to the MkDocs project's `docs/` directory
+2. Because of 1., paths can be with or without leading `/` as shown above. 
+
+See https://www.mkdocs.org/user-guide/configuration/#extra_css for more information.
+
 
 ## Developing
 
