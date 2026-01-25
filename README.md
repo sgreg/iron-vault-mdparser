@@ -8,12 +8,12 @@
 
 A [Python-Markdown](https://pypi.org/project/Markdown/) ([GitHub](https://github.com/Python-Markdown/markdown)) extension to parse Markdown files from the [Iron Vault](https://ironvault.quest/) ([GitHub](https://github.com/iron-vault-plugin/iron-vault)) Obsidian plugin.
 
-The main idea for this extension is to convert Iron Vault markdown journals into HTML sites for publishing.
+The main idea for this extension is to convert Iron Vault Markdown journals into HTML sites for publishing.
 
 ## Features
 
 Supports at this point
- - parsing ` ```iron-vault-mechanics ``` ` blocks (see [below](#supported-mechanics-block-content) for details)
+ - parsing ` ```iron-vault-mechanics ``` ` blocks
  - collecting frontmatter YAML information into a dictionary
  - regular and labeled wiki-style links, i.e. `[[link]]` and `[[link|label]]` (see also below for details)
  - user-definable templates for parsing the supported nodes
@@ -22,28 +22,26 @@ Supports at this point
 
 > Disclaimer: This extension came into existence for my own purposes, to eventually publish my campaigns.
 >
-> After old-school pen and paper, and a bunch of other experiments, I eventually gave Iron Vault a try for my most recent campaign - and I haven't looked back.
-However, this only happened in December 2024, so somewhere around Iron Vault version 1.88.1, and only with a Starforged campaign.
-Currently, neither journals created with an older version, nor OG Ironsworn, Delve, or Sundered Isles campaigns are supported,
-and results may be disappointing.
+> After old-school pen and paper, and a bunch of other experiments, I eventually gave Iron Vault a try
+> for my Starforged campaign at that time. This was in December 2024, around Iron Vault version 1.88.1.
+>
+> I have used it for other campaigns and Ironsworn rulesets since, but chances are I'm still missing some
+> parts here or there, and full support for everything cannot be claimed yet. Nor any support for older
+> Iron Vault versions.
 
 #### Mechanics blocks and nodes
-Currently supported blocks within a mechanics block:
-actor, move, oracle-group, **oracle**, prompted oracle
+All nodes and blocks within a `iron-vault-mechanics` block should be supported.
 
-Currently supported nodes within a mechanics block or any of the other blocks:
-add, burn, **clock**, impact, initiative, meter, move, out-of-character comments,
-**oracle**, position, **progress**, **progress-roll**, reroll, roll, **track**, xp.
-
-Elements in **bold** support a generic key=value parameter in hopes to cover differences
-in the game systems (and possible Iron Vault version compatibilities) better.
+Some have a strict regular expression to match, others support a generic `key=value` parameter matching,
+with the latter hopefully covering some more variety in rulesets and Iron Vault versions.
 
 #### Links
-Links are currently detected and optionally collected into a list with their reference and label,
-but no actual linking is performed. To collect all found links:
+Links are detected and optionally collected into a list with their reference, anchor, and label,
+see [the _Collecting Links_ section](#collecting-links) below.
 
-By default, links are packed in a `<span class="ivm-link">` element, but a `link` user template string
-can be defined to adjust that behavior - see the sections about templates for more information.
+Note that no actual linking is performed by default, and links are packed in a `<span class="ivm-link">`
+element insted. This behavior can be changed by providing [template files](#template-files) or
+[template overrides](#template-overrides) for the `link` element.
 
 #### Roll results
 Roll results of a move are collected, including dice rerolls and burning momentum, and
@@ -65,7 +63,7 @@ Setting a template to an empty string (`''`) will prevent the node from being pa
 pip install ironvaultmd
 ```
 
-This will install the required dependencies, `markdown` and `pyyaml`, as well.
+This will install the required dependencies (`markdown`, `pyyaml`, and `Jinja2`) as well.
 
 ## Usage within Python code
 
@@ -83,7 +81,7 @@ with open("/path/to/ironvault/Journals/JournalEntry.md", "r", encoding="utf-8") 
 
 Check also the [`ironparser.py` example file](src/ironparser.py) for a more complete example to write a given journal Markdown file as HTML file.
 
-### Links
+### Collecting Links
 ```python
 import markdown
 from ironvaultmd import IronVaultExtension, Link
@@ -144,7 +142,7 @@ Template files, both passed as a theme and default package-provided ones, can be
 This allows to either change the rendered text, by providing an alternative template string that Jinja understands,
 or completely disable the specific template by setting it to an empty string `""`.
 
-This is ideal if you're _mostly_ happy with the default templates, but want to tweak a thing or two.
+This is ideal if you're _mostly_ happy with the default templates but want to tweak a thing or two.
 
 ```python
 import markdown
