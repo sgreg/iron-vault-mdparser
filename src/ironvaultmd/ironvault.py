@@ -124,7 +124,7 @@ class IronVaultExtension(Extension):
         md.preprocessors.register(IronVaultFrontmatterPreprocessor(md, self.frontmatter), 'ironvault-frontmatter-preprocessor', 40)
         md.parser.blockprocessors.register(IronVaultMechanicsBlockProcessor(md.parser), 'ironvault-mechanics', 175)
         # wikilinks extension processor has priority 75, so need to make sure ours has higher priority again
-        md.inlinePatterns.register(WikiLinkProcessor(self.links), 'ironvault-wikilinks-inlineprocessor', 100)
+        md.inlinePatterns.register(WikiLinkProcessor(self.link_collector), 'ironvault-wikilinks-inlineprocessor', 100)
 
     def reset(self) -> None:
         """Reset extension state between Markdown conversions.
