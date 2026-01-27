@@ -24,9 +24,11 @@ template_top = """<!-- Created by ironparser.py -->
 </head>
 <body>
 <div class="ivm-content">
+<article>
 """
 
 template_bottom = """
+</article>
 </div>
 </body>
 </html>"""
