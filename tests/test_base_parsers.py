@@ -24,15 +24,17 @@ def test_node_regex_match():
     assert no_match is None
 
 def test_param_node_match(ctx):
-    parser = ParameterNodeParser(NameCollection("Node"), ["one", "two", "hyphen-param"])
-    args = parser._match('one="value one" two=2 optional=true hyphen-param="matched" empty=""')
+    parser = ParameterNodeParser(NameCollection("Node"), ["one", "two", "three", "hyphen-param"])
+    args = parser._match('one="value one" two=2 three=-3 optional=true hyphen-param="matched" empty="" negative=-5')
     assert args == {
         "one": "value one",
         "two": 2,
+        "three": -3,
         "hyphen-param": "matched",
         "extra": {
             "optional": True,
             "empty": "",
+            "negative": -5,
         }
     }
 
@@ -283,15 +285,17 @@ def test_block_no_match(ctx):
     assert name_node.text == "valid"
 
 def test_block_node_match(ctx):
-    parser = ParameterBlockParser(NameCollection("Block"), ["one", "two", "hyphen-param"])
-    args = parser._match('one="value one" two=2 optional=true hyphen-param="matched" empty=""')
+    parser = ParameterBlockParser(NameCollection("Block"), ["one", "two", "three", "hyphen-param"])
+    args = parser._match('one="value one" two=2 three=-3 optional=true hyphen-param="matched" empty="" negative=-5')
     assert args == {
         "one": "value one",
         "two": 2,
+        "three": -3,
         "hyphen-param": "matched",
         "extra": {
             "optional": True,
             "empty": "",
+            "negative": -5,
         }
     }
 

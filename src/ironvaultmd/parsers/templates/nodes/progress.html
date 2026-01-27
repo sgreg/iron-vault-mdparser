@@ -18,7 +18,7 @@ ticks       total amount of progress in ticks
     Progress
     <span class="ivm-track-name">{{ name }}</span>
     <span class="ivm-track-rank">({{ rank }})</span>
-    <span class="ivm-track-steps">+{{ steps }}</span>:
+    <span class="ivm-track-steps ivm-track-steps-{{ "increase" if steps >= 0 else "decrease" }}">{{ "{:+}".format(steps) }}</span>:
     <span class="ivm-track-progress">{{ from[0] }}b/{{ from[1] }}t</span> &amp;rarr;
     <span class="ivm-track-progress">{{ to[0] }}b/{{ to[1] }}t</span>
 </div>

@@ -459,8 +459,12 @@ span.ivm-position-badspot {
     font-weight: var(--ivm-name-weight);
 }
 
-.ivm-track-steps {
+.ivm-track-steps-increase {
     color: var(--ivm-strong);
+}
+
+.ivm-track-steps-decrease {
+    color: var(--ivm-miss);
 }
 
 .ivm-track-status {

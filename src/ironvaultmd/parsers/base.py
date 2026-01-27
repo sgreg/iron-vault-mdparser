@@ -110,8 +110,8 @@ class ParameterParsingMixin:
         PARAMS_REGEX: Pattern matching the entire parameter string.
         PARAM_REGEX: Pattern for extracting individual key=value pairs.
     """
-    PARAMS_REGEX = r'^(?P<params>(?:[\w-]+=(?:"[^"]*"|\d+|true|false)(?:\s+|$))+)$'
-    PARAM_REGEX = r'([\w-]+)=((?:"[^"]*"|\d+|true|false))'
+    PARAMS_REGEX = r'^(?P<params>(?:[\w-]+=(?:"[^"]*"|-?\d+|true|false)(?:\s+|$))+)$'
+    PARAM_REGEX = r'([\w-]+)=((?:"[^"]*"|-?\d+|true|false))'
 
     extra_regex: re.Pattern[str]
     known_keys: list[str]
@@ -136,7 +136,7 @@ class ParameterParsingMixin:
         for key, value in self.extra_regex.findall(params_string):
             if value.startswith('"') and value.endswith('"'):
                 params[key] = value[1:-1]
-            elif value.isdigit():
+            elif value.lstrip('-').isdigit():
                 params[key] = int(value)
             elif value in ('true', 'false'):
                 params[key] = value == 'true'
