@@ -4,6 +4,7 @@ This is an enclosing block that will hold at least a "roll" node.
 See nodes/mode.html for the non-rolling move node template.
 
 name        move name
+stat_name   stat or meter used for the roll
 rolled      true if the move was a dice-rolling move and has valid result values
 score       total value of the action die + stat + adds of the currently rerolled initial roll
 vs1         value of the first challenge die of the currently rerolled initial roll
@@ -17,7 +18,7 @@ no matter if "rolled" is true or false, but are only useful to include when "rol
 #}
 {%- if rolled %}
 <div class="ivm-move ivm-move-result-{{ hitmiss }}{{ " ivm-move-result-match" if match }}">
-    <div class="ivm-move-name">{{ name }}: <span class="ivm-roll-outcome">{{ hitmiss }}</span></div>
+    <div class="ivm-move-name">{{ name }}{{ " (+" ~ stat_name ~")" if stat_name != "" }}: <span class="ivm-roll-outcome">{{ hitmiss }}</span></div>
 </div>
 {%- else %}
 <div class="ivm-move">

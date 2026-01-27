@@ -80,7 +80,7 @@ def test_parser_move_with_roll(ctx):
     assert "name" in ctx.args.keys()
     assert ctx.args["name"] == "Move Name"
 
-    ctx.roll.roll(5, 2, 0, 3, 8) # total 7 vs 3 | 8, expect weak hit
+    ctx.roll.roll("stat", 5, 2, 0, 3, 8) # total 7 vs 3 | 8, expect weak hit
     parser.finalize(ctx)
 
     # Verify the move is rendered with a result class
@@ -103,7 +103,7 @@ def test_parser_move_with_roll_no_result_template(ctx):
 
     data = '"[Move Name](Move Link)"'
     parser.begin(ctx, data)
-    ctx.roll.roll(5, 2, 0, 3, 8) # total 7 vs 3 | 8, expect weak hit
+    ctx.roll.roll("stat",5, 2, 0, 3, 8) # total 7 vs 3 | 8, expect weak hit
     parser.finalize(ctx)
 
     # Verify the move is rendered with a result class

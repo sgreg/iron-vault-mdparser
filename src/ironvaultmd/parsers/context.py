@@ -49,6 +49,7 @@ class RollResult:
     """Outcome of a mechanics roll.
 
     Attributes:
+        stat_name: Stat (or meter) used for the roll.
         score: Final result used for comparison (action+stat+adds capped at 10
             for rolls, progress value, or amount of burned momentum)
         vs1: First challenge die value.
@@ -56,6 +57,7 @@ class RollResult:
         hitmiss: Outcome string (`miss`, `hit`, or `strong`)
         match: Whether the roll was a match or not.
     """
+    stat_name: str
     score: int
     vs1: int
     vs2: int
@@ -75,6 +77,7 @@ class RollContext:
     that later operations (e.g., `finalize()` in `MoveBlockParser`) can style
     output accordingly.
     """
+    stat_name: str
     action: int
     stat: int
     adds: int
@@ -86,6 +89,7 @@ class RollContext:
 
     def __init__(self) -> None:
         """Create a fresh roll context with zeroed values."""
+        self.stat_name = ""
         self.action = 0
         self.stat = 0
         self.adds = 0
@@ -95,10 +99,11 @@ class RollContext:
         self.progress = 0
         self.rolled = False
 
-    def roll(self, action: int | str, stat: int | str, adds: int | str, vs1: int | str, vs2: int | str) -> RollResult:
+    def roll(self, stat_name: str, action: int | str, stat: int | str, adds: int | str, vs1: int | str, vs2: int | str) -> RollResult:
         """Perform a standard action roll.
 
         Args:
+            stat_name: Stat (or meter) used for the roll.
             action: Action die value.
             stat: Stat value rolled with.
             adds: Additional modifiers.
@@ -114,6 +119,7 @@ class RollContext:
         if self.rolled:
             logger.warning("RollContext roll with existing roll data")
 
+        self.stat_name = stat_name
         self.action = int(action)
         self.stat = int(stat)
         self.adds = int(adds)
@@ -215,7 +221,7 @@ class RollContext:
             score = min(self.action + self.stat + self.adds, 10)
 
         hitmiss, match = check_dice(score, self.vs1, self.vs2)
-        return RollResult(score, self.vs1, self.vs2, hitmiss, match)
+        return RollResult(self.stat_name, score, self.vs1, self.vs2, hitmiss, match)
 
     def value(self, attribute: str) -> int | bool | None:
         """Retrieves the value of the specified attribute if it exists.

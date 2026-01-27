@@ -193,6 +193,7 @@ def test_node_template_disable(block_ctx):
 
     # Verify roll result is as expected from the parsed data
     result = block_ctx.roll.get()
+    assert result.stat_name == "iron"
     assert result.score == 5
     assert result.vs1 == 6
     assert result.vs2 == 3
@@ -370,7 +371,7 @@ def test_block_template_conditional(parent):
     ctx.parent.clear()
 
     parser.begin(ctx, data)
-    ctx.roll.roll(1, 2, 3, 4, 5)
+    ctx.roll.roll("stat", 1, 2, 3, 4, 5)
     parser.finalize(ctx)
     node = ctx.root.find("div")
     assert node is not None

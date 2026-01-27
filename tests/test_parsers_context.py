@@ -147,11 +147,11 @@ def test_rollcontext_roll():
     rctx = RollContext()
 
     data = [
-        [(1, 2, 3, 4, 5), RollResult(6, 4, 5, "strong", False)],
-        [(3, 0, 0, 3, 3), RollResult(3, 3, 3, "miss", True)],
-        [(0, 2, 0, 9, 1), RollResult(2, 9, 1, "weak", False)],
-        [(0, 0, 4, 3, 3), RollResult(4, 3, 3, "strong", True)],
-        [(6, 4, 2, 10, 1), RollResult(10, 10, 1, "weak", False)], # verify that scope caps at 10
+        [("iron", 1, 2, 3, 4, 5), RollResult("iron", 6, 4, 5, "strong", False)],
+        [("edge", 3, 0, 0, 3, 3), RollResult("edge", 3, 3, 3, "miss", True)],
+        [("heart", 0, 2, 0, 9, 1), RollResult("heart", 2, 9, 1, "weak", False)],
+        [("shadow", 0, 0, 4, 3, 3), RollResult("shadow", 4, 3, 3, "strong", True)],
+        [("wits", 6, 4, 2, 10, 1), RollResult("wits", 10, 10, 1, "weak", False)], # verify that scope caps at 10
     ]
 
     for d in data:
@@ -165,10 +165,10 @@ def test_rollcontext_progressroll():
     rctx = RollContext()
 
     data = [
-        [(6, 2, 3), RollResult(6, 2, 3, "strong", False)],
-        [(3, 3, 3), RollResult(3, 3, 3, "miss", True)],
-        [(5, 9, 1), RollResult(5, 9, 1, "weak", False)],
-        [(4, 3, 3), RollResult(4, 3, 3, "strong", True)]
+        [(6, 2, 3), RollResult("", 6, 2, 3, "strong", False)],
+        [(3, 3, 3), RollResult("", 3, 3, 3, "miss", True)],
+        [(5, 9, 1), RollResult("", 5, 9, 1, "weak", False)],
+        [(4, 3, 3), RollResult("", 4, 3, 3, "strong", True)]
     ]
 
     for d in data:
@@ -183,34 +183,34 @@ def test_rollcontext_progressroll():
 def test_rollcontext_reroll():
     rctx = RollContext()
 
-    res = rctx.roll(1, 2, 0, 4, 5)
-    assert res == RollResult(3, 4, 5, "miss", False)
-    assert rctx.reroll("action", 4) == RollResult(6, 4, 5, "strong", False)
-    assert rctx.reroll("vs1", 6) == RollResult(6, 6, 5, "weak", False)
-    assert rctx.reroll("vs2", 6) == RollResult(6, 6, 6, "miss", True)
-    assert rctx.reroll("unknown", 6) == RollResult(6, 6, 6, "miss", True) # verify invalid die is ignored
+    res = rctx.roll("edge", 1, 2, 0, 4, 5)
+    assert res == RollResult("edge", 3, 4, 5, "miss", False)
+    assert rctx.reroll("action", 4) == RollResult("edge", 6, 4, 5, "strong", False)
+    assert rctx.reroll("vs1", 6) == RollResult("edge", 6, 6, 5, "weak", False)
+    assert rctx.reroll("vs2", 6) == RollResult("edge", 6, 6, 6, "miss", True)
+    assert rctx.reroll("unknown", 6) == RollResult("edge", 6, 6, 6, "miss", True) # verify invalid die is ignored
 
     rctx = RollContext()
 
     res = rctx.progress_roll(6, 10, 9)
-    assert res == RollResult(6, 10, 9, "miss", False)
-    assert rctx.reroll("action", 2) == RollResult(6, 10, 9, "miss", False) # verify reroll of action die is ignored for progress-roll
-    assert rctx.reroll("vs1", 3) == RollResult(6, 3, 9, "weak", False)
-    assert rctx.reroll("vs2", 3) == RollResult(6, 3, 3, "strong", True)
-    assert rctx.reroll("unknown", 3) == RollResult(6, 3, 3, "strong", True) # verify invalid die is ignored
+    assert res == RollResult("", 6, 10, 9, "miss", False)
+    assert rctx.reroll("action", 2) == RollResult("", 6, 10, 9, "miss", False) # verify reroll of action die is ignored for progress-roll
+    assert rctx.reroll("vs1", 3) == RollResult("", 6, 3, 9, "weak", False)
+    assert rctx.reroll("vs2", 3) == RollResult("", 6, 3, 3, "strong", True)
+    assert rctx.reroll("unknown", 3) == RollResult("", 6, 3, 3, "strong", True) # verify invalid die is ignored
 
 def test_rollcontext_burn():
     rctx = RollContext()
 
-    res = rctx.roll(1, 2, 0, 4, 5)
-    assert res == RollResult(3, 4, 5, "miss", False)
-    assert rctx.burn(8) == RollResult(8, 4, 5, "strong", False)
+    res = rctx.roll("heart", 1, 2, 0, 4, 5)
+    assert res == RollResult("heart", 3, 4, 5, "miss", False)
+    assert rctx.burn(8) == RollResult("heart", 8, 4, 5, "strong", False)
 
     rctx = RollContext()
 
     res = rctx.progress_roll(6, 8, 9)
-    assert res == RollResult(6, 8, 9, "miss", False)
-    assert rctx.burn(8) == RollResult(6, 8, 9, "miss", False) # verify progress roll ignores momentum burning
+    assert res == RollResult("", 6, 8, 9, "miss", False)
+    assert rctx.burn(8) == RollResult("", 6, 8, 9, "miss", False) # verify progress roll ignores momentum burning
 
 def test_rollcontext_value():
     rctx = RollContext()
@@ -218,12 +218,14 @@ def test_rollcontext_value():
     assert rctx.value("rolled") == False
     assert rctx.value("action") == 0
     assert rctx.value("stat") == 0
+    assert rctx.value("stat_name") == ""
 
-    rctx.roll(5, 2, 0, 1, 9)
+    rctx.roll("iron", 5, 2, 0, 1, 9)
 
     assert rctx.value("rolled") == True
     assert rctx.value("action") == 5
     assert rctx.value("stat") == 2
+    assert rctx.value("stat_name") == "iron"
 
     assert rctx.value("") is None
     assert rctx.value("invalid") is None

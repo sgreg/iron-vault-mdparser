@@ -340,7 +340,7 @@ class RollNodeParser(NodeParser):
         Returns:
             The original groups merged with the serialized `RollResult`.
         """
-        result = ctx.roll.roll(data["action"], data["stat"], data["adds"], data["vs1"], data["vs2"])
+        result = ctx.roll.roll(data["stat_name"], data["action"], data["stat"], data["adds"], data["vs1"], data["vs2"])
         return data | asdict(result)
 
 
