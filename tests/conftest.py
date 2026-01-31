@@ -15,6 +15,7 @@ from ironvaultmd.processors.mechanics import (
     IronVaultMechanicsBlockProcessor,
     IronVaultMechanicsPreprocessor,
 )
+from ironvaultmd.processors.others import IronVaultOtherBlocksPreprocessor
 
 
 @pytest.fixture(autouse=True)
@@ -46,6 +47,12 @@ def frontmatter_preprocessor_generator(md):
     def _frontmatter_preprocessor(data_out_dict = None):
         return IronVaultFrontmatterPreprocessor(md, data_out_dict)
     return _frontmatter_preprocessor
+
+
+@pytest.fixture(name="othersproc")
+def others_block_preprocessor(md):
+    processor = IronVaultOtherBlocksPreprocessor(md)
+    yield processor
 
 
 @pytest.fixture(name="mechproc")

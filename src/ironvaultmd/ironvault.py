@@ -47,6 +47,7 @@ from ironvaultmd.processors.mechanics import (
     IronVaultMechanicsBlockProcessor,
     IronVaultMechanicsPreprocessor,
 )
+from ironvaultmd.processors.others import IronVaultOtherBlocksPreprocessor
 
 
 class IronVaultExtension(Extension):
@@ -126,6 +127,12 @@ class IronVaultExtension(Extension):
             IronVaultMechanicsPreprocessor(md),
             "ironvault-mechanics-preprocessor",
             50,
+        )
+
+        md.preprocessors.register(
+            IronVaultOtherBlocksPreprocessor(md),
+            "ironvault-others-preprocessor",
+            60,
         )
 
         md.preprocessors.register(

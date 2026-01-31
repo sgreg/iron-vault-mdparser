@@ -272,6 +272,9 @@ move "[React Under Fire](datasworn:move:starforged\\/combat\\/react_under_fire)"
 - "in control"
 ```
 
+```iron-vault-truth
+This should just be removed and therefore ignored
+```
 More text
 """
 

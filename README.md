@@ -14,6 +14,7 @@ The main idea for this extension is to convert Iron Vault Markdown journals into
 
 Supports at this point
  - parsing ` ```iron-vault-mechanics ``` ` blocks
+ - removing all other ` ```iron-vault-* ``` ` blocks
  - collecting frontmatter YAML information into a dictionary
  - regular and labeled wiki-style links, i.e. `[[link]]` and `[[link|label]]` (see also below for details)
  - user-definable templates for parsing the supported nodes
@@ -56,6 +57,34 @@ variables can be found from the [`templates/` directory ](src/ironvaultmd/parser
 
 Each node template can be overridden when initiating the `IronVaultExtension`. See below for some examples.
 Setting a template to an empty string (`''`) will prevent the node from being parsed to HTML altogether.
+
+### Other Iron Vault bocks
+All other [Iron Vault blocks](https://ironvault.quest/blocks/index.html) are removed.
+
+Iron Vault renders these blocks to provide meaningful information, but from a Markdown file parsing
+point of view, those are mostly just empty blocks with no extra data and no (straightforward) way
+to fill in that data. So instead of showing empty blocks (are empty code block if e.g. the `FencedCode`
+extension is used), they are just removed.
+
+### Inline Mechanics
+Iron Vault recently added [inline mechanics](https://ironvault.quest/other-features/inline-mechanics.html)
+to display mechanics blocks within the regular text flow, instead of separate blocks.
+
+There is currently no support for parsing those inline mechanics, nor any serious plans to add it.
+
+It's in the back of my mind, but I prefer to wait until the feature has matured a bit and the mechanics
+are fully documented before thinking of adding it.
+
+### Other Obsidian features
+Apart from the links and frontmatter, no other Obsidian-specific features are supported, or intended to
+be added. Focus is primarily on the Iron Vault extension itself.
+
+#### Callouts
+Have a look at [`markdown-obsidian-callouts`](https://pypi.org/project/markdown-obsidian-callouts/)
+([GitHub](https://github.com/lextoumbourou/markdown-obsidian-callouts)) for supporting Obsidian's
+[callouts](https://help.obsidian.md/callouts). While not natively supported, it can also handle Iron Vault's
+[spoiler callout](https://ironvault.quest/other-features/callouts.html).
+
 
 ## Installation
 
