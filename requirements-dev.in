@@ -2,3 +2,4 @@ pip-tools
 pytest
 coverage
 build
+ruff
