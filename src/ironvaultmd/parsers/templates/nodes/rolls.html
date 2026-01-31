@@ -1,0 +1,12 @@
+{#
+Rolls node used within a dice-expr block
+
+dice            string representation of what was rolled, e.g. "1d6", "3d6"
+rolls           raw string of the rolls, e.g. "4" a 1d6 roll, "4 1 5" for a 3d6 roll
+rolls_array     array of individual roll values, e.g. [4] for a 1d6 roll, [4, 1, 5] for a 3d6 roll
+                use `{% for roll in rolls_array %} ... {% endfor %}` to render individual rolls.
+#}
+<div class="ivm-rolls">
+    <span class="ivm-rolls-dice">{{ dice }}</span>:
+    <span class="ivm-rolls-rolls">{{ rolls }}</span>
+</div>

@@ -1,12 +1,13 @@
 from ironvaultmd.parsers.blocks import (
     ActorBlockParser,
+    DiceExprBlockParser,
     MoveBlockParser,
     OracleGroupBlockParser,
     OracleBlockParser,
     OraclePromptBlockParser,
 )
 from ironvaultmd.parsers.templater import Templater, TemplateOverrides, set_templater
-from utils import verify_is_dummy_block_element
+from utils import verify_is_dummy_block_element, element_text
 
 
 def test_parser_actor(ctx):
@@ -38,6 +39,30 @@ def test_parser_actor(ctx):
     assert len(children) == 1
     assert children[0].get("class") == "ivm-actor-name"
     assert children[0].text == "Character Name"
+
+def test_parser_dice_expr(ctx):
+    parser = DiceExprBlockParser()
+    assert parser.names.name == "Dice Expr"
+    assert parser.names.parser == "dice-expr"
+    assert parser.names.template == "dice_expr"
+
+    data = 'expr="3d6 + 3" result=12'
+    parser.begin(ctx, data)
+    verify_is_dummy_block_element(ctx.parent)
+
+    assert ctx.args == {"expr": "3d6 + 3", "result": 12, "extra": {}}
+
+    parser.finalize(ctx)
+
+    blocks = ctx.parent.findall("div")
+    assert len(blocks) == 1
+    assert blocks[0].get("class") == "ivm-dice-expr"
+
+    children = blocks[0].findall("div")
+    assert len(children) == 1
+    assert children[0].get("class") == "ivm-dice-expr-summary"
+    for sub in ["Dice Roll", "3d6 + 3", "12"]:
+        assert sub in element_text(children[0])
 
 def test_parser_move_no_roll(ctx):
     parser = MoveBlockParser()

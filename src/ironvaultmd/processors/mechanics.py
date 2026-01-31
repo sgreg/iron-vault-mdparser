@@ -22,6 +22,7 @@ from ironvaultmd.parsers.base import (
 )
 from ironvaultmd.parsers.blocks import (
     ActorBlockParser,
+    DiceExprBlockParser,
     MoveBlockParser,
     OracleGroupBlockParser,
     OracleBlockParser,
@@ -43,6 +44,7 @@ from ironvaultmd.parsers.nodes import (
     ProgressRollNodeParser,
     RerollNodeParser,
     RollNodeParser,
+    RollsNodeParser,
     TrackNodeParser,
     XpNodeParser,
 )
@@ -151,10 +153,10 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
     )
 
     RE_BLOCK_LINE = re.compile(
-        r"^(?P<name>actor|move|oracle-group|oracle|-) (?P<params>[^{]*) \{"
+        r"^(?P<name>actor|dice-expr|move|oracle-group|oracle|-) (?P<params>[^{]*) \{"
     )
     RE_NODE_LINE = re.compile(
-        r"^(?P<name>add|burn|clock|impact|initiative|meter|move|oracle|position|progress|progress-roll|reroll|roll|track|xp|-) (?P<params>.*)$"
+        r"^(?P<name>add|burn|clock|impact|initiative|meter|move|oracle|position|progress|progress-roll|reroll|roll|rolls|track|xp|-) (?P<params>.*)$"
     )
     RE_OOC_LINE = re.compile(r'^- "[^"]*$')
 
@@ -176,6 +178,7 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
 
         self.block_parsers: dict[str, MechanicsBlockParser] = {
             "actor": ActorBlockParser(),
+            "dice-expr": DiceExprBlockParser(),
             "move": MoveBlockParser(),
             "oracle-group": OracleGroupBlockParser(),
             "oracle": OracleBlockParser(),
@@ -197,6 +200,7 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
             "progress-roll": ProgressRollNodeParser(),
             "reroll": RerollNodeParser(),
             "roll": RollNodeParser(),
+            "rolls": RollsNodeParser(),
             "track": TrackNodeParser(),
             "xp": XpNodeParser(),
         }

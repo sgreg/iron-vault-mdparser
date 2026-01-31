@@ -194,6 +194,27 @@ body {
     /* placeholder */
 }
 
+/* ---------- Dice Expr block ---------- */
+.ivm-dice-expr {
+    padding: var(--ivm-pad-lg);
+    border: 1px solid var(--ivm-border);
+    border-radius: var(--ivm-radius-lg);
+    background: var(--ivm-surface);
+}
+
+.ivm-dice-expr-summary {
+    font-weight: var(--ivm-name-weight);
+}
+
+.ivm-dice-expr-expr {
+    font-weight: normal;
+    font-style: italic;
+}
+
+.ivm-dice-expr-result {
+    font-weight: var(--ivm-name-weight);
+}
+
 /* ---------- Impact ---------- */
 .ivm-impact {
     padding: var(--ivm-pad-md);
@@ -444,6 +465,19 @@ span.ivm-position-badspot {
 .ivm-roll-result {
     border-radius: var(--ivm-radius-sm);
     padding: var(--ivm-pad-sm);
+}
+
+/* ---------- Rolls (Dice Expr) ---------- */
+.ivm-rolls {
+    padding-left: 20px;
+}
+
+.ivm-rolls-dice {
+    /* placeholder */
+}
+
+.ivm-rolls-rolls {
+    font-style: italic;
 }
 
 /* ---------- Tracks ---------- */

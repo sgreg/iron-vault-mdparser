@@ -31,6 +31,20 @@ class ActorBlockParser(MechanicsBlockParser):
         super().__init__(names, regex)
 
 
+class DiceExprBlockParser(ParameterBlockParser):
+    """Block parser for dice-expr mechanics."""
+
+    # This doesn't combine the actual rolls yet as Iron Vault itself does it.
+    # Could consider that as a future improvement.
+    # Would need similar context handling as the Move block.
+
+    def __init__(self) -> None:
+        """Initialize the parser with its regex pattern."""
+        names = NameCollection("Dice Expr", "dice-expr", "dice_expr")
+        keys = ["expr", "result"]
+        super().__init__(names, keys)
+
+
 class MoveBlockParser(MechanicsBlockParser):
     """Block parser for mechanics move sections.
 
@@ -92,8 +106,8 @@ class OracleBlockParser(ParameterBlockParser):
         # See the oracle node parser, there can be two types (that I know of so far):
         # oracle name="[Core Oracles \/ Theme](datasworn:oracle_rollable:starforged\/core\/theme)" result="Warning" roll=96
         # oracle name="Will [[Lone Howls\/Clocks\/Clock decrypt Verholm research.md|Clock decrypt Verholm research]] advance? (Likely)" result="No" roll=83
-        known_keys = ["name", "result", "roll", "cursed", "replaced"]
-        super().__init__(names, known_keys)
+        keys = ["name", "result", "roll", "cursed", "replaced"]
+        super().__init__(names, keys)
 
     def handle_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:
         data["oracle"] = convert_link_name(data.get("name", "unknown"))

@@ -77,6 +77,7 @@ class TemplateOverrides:
 
     # Blocks
     actor_block: str | None = None
+    dice_expr_block: str | None = None
     mechanics_block: str | None = None
     move_block: str | None = None
     oracle_block: str | None = None
@@ -96,6 +97,7 @@ class TemplateOverrides:
     reroll: str | None = None
     roll: str | None = None
     roll_result: str | None = None
+    rolls: str | None = None
     track: str | None = None
     xp: str | None = None
     # Other elements

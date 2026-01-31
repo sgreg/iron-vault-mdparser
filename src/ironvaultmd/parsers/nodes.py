@@ -375,6 +375,20 @@ class RollNodeParser(NodeParser):
         return data | asdict(result)
 
 
+class RollsNodeParser(NodeParser):
+    """Parser for `rolls` used inside dice-expr blocks"""
+
+    def __init__(self) -> None:
+        # rolls 1 2 3 dice="3d6"
+        # rolls 1 dice="1d4"
+        regex = r'(?P<rolls>((\d+) ?)+) dice="(?P<dice>[0-9]+d[0-9]+)"'
+        super().__init__(NameCollection("Rolls", "rolls", "rolls"), regex)
+
+    def handle_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:
+        data["rolls_array"] = [int(roll) for roll in data["rolls"].split(" ")]
+        return data
+
+
 class TrackNodeParser(ParameterNodeParser):
     """Parser for `track` status changes (added/removed/resolved)."""
 

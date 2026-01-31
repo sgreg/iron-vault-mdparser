@@ -15,6 +15,7 @@ from ironvaultmd.parsers.nodes import (
     ProgressRollNodeParser,
     RerollNodeParser,
     RollNodeParser,
+    RollsNodeParser,
     TrackNodeParser,
     XpNodeParser,
 )
@@ -482,6 +483,44 @@ def test_parser_roll(block_ctx):
     ]
 
     assert_parser_data(parser, block_ctx, rolls, classes)
+
+
+def test_parser_rolls(block_ctx):
+    parser = RollsNodeParser()
+
+    assert parser.names.name == "Rolls"
+    assert parser.input_regex
+    assert not parser.extra_regex
+
+    rolls = [
+        ParserData('1 dice="1d10"', True, 0),
+        ParserData('100 dice="1d100"', True, 1),
+        ParserData('12 34 dice="2d100"', True, 2),
+        ParserData('1 2 3 dice="3d6"', True, 3),
+        ParserData('6 dice="invalid"', False),
+        ParserData('4 dice="1D10"', False), # lowercase 'd' expected
+        ParserData('dice="1d6" 1', False),
+        ParserData("", False),
+        ParserData('random data', False),
+    ]
+
+    nodes = assert_parser_data(parser, block_ctx, rolls, [])
+
+    assert "12 34" in element_text(nodes[2])
+    assert "2d100" in element_text(nodes[2])
+
+def test_parser_rolls_args(ctx):
+    parser = RollsNodeParser()
+    matches = parser._match('12 34 5 dice="3d100"')
+    args = parser.handle_args(matches, ctx)
+
+    assert args.get("dice", None) == "3d100"
+    assert args.get("rolls", None) == "12 34 5"
+    assert args.get("rolls_array", None) == [12, 34, 5]
+
+    # Make this some assert_parser_args() util function next and test all other node args
+    args = parser.handle_args(parser._match('1 dice="1d6"'), ctx)
+    assert args == {"dice": "1d6", "rolls": "1", "rolls_array": [1]}
 
 
 def test_parser_track(ctx):
