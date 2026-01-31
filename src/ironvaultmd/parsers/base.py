@@ -33,11 +33,17 @@ class Parser:
         input_regex: Compiled regular expression used to match input.
         extra_regex: Optional compiled regex for parsing key=value pairs.
     """
+
     names: NameCollection
     input_regex: re.Pattern[str]
     extra_regex: re.Pattern[str] | None
 
-    def __init__(self, names: NameCollection, line_regex: str, param_regex: str | None = None) -> None:
+    def __init__(
+        self,
+        names: NameCollection,
+        line_regex: str,
+        param_regex: str | None = None,
+    ) -> None:
         """Initialize the parser.
 
         Args:
@@ -61,7 +67,9 @@ class Parser:
         match = self.input_regex.search(data)
 
         if match is None:
-            logger.warning(f"Failed to match parameters for {self.names.name}: {repr(data)}")
+            logger.warning(
+                f"Failed to match parameters for {self.names.name}: {repr(data)}"
+            )
             return None
 
         logger.debug(f"{self.names.name} match: {match}")
@@ -110,6 +118,7 @@ class ParameterParsingMixin:
         PARAMS_REGEX: Pattern matching the entire parameter string.
         PARAM_REGEX: Pattern for extracting individual key=value pairs.
     """
+
     PARAMS_REGEX = r'^(?P<params>(?:[\w-]+=(?:"[^"]*"|-?\d+|true|false)(?:\s+|$))+)$'
     PARAM_REGEX = r'([\w-]+)=((?:"[^"]*"|-?\d+|true|false))'
 
@@ -129,17 +138,17 @@ class ParameterParsingMixin:
         Returns:
             Dictionary with parsed parameters
         """
-        params_string = data.get('params', '')
+        params_string = data.get("params", "")
         params = {}
 
         # Convert parameter types
         for key, value in self.extra_regex.findall(params_string):
             if value.startswith('"') and value.endswith('"'):
                 params[key] = value[1:-1]
-            elif value.lstrip('-').isdigit():
+            elif value.lstrip("-").isdigit():
                 params[key] = int(value)
-            elif value in ('true', 'false'):
-                params[key] = value == 'true'
+            elif value in ("true", "false"):
+                params[key] = value == "true"
             else:
                 logger.warning(f"Unexpected param match in {self.names.name}: {value}")
 
@@ -205,7 +214,9 @@ class NodeParser(Parser):
             if out := template.render(args).strip():
                 ctx.parent.append(etree.fromstring(out))
             else:
-                logger.debug(f"Template {template.filename} rendered no element for node {repr(data)}")
+                logger.debug(
+                    f"Template {template.filename} rendered no element for node {repr(data)}"
+                )
 
 
 class ParameterNodeParser(ParameterParsingMixin, NodeParser):
@@ -226,6 +237,7 @@ class ParameterNodeParser(ParameterParsingMixin, NodeParser):
     Attributes:
         known_keys: List of expected parameter names.
     """
+
     known_keys: list[str]
 
     def __init__(self, names: NameCollection, keys: list[str]) -> None:
@@ -235,7 +247,9 @@ class ParameterNodeParser(ParameterParsingMixin, NodeParser):
             names: Name collection for the node.
             keys: List of known/expected parameter names.
         """
-        super().__init__(names, ParameterParsingMixin.PARAMS_REGEX, ParameterParsingMixin.PARAM_REGEX)
+        super().__init__(
+            names, ParameterParsingMixin.PARAMS_REGEX, ParameterParsingMixin.PARAM_REGEX
+        )
         self.known_keys = keys
 
 
@@ -247,7 +261,12 @@ class MechanicsBlockParser(Parser):
     nodes are parsed, and can perform finalization in `finalize`.
     """
 
-    def __init__(self, names: NameCollection, line_regex: str, param_regex: str | None = None) -> None:
+    def __init__(
+        self,
+        names: NameCollection,
+        line_regex: str,
+        param_regex: str | None = None,
+    ) -> None:
         """Initialize the block parser.
 
         Args:
@@ -328,7 +347,9 @@ class MechanicsBlockParser(Parser):
                 ctx.replace_root(new_root)
             else:
                 # Note, this keeps the dummy div around currently, so the block remains rendered
-                logger.debug(f"Template {template.filename} rendered no element for block args {repr(ctx.args)}")
+                logger.debug(
+                    f"Template {template.filename} rendered no element for block args {repr(ctx.args)}"
+                )
 
         ctx.pop()
 
@@ -382,6 +403,7 @@ class ParameterBlockParser(ParameterParsingMixin, MechanicsBlockParser):
     Attributes:
         known_keys: List of expected parameter names.
     """
+
     known_keys: list[str]
 
     def __init__(self, names: NameCollection, keys: list[str]) -> None:
@@ -391,5 +413,7 @@ class ParameterBlockParser(ParameterParsingMixin, MechanicsBlockParser):
             names: Name collection for the block.
             keys: List of known/expected parameter names.
         """
-        super().__init__(names, ParameterParsingMixin.PARAMS_REGEX, ParameterParsingMixin.PARAM_REGEX)
+        super().__init__(
+            names, ParameterParsingMixin.PARAMS_REGEX, ParameterParsingMixin.PARAM_REGEX
+        )
         self.known_keys = keys

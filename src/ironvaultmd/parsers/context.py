@@ -39,6 +39,7 @@ class NameCollection:
         parser: Parser lookup name, e.g., "oracle-group", "progress-roll".
         template: Template lookup name, e.g., "oracle_group", "progress_roll".
     """
+
     name: str
     parser: str | None = None
     template: str | None = None
@@ -57,6 +58,7 @@ class RollResult:
         hitmiss: Outcome string (`miss`, `hit`, or `strong`)
         match: Whether the roll was a match or not.
     """
+
     stat_name: str
     score: int
     vs1: int
@@ -77,6 +79,7 @@ class RollContext:
     that later operations (e.g., `finalize()` in `MoveBlockParser`) can style
     output accordingly.
     """
+
     stat_name: str
     action: int
     stat: int
@@ -99,7 +102,15 @@ class RollContext:
         self.progress = 0
         self.rolled = False
 
-    def roll(self, stat_name: str, action: int | str, stat: int | str, adds: int | str, vs1: int | str, vs2: int | str) -> RollResult:
+    def roll(
+        self,
+        stat_name: str,
+        action: int | str,
+        stat: int | str,
+        adds: int | str,
+        vs1: int | str,
+        vs2: int | str,
+    ) -> RollResult:
         """Perform a standard action roll.
 
         Args:
@@ -129,7 +140,9 @@ class RollContext:
 
         return self.get()
 
-    def progress_roll(self, progress: int | str, vs1: int | str, vs2: int | str) -> RollResult:
+    def progress_roll(
+        self, progress: int | str, vs1: int | str, vs2: int | str
+    ) -> RollResult:
         """Perform a progress roll.
 
         Args:
@@ -172,7 +185,9 @@ class RollContext:
 
         if die == "action":
             if self.progress > 0:
-                logger.warning("Attempting to reroll action die on progress roll, ignoring")
+                logger.warning(
+                    "Attempting to reroll action die on progress roll, ignoring"
+                )
             else:
                 self.action = int(value)
         elif die == "vs1":
@@ -267,6 +282,7 @@ class Context:
             nodes and blocks contained within the main mechanics block.
         root_names: `NameCollection` values for the root element.
     """
+
     root_names = NameCollection("root")
 
     def __init__(self, root: etree.Element) -> None:
@@ -324,7 +340,9 @@ class Context:
             Nothing.
         """
         self.blocks.append(block)
-        logger.debug(f"CONTEXT: pushing #{len(self.blocks)} {repr(block)}  str {str(block)}")
+        logger.debug(
+            f"CONTEXT: pushing #{len(self.blocks)} {repr(block)}  str {str(block)}"
+        )
 
     def pop(self) -> None:
         """Pop the current block from the context stack.

@@ -44,6 +44,7 @@ class IronVaultFrontmatterPreprocessor(Preprocessor):
         frontmatter: Optional dictionary which, when provided, receives the
             parsed YAML key-value pairs.
     """
+
     FRONTMATTER_DELIMITER = "---"
 
     def __init__(self, md: Markdown | None = None, frontmatter: dict | None = None):
@@ -103,7 +104,7 @@ class IronVaultFrontmatterPreprocessor(Preprocessor):
         if self.frontmatter is not None:
             # If a frontmatter dictionary is set, create YAML data from the
             # extracted lines, parse it, and store it in that dictionary.
-            yaml_text = '\n'.join(yaml_lines)
+            yaml_text = "\n".join(yaml_lines)
             frontmatter = yaml.safe_load(yaml_text)
             self.frontmatter.clear()
             self.frontmatter.update(frontmatter)

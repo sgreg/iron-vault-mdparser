@@ -27,6 +27,7 @@ class ActorBlockParser(MechanicsBlockParser):
     Matches an opening line that references an Obsidian link with a piped
     label and renders the label as the actor name.
     """
+
     def __init__(self) -> None:
         """Initialize the parser with its regex pattern."""
         names = NameCollection("Actor", "actor", "actor")
@@ -40,6 +41,7 @@ class MoveBlockParser(MechanicsBlockParser):
     Creates a move container and, upon finalization, updates CSS classes
     based on the move roll outcome's hit/miss and match status.
     """
+
     def __init__(self) -> None:
         """Initialize the parser with its regex pattern."""
         names = NameCollection("Move", "move", "move")
@@ -78,6 +80,7 @@ class MoveBlockParser(MechanicsBlockParser):
 
 class OracleGroupBlockParser(MechanicsBlockParser):
     """Block parser for an oracle group header."""
+
     def __init__(self) -> None:
         """Initialize the parser with its regex pattern."""
         names = NameCollection("Oracle Group", "oracle-group", "oracle")
@@ -87,6 +90,7 @@ class OracleGroupBlockParser(MechanicsBlockParser):
 
 class OracleBlockParser(ParameterBlockParser):
     """Block parser for a single oracle roll result."""
+
     def __init__(self) -> None:
         names = NameCollection("Oracle", "oracle", "oracle")
         # See the oracle node parser, there can be two types (that I know of so far):
@@ -104,6 +108,7 @@ class OracleBlockParser(ParameterBlockParser):
 
 class OraclePromptBlockParser(MechanicsBlockParser):
     """Block parser for oracle prompts (narrative lines)."""
+
     def __init__(self) -> None:
         """Initialize the parser with its regex pattern."""
         names = NameCollection("Oracle Prompt", "-", "oracle")

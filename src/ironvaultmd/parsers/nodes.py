@@ -12,6 +12,7 @@ Classes derived from `NodeParser` use a strict, fixed parameter-based regex,
 while classes derived from `ParameterNodeParser` use a more relaxed key=value
 of arbitrary order regex.
 """
+
 from dataclasses import asdict
 from typing import Any
 
@@ -29,6 +30,7 @@ from ironvaultmd.util import (
 
 class AddNodeParser(NodeParser):
     """Parser for `add` mechanics lines (adds with optional reason)."""
+
     def __init__(self) -> None:
         # add 1 "Tech asset"   or just
         # add 1
@@ -38,9 +40,10 @@ class AddNodeParser(NodeParser):
 
 class BurnNodeParser(NodeParser):
     """Parser for momentum `burn` lines."""
+
     def __init__(self) -> None:
         # burn from=8 to=2
-        regex = r'^from=(?P<from>\d+) to=(?P<to>\d+)$'
+        regex = r"^from=(?P<from>\d+) to=(?P<to>\d+)$"
         super().__init__(NameCollection("Burn", "burn", "burn"), regex)
 
     def handle_args(self, data: dict[str, Any], ctx: Context) -> dict[str, Any]:
@@ -59,6 +62,7 @@ class BurnNodeParser(NodeParser):
 
 class ClockNodeParser(ParameterNodeParser):
     """Parser for clock progress or status change lines."""
+
     def __init__(self) -> None:
         # clock from=2 name="[[Lone Howls\/Clocks\/Titanhold Bounty Hunters closing in on Dykstra.md|Titanhold Bounty Hunters closing in on Dykstra]]" out-of=6 to=3
         # clock name="[[Lone Howls\/Clocks\/Titanhold Bounty Hunters closing in on Dykstra.md|Titanhold Bounty Hunters closing in on Dykstra]]" status="added"
@@ -73,6 +77,7 @@ class ClockNodeParser(ParameterNodeParser):
 
 class ImpactNodeParser(NodeParser):
     """Parser for marking or unmarking character impacts."""
+
     def __init__(self) -> None:
         # impact "Permanently Harmed" true
         regex = r'^"(?P<impact>[^\"]+)" (?P<marked>(true|false))$'
@@ -96,10 +101,13 @@ class ImpactNodeParser(NodeParser):
 
 class InitiativeNodeParser(NodeParser):
     """Parser for `initiative` state transitions."""
+
     def __init__(self) -> None:
         # initiative from="out of combat" to="has initiative"
         regex = r'^from="(?P<from>.+)" to="(?P<to>.+)"$'
-        super().__init__(NameCollection("Initiative", "initiative", "initiative"), regex)
+        super().__init__(
+            NameCollection("Initiative", "initiative", "initiative"), regex
+        )
 
     def handle_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:
         """Add slugified forms of the initiative states.
@@ -112,11 +120,15 @@ class InitiativeNodeParser(NodeParser):
             The original groups merged with `from_slug` and `to_slug` computed
             via `initiative_slugify`.
         """
-        return data | {"from_slug": initiative_slugify(data["from"]), "to_slug": initiative_slugify(data["to"])}
+        return data | {
+            "from_slug": initiative_slugify(data["from"]),
+            "to_slug": initiative_slugify(data["to"]),
+        }
 
 
 class MeterNodeParser(NodeParser):
     """Parser for `meter` changes (e.g., Health, Momentum)."""
+
     def __init__(self) -> None:
         # meter "Momentum" from=5 to=6
         regex = r'^"(?P<meter_name>[^"]+)" from=(?P<from>\d+) to=(?P<to>\d+$)'
@@ -148,6 +160,7 @@ class MoveNodeParser(NodeParser):
     Note that this only handles standalone `move` lines, not the whole
     `move` block, which is handled in `MoveBlockParser`.
     """
+
     def __init__(self) -> None:
         # move "[Aid Your Ally](datasworn:move:starforged\/adventure\/aid_your_ally)"
         regex = r'^"\[(?P<move_name>[^]]+)]\((?P<move_link>[^)]+)\)"$'
@@ -168,6 +181,7 @@ class MoveNodeParser(NodeParser):
 
 class OocNodeParser(NodeParser):
     """Parser for out-of-character notes inside mechanics blocks."""
+
     def __init__(self) -> None:
         regex = '^"(?P<comment>.*)"$'
         super().__init__(NameCollection("OOC", "-", "ooc"), regex)
@@ -189,6 +203,7 @@ class OocNodeParser(NodeParser):
 
 class OracleNodeParser(ParameterNodeParser):
     """Parser for oracle roll results (text or datasworn references)."""
+
     def __init__(self) -> None:
         # oracle name="[Core Oracles \/ Theme](datasworn:oracle_rollable:starforged\/core\/theme)" result="Warning" roll=96
         # oracle name="Will [[Lone Howls\/Clocks\/Clock decrypt Verholm research.md|Clock decrypt Verholm research]] advance? (Likely)" result="No" roll=83
@@ -204,8 +219,9 @@ class OracleNodeParser(ParameterNodeParser):
 
 class PositionNodeParser(NodeParser):
     """Parser for `position` state transitions."""
+
     def __init__(self) -> None:
-        #position from="out of combat" to="in control"
+        # position from="out of combat" to="in control"
         regex = r'^from="(?P<from>.+)" to="(?P<to>.+)"$'
         super().__init__(NameCollection("Position", "position", "position"), regex)
 
@@ -220,11 +236,15 @@ class PositionNodeParser(NodeParser):
             The original groups merged with `from_slug` and `to_slug` computed
             via `position_slugify`.
         """
-        return data | {"from_slug": position_slugify(data["from"]), "to_slug": position_slugify(data["to"])}
+        return data | {
+            "from_slug": position_slugify(data["from"]),
+            "to_slug": position_slugify(data["to"]),
+        }
 
 
 class ProgressNodeParser(ParameterNodeParser):
     """Parser for `progress` track changes."""
+
     def __init__(self) -> None:
         # progress: from=8 name="[[Lone Howls\/Progress\/Connection Dykstra.md|Connection Dykstra]]" rank="dangerous" steps=1
         # regex = r'^from=(?P<from>\d+) name="\[\[.*\|(?P<name>.*)\]\]" rank="(?P<rank>\w+)" steps=(?P<steps>\d+)$'
@@ -260,19 +280,21 @@ class ProgressNodeParser(ParameterNodeParser):
             "from_fract": ticks_to_float(from_ticks),
             "to_fract": ticks_to_float(to_ticks),
             "ticks": ticks,
-            "extra": data["extra"]
+            "extra": data["extra"],
         }
-
 
 
 class ProgressRollNodeParser(ParameterNodeParser):
     """Parser for `progress-roll` outcomes with optional name."""
+
     def __init__(self) -> None:
         # progress-roll name="[[Lone Howls\/Progress\/Combat Tayla.md|Combat Tayla]]" score=8 vs1=1 vs2=4
         # Note, before Dec 2024, name parameter may be missing, so pack the whole 'name="[[..|..]]" ' into optional group '(?: ...)?'
         # Addition: in some cases the name might be in the back: progress-roll score=8 vs1=1 vs2=4 name="[[...|...]]"
-        keys=["name", "score", "vs1", "vs2"]
-        super().__init__(NameCollection("Progress Roll", "progress-roll", "progress_roll"), keys)
+        keys = ["name", "score", "vs1", "vs2"]
+        super().__init__(
+            NameCollection("Progress Roll", "progress-roll", "progress_roll"), keys
+        )
 
     def handle_args(self, data: dict[str, Any], ctx: Context) -> dict[str, Any]:
         """Perform the progress roll via context and set the track name.
@@ -298,6 +320,7 @@ class ProgressRollNodeParser(ParameterNodeParser):
 
 class RerollNodeParser(NodeParser):
     """Parser for a selective die `reroll`."""
+
     def __init__(self) -> None:
         # reroll action="5"
         # reroll vs1="3"
@@ -325,6 +348,7 @@ class RerollNodeParser(NodeParser):
 
 class RollNodeParser(NodeParser):
     """Parser for a standard roll including adds and stat."""
+
     def __init__(self) -> None:
         regex = r'^"(?P<stat_name>\w+)" action=(?P<action>\d+) adds=(?P<adds>\d+) stat=(?P<stat>\d+) vs1=(?P<vs1>\d+) vs2=(?P<vs2>\d+)$'
         super().__init__(NameCollection("Roll", "roll", "roll"), regex)
@@ -340,12 +364,20 @@ class RollNodeParser(NodeParser):
         Returns:
             The original groups merged with the serialized `RollResult`.
         """
-        result = ctx.roll.roll(data["stat_name"], data["action"], data["stat"], data["adds"], data["vs1"], data["vs2"])
+        result = ctx.roll.roll(
+            data["stat_name"],
+            data["action"],
+            data["stat"],
+            data["adds"],
+            data["vs1"],
+            data["vs2"],
+        )
         return data | asdict(result)
 
 
 class TrackNodeParser(ParameterNodeParser):
     """Parser for `track` status changes (added/removed/resolved)."""
+
     def __init__(self) -> None:
         # track name="[[Lone Howls\/Progress\/Combat Tayla.md|Combat Tayla]]" status="removed"
         keys = ["name", "status"]
@@ -358,9 +390,10 @@ class TrackNodeParser(ParameterNodeParser):
 
 class XpNodeParser(NodeParser):
     """Parser for `xp` value changes."""
+
     def __init__(self) -> None:
         # xp from=3 to=5
-        regex = r'^from=(?P<from>\d+) to=(?P<to>\d+)$'
+        regex = r"^from=(?P<from>\d+) to=(?P<to>\d+)$"
         super().__init__(NameCollection("XP", "xp", "xp"), regex)
 
     def handle_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:

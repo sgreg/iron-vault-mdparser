@@ -32,11 +32,18 @@ import logging
 from contextvars import ContextVar
 from dataclasses import dataclass
 
-from jinja2 import Template, PackageLoader, Environment, TemplateNotFound, FileSystemLoader
+from jinja2 import (
+    Template,
+    PackageLoader,
+    Environment,
+    TemplateNotFound,
+    FileSystemLoader,
+)
 
 from ironvaultmd import logger_name
 
 logger = logging.getLogger(logger_name)
+
 
 @dataclass
 class TemplateOverrides:
@@ -70,6 +77,7 @@ class TemplateOverrides:
         xp: Template for the `xp` node.
         link: Template for wiki links rendered by the links processor.
     """
+
     # Blocks
     actor_block: str | None = None
     mechanics_block: str | None = None
@@ -125,7 +133,11 @@ class Templater:
     default_templates: dict[str, Template]
     templates_cache: dict[str, Template]
 
-    def __init__(self, path: str | None = None, overrides: TemplateOverrides | None = None) -> None:
+    def __init__(
+        self,
+        path: str | None = None,
+        overrides: TemplateOverrides | None = None,
+    ) -> None:
         """Initialize the templating environment.
 
         Sets up Jinja template handling with either a user-provided directory
@@ -143,7 +155,7 @@ class Templater:
             self.template_loader = FileSystemLoader(path)
         else:
             logger.debug("Using package-provided templates")
-            self.template_loader = PackageLoader('ironvaultmd.parsers', 'templates')
+            self.template_loader = PackageLoader("ironvaultmd.parsers", "templates")
 
         self.overrides = TemplateOverrides()
 
@@ -167,7 +179,9 @@ class Templater:
                 for that template.
         """
         if not overrides:
-            logger.warning("Trying to load template overrides, but no overrides are set")
+            logger.warning(
+                "Trying to load template overrides, but no overrides are set"
+            )
             return
 
         for name, value in vars(overrides).items():
@@ -204,7 +218,7 @@ class Templater:
         Returns:
             The corresponding default `Template`, or the generic `<div></div>`
             fallback if the key is not recognized.
-            """
+        """
         if key in self.default_templates:
             return self.default_templates[key]
         return self.default_templates["default"]
@@ -225,7 +239,7 @@ class Templater:
         """
         cache_key = f"{template_type}:{name}"
         if cache_key not in self.templates_cache:
-            self.templates_cache[cache_key] = self._get_template(name,template_type)
+            self.templates_cache[cache_key] = self._get_template(name, template_type)
         return self.templates_cache[cache_key]
 
     def _get_template(self, name: str, template_type: str = "") -> Template | None:
@@ -248,14 +262,16 @@ class Templater:
             A compiled Jinja `Template` or `None` when explicitly disabled
             or reading the template file fails / it doesn't exist.
         """
-        logger.info(f"[ctx {hex(id(self))}] Getting {template_type} template for '{name}'")
-        key = name.lower().replace(' ', '_')
+        logger.info(
+            f"[ctx {hex(id(self))}] Getting {template_type} template for '{name}'"
+        )
+        key = name.lower().replace(" ", "_")
 
         overrides = self._lookup_template_override(key, template_type)
 
         if isinstance(overrides, str):
             # User-defined template override string found
-            if str(overrides) == '':
+            if str(overrides) == "":
                 # Empty string, template is explicitly disabled
                 logger.debug("  -> found empty template override")
                 return None
@@ -319,8 +335,9 @@ class Templater:
         return template
 
 
-_templater_var: ContextVar[Templater | None] = ContextVar('templater', default=None)
+_templater_var: ContextVar[Templater | None] = ContextVar("templater", default=None)
 """Context variable for managing per-context `Templater` instances."""
+
 
 def get_templater() -> Templater:
     """Get the current context's `Templater` instance.
@@ -342,6 +359,7 @@ def get_templater() -> Templater:
     logger.debug(f"TEMPLATER: get instance {hex(id(templater_instance))}")
     return templater_instance
 
+
 def set_templater(templater_instance: Templater) -> None:
     """Set a `Templater` instance for the current context.
 
@@ -351,6 +369,7 @@ def set_templater(templater_instance: Templater) -> None:
     logger.debug(f"TEMPLATER: set instance {hex(id(templater_instance))}")
     _templater_var.set(templater_instance)
 
+
 def reset_templater() -> None:
     """Reset the current context's templater to a fresh instance.
 
@@ -359,6 +378,7 @@ def reset_templater() -> None:
     """
     _templater_var.set(Templater())
     logger.debug(f"TEMPLATER: rst instance {_templater_var.get()}")
+
 
 def clear_templater() -> None:
     """Unset the current context's templater.

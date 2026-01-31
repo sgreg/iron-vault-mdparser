@@ -39,6 +39,7 @@ class Link:
         anchor: anchor within the linked document.
         label: link label text that is displayed.
     """
+
     seq: int
     ref: str
     anchor: str
@@ -139,11 +140,13 @@ class WikiLinkProcessor(InlineProcessor):
         # [[link|label]]
         # [[link#anchor]]
         # [[link#anchor|with label]]
-        wikilink_pattern = r'!?\[\[([^]|#]+)(?:#([^|\]]+))?(?:\|([^]]+))?]]'
+        wikilink_pattern = r"!?\[\[([^]|#]+)(?:#([^|\]]+))?(?:\|([^]]+))?]]"
         self.links = link_collector
         super().__init__(wikilink_pattern)
 
-    def handleMatch(self, m: re.Match[str], data: str) -> tuple[etree.Element | str, int, int]:
+    def handleMatch(
+        self, m: re.Match[str], data: str
+    ) -> tuple[etree.Element | str, int, int]:
         """Handle a single wiki link match.
 
         Args:
@@ -175,9 +178,11 @@ class WikiLinkProcessor(InlineProcessor):
 
             link = self.links.add(ref, anchor, label)
             template = get_templater().get_template("link")
-            element = etree.fromstring(template.render(link.__dict__)) if template else label
+            element = (
+                etree.fromstring(template.render(link.__dict__)) if template else label
+            )
 
         else:
-            element = ''
+            element = ""
 
         return element, m.start(0), m.end(0)

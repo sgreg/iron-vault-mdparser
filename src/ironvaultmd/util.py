@@ -29,14 +29,15 @@ def split_match(text: str, match: re.Match[str]) -> tuple[str, str]:
         A tuple `(before, after)` containing the substrings before and after
         the matched span.
     """
-    before = text[:match.start()]
-    after = text[match.end():]
+    before = text[: match.start()]
+    after = text[match.end() :]
     return before, after
 
 
 RE_LINK_TEXT_MARKDOWN = re.compile(r"\[(?P<link_name>[^]]+)]\([^)]*\)")
 RE_LINK_TEXT_WIKITYPE = re.compile(r"\[\[(?P<link_name>[^]|]+)]]")
 RE_LINK_TEXT_WIKITYPE_NAMED = re.compile(r"\[\[[^]|]*\|(?P<link_name>[^]]+)]]")
+
 
 def convert_link_name(raw: str) -> str:
     """Normalize a link‑decorated string to a plain display name.
@@ -52,9 +53,9 @@ def convert_link_name(raw: str) -> str:
         The normalized display string with link markup removed.
     """
     if (
-        (m := RE_LINK_TEXT_MARKDOWN.search(raw)) or
-        (m := RE_LINK_TEXT_WIKITYPE.search(raw)) or
-        (m := RE_LINK_TEXT_WIKITYPE_NAMED.search(raw))
+        (m := RE_LINK_TEXT_MARKDOWN.search(raw))
+        or (m := RE_LINK_TEXT_WIKITYPE.search(raw))
+        or (m := RE_LINK_TEXT_WIKITYPE_NAMED.search(raw))
     ):
         link_name = m.groupdict()["link_name"].replace("\\/", "/")
         before, after = split_match(raw, m)
@@ -84,7 +85,7 @@ def check_dice(score, vs1, vs2) -> tuple[str, bool]:
     else:
         hitmiss = "miss"
 
-    match = (vs1 == vs2)
+    match = vs1 == vs2
     return hitmiss, match
 
 

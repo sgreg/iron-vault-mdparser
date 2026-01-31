@@ -36,6 +36,7 @@ arguments when constructing `IronVaultExtension` or via Markdown config):
 - `template_overrides` (TemplateOverrides): Optional overrides for templates.
 - `template_path` (str): Optional path for templates to use.
 """
+
 import logging
 
 from markdown.extensions import Extension
@@ -51,6 +52,7 @@ from ironvaultmd.processors.mechanics import (
 
 logger = logging.getLogger(logger_name)
 
+
 class IronVaultExtension(Extension):
     """Markdown extension that registers the Iron‑Vault processors.
 
@@ -60,6 +62,7 @@ class IronVaultExtension(Extension):
         md: The `markdown.Markdown` instance after registration.
         frontmatter: Optional dictionary that will receive parsed front matter.
     """
+
     def __init__(self, **kwargs):
         """Create and configure the Iron‑Vault Markdown extension.
 
@@ -76,22 +79,25 @@ class IronVaultExtension(Extension):
         """
 
         self.config = {
-            'links': [[], 'List of collected links'],
-            'frontmatter': [{}, "YAML Frontmatter parsed into dictionary"],
-            'template_path': ["", "Path to a directory with custom templates"],
-            'template_overrides': [{}, "TemplateOverrides instance with user-defined template overrides"],
+            "links": [[], "List of collected links"],
+            "frontmatter": [{}, "YAML Frontmatter parsed into dictionary"],
+            "template_path": ["", "Path to a directory with custom templates"],
+            "template_overrides": [
+                {},
+                "TemplateOverrides instance with user-defined template overrides",
+            ],
         }
 
         super().__init__(**kwargs)
 
         self.md = None
 
-        links = self.getConfig('links', None)
+        links = self.getConfig("links", None)
         if links is not None and not isinstance(links, list):
             raise TypeError("Parameter 'links' must be a list")
         self.link_collector = LinkCollector(links)
 
-        self.frontmatter = self.getConfig('frontmatter', None)
+        self.frontmatter = self.getConfig("frontmatter", None)
         if self.frontmatter is not None and not isinstance(self.frontmatter, dict):
             raise TypeError("Parameter 'frontmatter' must be a dict")
 
@@ -120,11 +126,30 @@ class IronVaultExtension(Extension):
         self.md = md
 
         # fenced_code preprocessor has priority 25, ours must have higher one to make sure it's runs first
-        md.preprocessors.register(IronVaultMechanicsPreprocessor(md), 'ironvault-mechanics-preprocessor', 50)
-        md.preprocessors.register(IronVaultFrontmatterPreprocessor(md, self.frontmatter), 'ironvault-frontmatter-preprocessor', 40)
-        md.parser.blockprocessors.register(IronVaultMechanicsBlockProcessor(md.parser), 'ironvault-mechanics', 175)
+        md.preprocessors.register(
+            IronVaultMechanicsPreprocessor(md),
+            "ironvault-mechanics-preprocessor",
+            50,
+        )
+
+        md.preprocessors.register(
+            IronVaultFrontmatterPreprocessor(md, self.frontmatter),
+            "ironvault-frontmatter-preprocessor",
+            40,
+        )
+
+        md.parser.blockprocessors.register(
+            IronVaultMechanicsBlockProcessor(md.parser),
+            "ironvault-mechanics",
+            175,
+        )
+
         # wikilinks extension processor has priority 75, so need to make sure ours has higher priority again
-        md.inlinePatterns.register(WikiLinkProcessor(self.link_collector), 'ironvault-wikilinks-inlineprocessor', 100)
+        md.inlinePatterns.register(
+            WikiLinkProcessor(self.link_collector),
+            "ironvault-wikilinks-inlineprocessor",
+            100,
+        )
 
     def reset(self) -> None:
         """Reset extension state between Markdown conversions.

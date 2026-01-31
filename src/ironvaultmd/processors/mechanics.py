@@ -75,7 +75,7 @@ class IronVaultMechanicsPreprocessor(Preprocessor):
     END = "```"
     NEW_END = ",,,"
 
-    def run(self, lines: list[str]) -> list[str]: # NOSONAR don't complain about cognitive complexity, it's a parser after all
+    def run(self, lines: list[str]) -> list[str]:  # NOSONAR
         """Rewrite mechanics fences and ensure block boundaries.
 
         Converts triple backticks around mechanics blocks to triple commas to
@@ -143,15 +143,22 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
         block_parsers: Mapping of block names to `MechanicsBlockParser` instances.
         node_parsers: Mapping of node names to `NodeParser` instances.
     """
+
     # Note, preprocessor removes now all content before and after the mechanics block,
     # so could consider tweaking the regex strings accordingly for these two here.
     # Also, empty but otherwise valid block fails to match now and raises an exception,
     # that's a bit harsh? Could use one common regex here, so test() fails on empty block.
-    RE_MECHANICS_START = re.compile(r'(^|\n),,,iron-vault-mechanics(\n|$)')
-    RE_MECHANICS_SECTION = re.compile(r'(^|\n),,,iron-vault-mechanics\n(?P<mechanics>[\s\S]*)\n,,,(\n|$)')
+    RE_MECHANICS_START = re.compile(r"(^|\n),,,iron-vault-mechanics(\n|$)")
+    RE_MECHANICS_SECTION = re.compile(
+        r"(^|\n),,,iron-vault-mechanics\n(?P<mechanics>[\s\S]*)\n,,,(\n|$)"
+    )
 
-    RE_BLOCK_LINE = re.compile(r'^(?P<name>actor|move|oracle-group|oracle|-) (?P<params>[^{]*) \{')
-    RE_NODE_LINE = re.compile(r'^(?P<name>add|burn|clock|impact|initiative|meter|move|oracle|position|progress|progress-roll|reroll|roll|track|xp|-) (?P<params>.*)$')
+    RE_BLOCK_LINE = re.compile(
+        r"^(?P<name>actor|move|oracle-group|oracle|-) (?P<params>[^{]*) \{"
+    )
+    RE_NODE_LINE = re.compile(
+        r"^(?P<name>add|burn|clock|impact|initiative|meter|move|oracle|position|progress|progress-roll|reroll|roll|track|xp|-) (?P<params>.*)$"
+    )
     RE_OOC_LINE = re.compile(r'^- "[^"]*$')
 
     # Other blocks that exist (see https://ironvault.quest/blocks/index.html)
@@ -208,7 +215,9 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
             True if the block contains a mechanics start fence; otherwise False.
         """
         match = self.RE_MECHANICS_START.search(block)
-        logger.debug(f" >>> VLT testing ({'Y' if match is not None else 'N'}) {repr(block)} -> '{match}'")
+        logger.debug(
+            f" >>> VLT testing ({'Y' if match is not None else 'N'}) {repr(block)} -> '{match}'"
+        )
         return match is not None
 
     def run(self, parent, blocks) -> None:
@@ -226,7 +235,7 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
         logger.debug(f"\nrun, {len(blocks)} blocks: '{blocks}'")
 
         block = blocks.pop(0)
-        content = ''
+        content = ""
 
         if (match := self.RE_MECHANICS_SECTION.search(block)) is not None:
             # iron-vault-mechanics section found.
@@ -236,7 +245,9 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
             # all that accordingly. So if there is other content, there's
             # need for some logic improvements. Fail hard.
             if before_mechanics or after_mechanics:
-                raise MechanicsBlockException(f"Unexpected content around match block: {repr(block)}")
+                raise MechanicsBlockException(
+                    f"Unexpected content around match block: {repr(block)}"
+                )
 
             content = match.group("mechanics")
 
@@ -246,7 +257,9 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
             # The preprocessor should have arranged everything to find
             # the entire section's content in there, yet the regex didn't
             # match that here. Something is wrong. Fail hard.
-            raise MechanicsBlockException(f"Mechanics block matching failed: {repr(block)}")
+            raise MechanicsBlockException(
+                f"Mechanics block matching failed: {repr(block)}"
+            )
 
         logger.debug(f"mechanics block content: {repr(content)}")
         ctx = Context(parent)
@@ -281,7 +294,6 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
                 line = "<br />".join(multiline_ooc)
                 multiline_ooc = None
 
-
             if (block_match := self.RE_BLOCK_LINE.search(line)) is not None:
                 name = block_match.group("name")
                 data = block_match.group("params")
@@ -296,6 +308,6 @@ class IronVaultMechanicsBlockProcessor(BlockProcessor):
                 parser = self.node_parsers.get(name)
                 parser.parse(ctx, data)
 
-            elif line == '}':
+            elif line == "}":
                 parser = self.block_parsers.get(ctx.names.parser)
                 parser.finalize(ctx)
