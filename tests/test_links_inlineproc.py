@@ -1,10 +1,9 @@
 import xml.etree.ElementTree as etree
 
-import pytest
+from utils import StringCompareData
 
 from ironvaultmd.parsers.templater import TemplateOverrides, Templater, set_templater
 from ironvaultmd.processors.links import Link, LinkCollector
-from utils import StringCompareData
 
 
 def test_linkproc_match_success(linkproc):

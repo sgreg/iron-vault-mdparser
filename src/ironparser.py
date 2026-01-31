@@ -6,7 +6,7 @@ import sys
 import markdown
 from markdown.extensions.fenced_code import FencedCodeExtension
 
-from ironvaultmd import IronVaultExtension, IronVaultTemplateOverrides, Link
+from ironvaultmd import IronVaultExtension, TemplateOverrides, Link
 
 logger = logging.getLogger("ironparser")
 
@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
     links: list[Link] = []
     frontmatter = {}
-    overrides = IronVaultTemplateOverrides(
+    overrides = TemplateOverrides(
         ooc='<div class="ivm-ooc">OOC: {{ comment }}</div>',
         roll_result="",  # don't add roll_result output
     )

@@ -44,10 +44,10 @@ Attributes:
     __version__: Package version string.
 """
 
-__version__ = "0.5.2"
-
 from .ironvault import IronVaultExtension as IronVaultExtension
-from .parsers.templater import TemplateOverrides as IronVaultTemplateOverrides
+from .parsers.templater import TemplateOverrides as TemplateOverrides
 from .processors.frontmatter import FrontmatterException as FrontmatterException
-from .processors.links import Link
+from .processors.links import Link as Link
 from .processors.mechanics import MechanicsBlockException as MechanicsBlockException
+
+__version__ = "0.5.2"

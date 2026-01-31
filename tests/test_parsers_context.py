@@ -157,7 +157,7 @@ def test_rollcontext_roll():
     for d in data:
         assert rctx.roll(*d[0]) == d[1]
 
-        assert rctx.rolled == True
+        assert rctx.rolled
         assert rctx.momentum == 0
         assert rctx.progress == 0
 
@@ -174,7 +174,7 @@ def test_rollcontext_progressroll():
     for d in data:
         assert rctx.progress_roll(*d[0]) == d[1]
 
-        assert rctx.rolled == True
+        assert rctx.rolled
         assert rctx.momentum == 0
         assert rctx.action == 0
         assert rctx.stat == 0
@@ -215,14 +215,14 @@ def test_rollcontext_burn():
 def test_rollcontext_value():
     rctx = RollContext()
 
-    assert rctx.value("rolled") == False
+    assert not rctx.value("rolled")
     assert rctx.value("action") == 0
     assert rctx.value("stat") == 0
     assert rctx.value("stat_name") == ""
 
     rctx.roll("iron", 5, 2, 0, 1, 9)
 
-    assert rctx.value("rolled") == True
+    assert rctx.value("rolled")
     assert rctx.value("action") == 5
     assert rctx.value("stat") == 2
     assert rctx.value("stat_name") == "iron"

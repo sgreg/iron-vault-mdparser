@@ -146,9 +146,9 @@ This is ideal if you're _mostly_ happy with the default templates but want to tw
 
 ```python
 import markdown
-from ironvaultmd import IronVaultExtension, IronVaultTemplateOverrides
+from ironvaultmd import IronVaultExtension, TemplateOverrides
 
-my_overrides = IronVaultTemplateOverrides()
+my_overrides = TemplateOverrides()
 my_overrides.add  = '<div class="my-own-class">Adding {{ add }}</div>'
 my_overrides.roll = '<div class="ivm-roll">{{ total }} vs {{ vs1 }} and {{ vs2 }}</div>'
 my_overrides.link = '<i>{{ label }}</i>'

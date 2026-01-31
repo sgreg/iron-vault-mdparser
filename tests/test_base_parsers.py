@@ -137,7 +137,7 @@ def test_node_fallback_render(ctx):
     # Verify the first is the initial, not-matched div
     assert nodes[0].text == f"Test: {data}"
     # Verify the second is the matched div and it uses the test template
-    assert nodes[1].text == f"data: yes match"
+    assert nodes[1].text == "data: yes match"
 
 
 def test_node_args_override(ctx):
