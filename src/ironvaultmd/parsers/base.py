@@ -10,16 +10,13 @@ This module defines abstract helpers used by concrete parsers in
   parsers that own a subtree in the output document.
 """
 
-import logging
 import re
 import xml.etree.ElementTree as etree
 from typing import Any
 
-from ironvaultmd import logger_name
+from ironvaultmd.logger import logger
 from ironvaultmd.parsers.context import Context, BlockContext, NameCollection
 from ironvaultmd.parsers.templater import get_templater
-
-logger = logging.getLogger(logger_name)
 
 
 class Parser:

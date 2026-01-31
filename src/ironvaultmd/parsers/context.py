@@ -13,16 +13,13 @@ This module defines small helper classes that carry state while parsing
   current parent element and roll context.
 """
 
-import logging
 import xml.etree.ElementTree as etree
 from dataclasses import dataclass, field
 from typing import Any
 
-from ironvaultmd import logger_name
+from ironvaultmd.logger import logger
 from ironvaultmd.parsers.templater import get_templater
 from ironvaultmd.util import check_dice
-
-logger = logging.getLogger(logger_name)
 
 
 @dataclass

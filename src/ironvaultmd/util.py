@@ -10,12 +10,9 @@ Provided utilities:
 - Mechanics helpers: `check_dice`, `check_ticks`, `initiative_slugify`, `position_slugify`.
 """
 
-import logging
 import re
 
-from ironvaultmd import logger_name
-
-logger = logging.getLogger(logger_name)
+from ironvaultmd.logger import logger
 
 
 def split_match(text: str, match: re.Match[str]) -> tuple[str, str]:

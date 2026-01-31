@@ -7,18 +7,14 @@ and is responsible for parsing a block within a mechanics block (e.g., "move",
 See also the `nodes.py` module for additional information.
 """
 
-import logging
 import xml.etree.ElementTree as etree
 from dataclasses import asdict
 from typing import Any
 
-from ironvaultmd import logger_name
 from ironvaultmd.parsers.base import MechanicsBlockParser, ParameterBlockParser
 from ironvaultmd.parsers.context import Context, NameCollection
 from ironvaultmd.parsers.templater import get_templater
 from ironvaultmd.util import convert_link_name
-
-logger = logging.getLogger(logger_name)
 
 
 class ActorBlockParser(MechanicsBlockParser):

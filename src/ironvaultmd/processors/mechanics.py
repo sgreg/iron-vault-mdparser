@@ -9,14 +9,13 @@ The preprocessor normalizes fencing so that the block processor can reliably
 detect and consume entire mechanics sections as a single block.
 """
 
-import logging
 import re
 
 from markdown.blockparser import BlockParser
 from markdown.blockprocessors import BlockProcessor
 from markdown.preprocessors import Preprocessor
 
-from ironvaultmd import logger_name
+from ironvaultmd.logger import logger
 from ironvaultmd.parsers.base import (
     NodeParser,
     MechanicsBlockParser,
@@ -48,8 +47,6 @@ from ironvaultmd.parsers.nodes import (
     XpNodeParser,
 )
 from ironvaultmd.util import split_match
-
-logger = logging.getLogger(logger_name)
 
 
 class MechanicsBlockException(Exception):

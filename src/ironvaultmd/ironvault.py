@@ -37,11 +37,9 @@ arguments when constructing `IronVaultExtension` or via Markdown config):
 - `template_path` (str): Optional path for templates to use.
 """
 
-import logging
-
 from markdown.extensions import Extension
 
-from ironvaultmd import logger_name
+from ironvaultmd.logger import logger
 from ironvaultmd.parsers.templater import TemplateOverrides, Templater, set_templater
 from ironvaultmd.processors.frontmatter import IronVaultFrontmatterPreprocessor
 from ironvaultmd.processors.links import WikiLinkProcessor, LinkCollector
@@ -49,8 +47,6 @@ from ironvaultmd.processors.mechanics import (
     IronVaultMechanicsBlockProcessor,
     IronVaultMechanicsPreprocessor,
 )
-
-logger = logging.getLogger(logger_name)
 
 
 class IronVaultExtension(Extension):

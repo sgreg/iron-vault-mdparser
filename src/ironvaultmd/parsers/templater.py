@@ -28,7 +28,6 @@ html = md.convert(your_markdown_text)
 ```
 """
 
-import logging
 from contextvars import ContextVar
 from dataclasses import dataclass
 
@@ -40,9 +39,7 @@ from jinja2 import (
     FileSystemLoader,
 )
 
-from ironvaultmd import logger_name
-
-logger = logging.getLogger(logger_name)
+from ironvaultmd.logger import logger
 
 
 @dataclass
