@@ -1,4 +1,10 @@
-from utils import ParserData, assert_parser_data, element_text
+from utils import (
+    ParserArgsData,
+    ParserData,
+    assert_parser_args,
+    assert_parser_data,
+    element_text,
+)
 
 from ironvaultmd.parsers.nodes import (
     AddNodeParser,
@@ -44,6 +50,16 @@ def test_parser_add(ctx):
     assert "comment" in element_text(nodes[1])
 
 
+def test_parser_add_args(ctx):
+    data = [
+        ParserArgsData("1", {"add": "1", "reason": None}),
+        ParserArgsData('1 "because"', {"add": "1", "reason": "because"}),
+        ParserArgsData('1 "because reasons"', {"add": "1", "reason": "because reasons"}),
+    ]
+
+    assert_parser_args(AddNodeParser(), ctx, data)
+
+
 def test_parser_burn(block_ctx):
     parser = BurnNodeParser()
 
@@ -67,6 +83,14 @@ def test_parser_burn(block_ctx):
     ]
 
     assert_parser_data(parser, block_ctx, rolls, classes)
+
+
+def test_parser_burn_args(block_ctx):
+    data = [
+        ParserArgsData("from=4 to=2", {"from": "4", "to": "2", "stat_name": "", "score": 4, "vs1": 0, "vs2": 0, "hitmiss": "strong", "match": True}),
+    ]
+
+    assert_parser_args(BurnNodeParser(), block_ctx, data)
 
 
 def test_parser_clock(ctx):
@@ -104,6 +128,18 @@ def test_parser_clock(ctx):
     assert "Clock Name" in element_text(nodes[0])
 
 
+def test_parser_clock_args(ctx):
+    data = [
+        ParserArgsData('name="a clock" from=3 to=4 out-of=6', {"name": "a clock", "from": 3, "to": 4, "out-of": 6, "segments": 6, "extra": {}}),
+        ParserArgsData('to=4 out-of=6 name="a clock" from=3', {"name": "a clock", "from": 3, "to": 4, "out-of": 6, "segments": 6, "extra": {}}),
+        ParserArgsData('from=2 to=4 out-of=4', {"name": "unknown", "from": 2, "to": 4, "out-of": 4, "segments": 4, "extra": {}}),
+        ParserArgsData('name="another clock" status="added"', {"name": "another clock", "status": "added", "segments": 0, "extra": {}}),
+        ParserArgsData('status="removed"', {"name": "unknown", "status": "removed", "segments": 0, "extra": {}}),
+        ParserArgsData('status="removed" unexpected="value"', {"name": "unknown", "status": "removed", "segments": 0, "extra": {"unexpected": "value"}}),
+    ]
+
+    assert_parser_args(ClockNodeParser(), ctx, data)
+
 
 def test_parser_impact(ctx):
     parser = ImpactNodeParser()
@@ -130,6 +166,16 @@ def test_parser_impact(ctx):
     ]
 
     assert_parser_data(parser, ctx, data, classes)
+
+
+def test_parser_impact_args(ctx):
+    data = [
+        ParserArgsData('"Wounded" true', {"impact": "Wounded", "marked": True}),
+        ParserArgsData('"wounded" true', {"impact": "wounded", "marked": True}),
+        ParserArgsData('"Naked and Afraid" false', {"impact": "Naked and Afraid", "marked": False}),
+    ]
+
+    assert_parser_args(ImpactNodeParser(), ctx, data)
 
 
 def test_parser_initiative(ctx):
@@ -167,6 +213,15 @@ def test_parser_initiative(ctx):
     ]
 
     assert_parser_data(parser, ctx, rolls, classes)
+
+
+def test_parser_initiative_args(ctx):
+    data = [
+        ParserArgsData('from="out of combat" to="has initiative"', {"from": "out of combat", "to": "has initiative", "from_slug": "nocombat", "to_slug": "initiative"}),
+        ParserArgsData('from="has initiative" to="no initiative"', {"from": "has initiative", "to": "no initiative", "from_slug": "initiative", "to_slug": "noinitiative"}),
+    ]
+
+    assert_parser_args(InitiativeNodeParser(), ctx, data)
 
 
 def test_parser_meter(ctx):
@@ -208,6 +263,15 @@ def test_parser_meter(ctx):
     assert "Meter with Link" in element_text(nodes[5])
 
 
+def test_parser_meter_args(ctx):
+    data = [
+        ParserArgsData('"Health" from=4 to=3', {"meter_name": "Health", "from": 4, "to": 3, "diff": -1}),
+        ParserArgsData('"Starship \\/ Integrity" from=2 to=3', {"meter_name": "Starship / Integrity", "from": 2, "to": 3, "diff": 1}),
+    ]
+
+    assert_parser_args(MeterNodeParser(), ctx, data)
+
+
 def test_parser_move(ctx):
     parser = MoveNodeParser()
 
@@ -229,6 +293,15 @@ def test_parser_move(ctx):
     move_name = nodes[0].findall('div')
     assert move_name is not None
     assert "Move Name" in move_name[0].text
+
+
+def test_parser_move_args(ctx):
+    data = [
+        ParserArgsData('"[Compel](datasworn:move:starforged\\/adventure\\/compel)"', {"name": "Compel"}),
+        ParserArgsData('"[Secure an Advantage](datasworn:move:starforged\\/adventure\\/secure_an_advantage)"', {"name": "Secure an Advantage"}),
+    ]
+
+    assert_parser_args(MoveNodeParser(), ctx, data)
 
 
 def test_parser_ooc(ctx):
@@ -255,6 +328,16 @@ def test_parser_ooc(ctx):
     for idx, node in enumerate(nodes):
         assert node.get("class") == "ivm-ooc"
         assert contents[idx] in node.text
+
+
+def test_parser_ooc_args(ctx):
+    data = [
+        ParserArgsData('"comment"', {"comment": "comment"}),
+        ParserArgsData('"several words comment"', {"comment": "several words comment"}),
+        ParserArgsData('"comment with \\"quoted\\" text"', {"comment": 'comment with "quoted" text'}),
+    ]
+
+    assert_parser_args(OocNodeParser(), ctx, data)
 
 
 def test_parser_oracle(ctx):
@@ -285,6 +368,17 @@ def test_parser_oracle(ctx):
     nodes = assert_parser_data(parser, ctx, rolls, classes)
     assert "Oracle Name" in element_text(nodes[0])
     assert "Something" in element_text(nodes[0])
+
+
+def test_parser_oracle_args(ctx):
+    data = [
+        ParserArgsData('name="[Core Oracles \\/ Theme](datasworn:path)" result="Warning" roll=96', {"name": "[Core Oracles \\/ Theme](datasworn:path)", "oracle": "Core Oracles / Theme", "result": "Warning", "roll": 96, "extra": {}}),
+        ParserArgsData("roll=12", {"oracle": "unknown", "result": "unknown", "roll": 12, "extra": {}}),
+        ParserArgsData('cursed=1 name="something" replaced=true result="Pyramid architecture" roll=74', {"name": "something", "oracle": "something", "result": "Pyramid architecture", "roll": 74, "cursed": 1, "replaced": True, "extra": {}}),
+        ParserArgsData("roll=12 random=3", {"oracle": "unknown", "result": "unknown", "roll": 12, "extra": {"random": 3}}),
+    ]
+
+    assert_parser_args(OracleNodeParser(), ctx, data)
 
 
 def test_parser_position(ctx):
@@ -324,6 +418,15 @@ def test_parser_position(ctx):
     assert_parser_data(parser, ctx, rolls, classes)
 
 
+def test_parser_position_args(ctx):
+    data = [
+        ParserArgsData('from="out of combat" to="in control"', {"from": "out of combat", "to": "in control", "from_slug": "nocombat", "to_slug": "control"}),
+        ParserArgsData('from="in control" to="in a bad spot"', {"from": "in control", "to": "in a bad spot", "from_slug": "control", "to_slug": "badspot"}),
+    ]
+
+    assert_parser_args(PositionNodeParser(), ctx, data)
+
+
 def test_parser_progress(ctx):
     parser = ProgressNodeParser()
 
@@ -354,6 +457,15 @@ def test_parser_progress(ctx):
     nodes = assert_parser_data(parser, ctx, rolls, classes)
 
     assert "Track Name" in element_text(nodes[0])
+
+
+def test_parser_progress_args(ctx):
+    data = [
+        ParserArgsData('from=8 name="track" rank="dangerous" steps=1', {"name": "track", "rank": "dangerous", "steps": 1, "from": (2, 0), "to": (4, 0), "from_ticks": 8, "to_ticks": 16, "from_fract": 2.0, "to_fract": 4.0, "ticks": 8, "extra": {}}),
+        ParserArgsData('from=8 name="track" rank="dangerous" steps=1 else="something"', {"name": "track", "rank": "dangerous", "steps": 1, "from": (2, 0), "to": (4, 0), "from_ticks": 8, "to_ticks": 16, "from_fract": 2.0, "to_fract": 4.0, "ticks": 8, "extra": {"else": "something"}}),
+    ]
+
+    assert_parser_args(ProgressNodeParser(), ctx, data)
 
 
 def test_parser_progressroll(block_ctx):
@@ -402,6 +514,16 @@ def test_parser_progressroll(block_ctx):
     assert "Name in the back" in element_text(nodes[7])
 
 
+def test_parser_progressroll_args(block_ctx):
+    data = [
+        ParserArgsData('name="track" score=8 vs1=4 vs2=10', {"name": "track", "score": 8, "vs1": 4, "vs2": 10, "stat_name": "", "hitmiss": "weak", "match": False, "extra": {}}),
+        ParserArgsData("score=8 vs1=4 vs2=10", {"name": "undefined", "score": 8, "vs1": 4, "vs2": 10, "stat_name": "", "hitmiss": "weak", "match": False, "extra": {}}),
+        ParserArgsData('score=8 vs1=4 vs2=10 track="name"', {"name": "undefined", "score": 8, "vs1": 4, "vs2": 10, "stat_name": "", "hitmiss": "weak", "match": False, "extra": {"track": "name"}}),
+    ]
+
+    assert_parser_args(ProgressRollNodeParser(), block_ctx, data)
+
+
 def test_parser_reroll(block_ctx):
     parser = RerollNodeParser()
 
@@ -438,6 +560,17 @@ def test_parser_reroll(block_ctx):
     ]
 
     assert_parser_data(parser, block_ctx, rolls, classes)
+
+
+def test_parser_reroll_args(block_ctx):
+    data = [
+        ParserArgsData('action="5"', {"die": "action", "value": 5, "old_value": 0, "stat_name": "", "score": 5, "vs1": 0, "vs2": 0, "hitmiss": "strong", "match": True}),
+        ParserArgsData('vs1="8"', {"die": "vs1", "value": 8, "old_value": 0, "stat_name": "", "score": 5, "vs1": 8, "vs2": 0, "hitmiss": "weak", "match": False}),
+        ParserArgsData('vs2="6"', {"die": "vs2", "value": 6, "old_value": 0, "stat_name": "", "score": 5, "vs1": 8, "vs2": 6, "hitmiss": "miss", "match": False}),
+        ParserArgsData('vs1="6"', {"die": "vs1", "value": 6, "old_value": 8, "stat_name": "", "score": 5, "vs1": 6, "vs2": 6, "hitmiss": "miss", "match": True}),
+    ]
+
+    assert_parser_args(RerollNodeParser(), block_ctx, data)
 
 
 def test_parser_roll(block_ctx):
@@ -485,6 +618,15 @@ def test_parser_roll(block_ctx):
     assert_parser_data(parser, block_ctx, rolls, classes)
 
 
+def test_parser_roll_args(block_ctx):
+    data = [
+        ParserArgsData('"Heart" action=5 adds=0 stat=2 vs1=4 vs2=8', {"stat_name": "Heart", "action": "5", "adds": "0", "stat": "2", "score": 7, "vs1": 4, "vs2": 8, "hitmiss": "weak", "match": False}),
+        ParserArgsData('"Edge" action=3 adds=1 stat=3 vs1=5 vs2=5', {"stat_name": "Edge", "action": "3", "adds": "1", "stat": "3", "score": 7, "vs1": 5, "vs2": 5, "hitmiss": "strong", "match": True}),
+    ]
+
+    assert_parser_args(RollNodeParser(), block_ctx, data)
+
+
 def test_parser_rolls(block_ctx):
     parser = RollsNodeParser()
 
@@ -510,17 +652,12 @@ def test_parser_rolls(block_ctx):
     assert "2d100" in element_text(nodes[2])
 
 def test_parser_rolls_args(ctx):
-    parser = RollsNodeParser()
-    matches = parser._match('12 34 5 dice="3d100"')
-    args = parser.handle_args(matches, ctx)
+    data = [
+        ParserArgsData('12 34 5 dice="3d100"', {"dice": "3d100", "rolls": "12 34 5", "rolls_array": [12, 34, 5]}),
+        ParserArgsData('1 dice="1d6"', {"dice": "1d6", "rolls": "1", "rolls_array": [1]}),
+    ]
 
-    assert args.get("dice", None) == "3d100"
-    assert args.get("rolls", None) == "12 34 5"
-    assert args.get("rolls_array", None) == [12, 34, 5]
-
-    # Make this some assert_parser_args() util function next and test all other node args
-    args = parser.handle_args(parser._match('1 dice="1d6"'), ctx)
-    assert args == {"dice": "1d6", "rolls": "1", "rolls_array": [1]}
+    assert_parser_args(RollsNodeParser(), ctx, data)
 
 
 def test_parser_track(ctx):
@@ -548,6 +685,17 @@ def test_parser_track(ctx):
 
     nodes = assert_parser_data(parser, ctx, rolls, classes)
     assert "Track Name" in element_text(nodes[0])
+
+
+def test_parser_track_args(ctx):
+    data = [
+        ParserArgsData('name="[[Campaign\\/Progress\\/Track.md|Track]]" status="added"', {"name": "Track", "status": "added", "extra": {}}),
+        ParserArgsData('status="removed"', {"name": "undefined", "status": "removed", "extra": {}}),
+        ParserArgsData('status="removed" unexpected="value"', {"name": "undefined", "status": "removed", "extra": {"unexpected": "value"}}),
+        ParserArgsData('status="removed" expected=false', {"name": "undefined", "status": "removed", "extra": {"expected": False}}),
+    ]
+
+    assert_parser_args(TrackNodeParser(), ctx, data)
 
 
 def test_parser_xp(ctx):
@@ -578,3 +726,12 @@ def test_parser_xp(ctx):
     ]
 
     assert_parser_data(parser, ctx, rolls, classes)
+
+
+def test_parser_xp_args(ctx):
+    data = [
+        ParserArgsData("from=1 to=2", {"from": 1, "to": 2, "diff": 1}),
+        ParserArgsData("from=6 to=4", {"from": 6, "to": 4, "diff": -2}),
+    ]
+
+    assert_parser_args(XpNodeParser(), ctx, data)

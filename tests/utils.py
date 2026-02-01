@@ -1,5 +1,5 @@
 import xml.etree.ElementTree as etree
-from typing import NamedTuple
+from typing import NamedTuple, Any
 
 from ironvaultmd.parsers.base import NodeParser
 from ironvaultmd.parsers.context import Context
@@ -44,6 +44,17 @@ def assert_parser_data(parser: NodeParser, ctx: Context, rolls: list[ParserData]
             assert rolls[idx].content in element_text(node)
 
     return nodes
+
+
+class ParserArgsData(NamedTuple):
+    line: str
+    expected_args: dict[str, Any]
+
+def assert_parser_args(parser: NodeParser, ctx: Context, data: list[ParserArgsData]):
+    for entry in data:
+        matches = parser._match(entry.line)
+        args = parser.handle_args(matches, ctx)
+        assert args == entry.expected_args
 
 
 class StringCompareData(NamedTuple):

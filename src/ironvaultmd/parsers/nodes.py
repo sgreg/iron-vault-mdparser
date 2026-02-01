@@ -37,6 +37,8 @@ class AddNodeParser(NodeParser):
         regex = r'^(?P<add>\d+)(?: "(?P<reason>.+)")?$'
         super().__init__(NameCollection("Add", "add", "add"), regex)
 
+        # XXX should args be converted to ints?
+
 
 class BurnNodeParser(NodeParser):
     """Parser for momentum `burn` lines."""
@@ -73,6 +75,8 @@ class ClockNodeParser(ParameterNodeParser):
         data["name"] = convert_link_name(data.get("name", "unknown"))
         data["segments"] = data.get("out-of", 0)
         return data
+
+        # XXX there's always "segments" even if "out-of" is missing, should it be changed?
 
 
 class ImpactNodeParser(NodeParser):
@@ -215,6 +219,8 @@ class OracleNodeParser(ParameterNodeParser):
         data["result"] = convert_link_name(data.get("result", "unknown"))
 
         return data
+
+        # XXX this keeps the "name" entry, kinda no point for that?
 
 
 class PositionNodeParser(NodeParser):
@@ -373,6 +379,8 @@ class RollNodeParser(NodeParser):
             data["vs2"],
         )
         return data | asdict(result)
+
+        # XXX there's some values ints (vs1, vs2), others strings (action, adds, stat, score)
 
 
 class RollsNodeParser(NodeParser):
