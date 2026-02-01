@@ -37,7 +37,9 @@ class AddNodeParser(NodeParser):
         regex = r'^(?P<add>\d+)(?: "(?P<reason>.+)")?$'
         super().__init__(NameCollection("Add", "add", "add"), regex)
 
-        # XXX should args be converted to ints?
+    def handle_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:
+        data["add"] = int(data["add"])
+        return data
 
 
 class BurnNodeParser(NodeParser):
@@ -58,7 +60,11 @@ class BurnNodeParser(NodeParser):
         Returns:
             The original groups merged with the serialized `RollResult`.
         """
+        data["from"] = int(data["from"])
+        data["to"] = int(data["to"])
+
         result = ctx.roll.burn(data["from"])
+
         return data | asdict(result)
 
 
@@ -73,10 +79,13 @@ class ClockNodeParser(ParameterNodeParser):
 
     def handle_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:
         data["name"] = convert_link_name(data.get("name", "unknown"))
-        data["segments"] = data.get("out-of", 0)
-        return data
 
-        # XXX there's always "segments" even if "out-of" is missing, should it be changed?
+        segments = data.get("out-of", None)
+        if segments is not None:
+            data["segments"] = int(segments)
+            del data["out-of"]
+
+        return data
 
 
 class ImpactNodeParser(NodeParser):
@@ -215,12 +224,17 @@ class OracleNodeParser(ParameterNodeParser):
         super().__init__(NameCollection("Oracle", "oracle", "oracle"), known_keys)
 
     def handle_args(self, data: dict[str, Any], _: Context) -> dict[str, Any]:
-        data["oracle"] = convert_link_name(data.get("name", "unknown"))
+        oracle = data.get("name", None)
+        if oracle is not None:
+            oracle = convert_link_name(oracle)
+            del data["name"]
+        else:
+            oracle = "unknown"
+
+        data["oracle"] = oracle
         data["result"] = convert_link_name(data.get("result", "unknown"))
 
         return data
-
-        # XXX this keeps the "name" entry, kinda no point for that?
 
 
 class PositionNodeParser(NodeParser):
@@ -378,9 +392,13 @@ class RollNodeParser(NodeParser):
             data["vs1"],
             data["vs2"],
         )
-        return data | asdict(result)
 
-        # XXX there's some values ints (vs1, vs2), others strings (action, adds, stat, score)
+        # returned roll results will have some values converted to integers, convert all others now too
+        data["action"] = int(data["action"])
+        data["adds"] = int(data["adds"])
+        data["stat"] = int(data["stat"])
+
+        return data | asdict(result)
 
 
 class RollsNodeParser(NodeParser):

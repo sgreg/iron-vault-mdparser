@@ -52,9 +52,9 @@ def test_parser_add(ctx):
 
 def test_parser_add_args(ctx):
     data = [
-        ParserArgsData("1", {"add": "1", "reason": None}),
-        ParserArgsData('1 "because"', {"add": "1", "reason": "because"}),
-        ParserArgsData('1 "because reasons"', {"add": "1", "reason": "because reasons"}),
+        ParserArgsData("1", {"add": 1, "reason": None}),
+        ParserArgsData('1 "because"', {"add": 1, "reason": "because"}),
+        ParserArgsData('1 "because reasons"', {"add": 1, "reason": "because reasons"}),
     ]
 
     assert_parser_args(AddNodeParser(), ctx, data)
@@ -87,7 +87,7 @@ def test_parser_burn(block_ctx):
 
 def test_parser_burn_args(block_ctx):
     data = [
-        ParserArgsData("from=4 to=2", {"from": "4", "to": "2", "stat_name": "", "score": 4, "vs1": 0, "vs2": 0, "hitmiss": "strong", "match": True}),
+        ParserArgsData("from=4 to=2", {"from": 4, "to": 2, "stat_name": "", "score": 4, "vs1": 0, "vs2": 0, "hitmiss": "strong", "match": True}),
     ]
 
     assert_parser_args(BurnNodeParser(), block_ctx, data)
@@ -130,12 +130,12 @@ def test_parser_clock(ctx):
 
 def test_parser_clock_args(ctx):
     data = [
-        ParserArgsData('name="a clock" from=3 to=4 out-of=6', {"name": "a clock", "from": 3, "to": 4, "out-of": 6, "segments": 6, "extra": {}}),
-        ParserArgsData('to=4 out-of=6 name="a clock" from=3', {"name": "a clock", "from": 3, "to": 4, "out-of": 6, "segments": 6, "extra": {}}),
-        ParserArgsData('from=2 to=4 out-of=4', {"name": "unknown", "from": 2, "to": 4, "out-of": 4, "segments": 4, "extra": {}}),
-        ParserArgsData('name="another clock" status="added"', {"name": "another clock", "status": "added", "segments": 0, "extra": {}}),
-        ParserArgsData('status="removed"', {"name": "unknown", "status": "removed", "segments": 0, "extra": {}}),
-        ParserArgsData('status="removed" unexpected="value"', {"name": "unknown", "status": "removed", "segments": 0, "extra": {"unexpected": "value"}}),
+        ParserArgsData('name="a clock" from=3 to=4 out-of=6', {"name": "a clock", "from": 3, "to": 4, "segments": 6, "extra": {}}),
+        ParserArgsData('to=4 out-of=6 name="a clock" from=3', {"name": "a clock", "from": 3, "to": 4, "segments": 6, "extra": {}}),
+        ParserArgsData('from=2 to=4 out-of=4', {"name": "unknown", "from": 2, "to": 4, "segments": 4, "extra": {}}),
+        ParserArgsData('name="another clock" status="added"', {"name": "another clock", "status": "added", "extra": {}}),
+        ParserArgsData('status="removed"', {"name": "unknown", "status": "removed", "extra": {}}),
+        ParserArgsData('status="removed" unexpected="value"', {"name": "unknown", "status": "removed", "extra": {"unexpected": "value"}}),
     ]
 
     assert_parser_args(ClockNodeParser(), ctx, data)
@@ -372,9 +372,9 @@ def test_parser_oracle(ctx):
 
 def test_parser_oracle_args(ctx):
     data = [
-        ParserArgsData('name="[Core Oracles \\/ Theme](datasworn:path)" result="Warning" roll=96', {"name": "[Core Oracles \\/ Theme](datasworn:path)", "oracle": "Core Oracles / Theme", "result": "Warning", "roll": 96, "extra": {}}),
+        ParserArgsData('name="[Core Oracles \\/ Theme](datasworn:path)" result="Warning" roll=96', {"oracle": "Core Oracles / Theme", "result": "Warning", "roll": 96, "extra": {}}),
         ParserArgsData("roll=12", {"oracle": "unknown", "result": "unknown", "roll": 12, "extra": {}}),
-        ParserArgsData('cursed=1 name="something" replaced=true result="Pyramid architecture" roll=74', {"name": "something", "oracle": "something", "result": "Pyramid architecture", "roll": 74, "cursed": 1, "replaced": True, "extra": {}}),
+        ParserArgsData('cursed=1 name="something" replaced=true result="Pyramid architecture" roll=74', {"oracle": "something", "result": "Pyramid architecture", "roll": 74, "cursed": 1, "replaced": True, "extra": {}}),
         ParserArgsData("roll=12 random=3", {"oracle": "unknown", "result": "unknown", "roll": 12, "extra": {"random": 3}}),
     ]
 
@@ -620,8 +620,8 @@ def test_parser_roll(block_ctx):
 
 def test_parser_roll_args(block_ctx):
     data = [
-        ParserArgsData('"Heart" action=5 adds=0 stat=2 vs1=4 vs2=8', {"stat_name": "Heart", "action": "5", "adds": "0", "stat": "2", "score": 7, "vs1": 4, "vs2": 8, "hitmiss": "weak", "match": False}),
-        ParserArgsData('"Edge" action=3 adds=1 stat=3 vs1=5 vs2=5', {"stat_name": "Edge", "action": "3", "adds": "1", "stat": "3", "score": 7, "vs1": 5, "vs2": 5, "hitmiss": "strong", "match": True}),
+        ParserArgsData('"Heart" action=5 adds=0 stat=2 vs1=4 vs2=8', {"stat_name": "Heart", "action": 5, "adds": 0, "stat": 2, "score": 7, "vs1": 4, "vs2": 8, "hitmiss": "weak", "match": False}),
+        ParserArgsData('"Edge" action=3 adds=1 stat=3 vs1=5 vs2=5', {"stat_name": "Edge", "action": 3, "adds": 1, "stat": 3, "score": 7, "vs1": 5, "vs2": 5, "hitmiss": "strong", "match": True}),
     ]
 
     assert_parser_args(RollNodeParser(), block_ctx, data)
