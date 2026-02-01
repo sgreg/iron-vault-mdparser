@@ -261,7 +261,7 @@ class Templater:
             A compiled Jinja `Template` or `None` when explicitly disabled
             or reading the template file fails / it doesn't exist.
         """
-        logger.info(
+        logger.debug(
             f"[ctx {hex(id(self))}] Getting {template_type} template for '{name}'"
         )
         key = name.lower().replace(" ", "_")
