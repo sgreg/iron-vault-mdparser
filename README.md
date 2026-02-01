@@ -75,15 +75,31 @@ There is currently no support for parsing those inline mechanics, nor any seriou
 It's in the back of my mind, but I prefer to wait until the feature has matured a bit and the mechanics
 are fully documented before thinking of adding it.
 
-### Other Obsidian features
-Apart from the links and frontmatter, no other Obsidian-specific features are supported, or intended to
+### Other Obsidian / Markdown features
+Apart from the links and frontmatter, no other Obsidian-specific features are supported or intended to
 be added. Focus is primarily on the Iron Vault extension itself.
+
+But there are other [Python Markdown extensions](https://python-markdown.github.io/extensions/) that should
+run nicely alongside `ironvaultmd`. If you, for example, use a lot of heading levels in your journals
+and want a table of contents, check the [`TocExtension`](https://python-markdown.github.io/extensions/toc/).
+And the [Python Markdown `TableExtension`](https://python-markdown.github.io/extensions/tables/) can handle
+Obsidian's type of [tables](https://help.obsidian.md/advanced-syntax#Tables).
 
 #### Callouts
 Have a look at [`markdown-obsidian-callouts`](https://pypi.org/project/markdown-obsidian-callouts/)
 ([GitHub](https://github.com/lextoumbourou/markdown-obsidian-callouts)) for supporting Obsidian's
 [callouts](https://help.obsidian.md/callouts). While not natively supported, it can also handle Iron Vault's
 [spoiler callout](https://ironvault.quest/other-features/callouts.html).
+
+#### Images
+The way Obsidian inserts images (`![name](image.jpg)`) should just work&trade; with how Python Markdown parses them.
+
+Note that if the image has a unique name, Obsidian seems to link just the name itself (`image.jpg`),
+but if there are mutliple images with the same name, it will use the relative path, from within the vault,
+to link to the image (`campaign/images/image.jpg`).
+
+To make the images show up on the resulting HTML page, make sure to store the images in the same path
+structure relative to the HTML file itself.
 
 
 ## Installation
